@@ -1,0 +1,156 @@
+<!-- python 3.13.2 -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0e7ef 0%, #b2d8f7 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      padding: 38px 36px 32px 36px;
+      width: 370px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1.5px solid #e3e3e3;
+      transition: box-shadow 0.3s;
+    }
+    .login-card:hover {
+      box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.22);
+    }
+    .logos {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+    }
+    .logos img {
+      height: 100px;
+      object-fit: contain;
+      background: none;
+      filter: drop-shadow(0 2px 2px #e0e0e0);
+      border-radius: 6px;
+    }
+    .login-label {
+      font-size: 1.35rem;
+      margin-bottom: 6px;
+      margin-top: 16px;
+      font-family: inherit;
+      color: #222;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+      display: block;
+    }
+    .login-input {
+      width: 100%;
+      padding: 12px 20px;
+      border: 2px solid #b2d8f7;
+      border-radius: 25px;
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+      outline: none;
+      background: #f7fbff;
+      font-family: inherit;
+      transition: border 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+    .login-input:focus {
+      border: 2px solid #4fc3f7;
+      box-shadow: 0 0 0 2px #b2d8f7;
+      background: #fff;
+    }
+    .login-btn {
+      width: 65%;
+      padding: 13px 0;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(90deg, #4fc3f7 0%, #2196f3 100%);
+      color: #fff;
+      font-size: 1.45rem;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 22px;
+      margin-bottom: 8px;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px 0 rgba(79,195,247,0.10);
+      letter-spacing: 1px;
+    }
+    .login-btn:hover {
+      background: linear-gradient(90deg, #2196f3 0%, #4fc3f7 100%);
+      box-shadow: 0 4px 16px 0 rgba(33,150,243,0.13);
+    }
+    #message {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 1.05rem;
+      min-height: 22px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+    @media (max-width: 480px) {
+      .login-card {
+        width: 98vw;
+        padding: 18px 4vw 18px 4vw;
+      }
+      .logos img {
+        height: 38px;
+      }
+      .login-btn {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logos">
+      <img src="C:\Users\Aluno\Desktop\tcc\images\etec_nelson-removebg-preview.png" alt="Centro Paula Souza">
+      <img src="C:\Users\Aluno\Desktop\tcc\images\etec-identidade-removebg-preview.png" alt="Etec">
+    </div>
+    <form id="loginForm" style="width:100%;">
+      <label for="email" class="login-label">Usuário</label>
+      <input type="email" id="email" class="login-input" required autocomplete="username" placeholder="">
+      <label for="password" class="login-label">Senha</label>
+      <input type="password" id="password" class="login-input" required autocomplete="current-password" placeholder="">
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="submit" class="login-btn">ENTRAR</button>
+      </div>
+      <div id="message"></div>
+    </form>
+  </div>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      const result = await response.json();
+      const msgDiv = document.getElementById('message');
+      msgDiv.innerText = result.message;
+      msgDiv.style.color = result.message.includes('sucesso') ? '#219a00' : '#d32f2f';
+      if (result.message.includes('sucesso')) {
+        setTimeout(() => {
+          window.location.href = "paginamain.html";
+        }, 800); // Pequeno delay para mostrar a mensagem
+      }
+    });
+  </script>
+</body>
+</html>
