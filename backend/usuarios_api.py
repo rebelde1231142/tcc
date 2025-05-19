@@ -6,7 +6,7 @@ CORS(app)
 
 # Simulação de "banco de dados" de usuários
 usuarios = [
-    {"id": 1, "email": "leonel", "senha": "1234"},
+    {"id": 1, "email": "leonel@gmail.com", "senha": "1234"},
     {"id": 2, "email": "admin@exemplo.com", "senha": "admin"}
 ]
 
