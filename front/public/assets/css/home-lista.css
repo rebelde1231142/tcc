@@ -1,0 +1,21 @@
+/* Estilos para a lista de itens personalizados da home */
+.list-group-sm .list-group-item {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+    font-size: 0.97rem;
+}
+.list-group.border {
+    border: 1.5px solid #d1d5db !important;
+}
+.list-group.border .list-group-item {
+    border-bottom: 1px solid #d1d5db;
+}
+.list-group.border .list-group-item:last-child {
+    border-bottom: none;
+}
+.p-4.border.rounded.shadow.bg-white {
+    box-shadow: 0 4px 24px 0 rgba(0, 17, 255, 0.1);
+    border: 2px solid #d1d5db !important;
+    background: #fff !important;
+    border-left: 400px;
+}
