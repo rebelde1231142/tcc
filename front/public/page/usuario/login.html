@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="/assets/css/login.css">
+</head>
+<body>
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="login-container">
+            <form id="formLogin">
+                <h1>Login</h1>
+                <div class="mb-3">
+                    <label for="cpf" class="form-label">CPF</label>
+                    <input type="text" class="form-control" id="cpf" placeholder="Digite seu CPF" required>
+                </div>
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="senha" placeholder="Digite sua senha" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                <a href="/usuario/cadastrousuario" id="linkCadastro" class="btn btn-outline-secondary w-100 mt-2">Cadastrar</a>
+            </form>
+            <div id="alertaLogin" class="alert d-none mt-3" role="alert"></div>
+        </div>
+    </div>
+
+    <script>
+        // Limpa qualquer usuário antigo salvo ao abrir a tela de login
+        localStorage.removeItem('usuarioLogado');
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="/assets/js/loginHideMenu.js"></script>
+    <script>
+        $(document).ready(() => {
+            $('#formLogin').on('submit', function (e) {
+                e.preventDefault();
+
+                const cpf = $('#cpf').val();
+                const senha = $('#senha').val();
+
+                fetch('http://localhost:3000/usuarios')
+                    .then(response => response.json())
+                    .then(usuarios => {
+                        const usuario = usuarios.find(u => u.id === cpf && u.senha === senha);
+                        if (usuario) {
+                            localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+                            $('#alertaLogin')
+                                .removeClass('d-none alert-danger')
+                                .addClass('alert-success')
+                                .text('Login realizado com sucesso!');
+                            setTimeout(() => window.location.href = '/', 2000);
+                        } else {
+                            throw new Error('CPF ou senha inválidos.');
+                        }
+                    })
+                    .catch(error => {
+                        $('#alertaLogin')
+                            .removeClass('d-none alert-success')
+                            .addClass('alert-danger')
+                            .text(error.message);
+                    });
+            });
+            // Redireciona para o cadastro ao clicar em "Cadastrar"
+            $('#linkCadastro').on('click', function(e) {
+                e.preventDefault();
+                window.location.href = '/usuario/cadastrousuario';
+            });
+        });
+    </script>
+</body>
+</html>

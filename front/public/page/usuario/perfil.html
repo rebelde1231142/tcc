@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Perfil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+        }
+        .perfil-card {
+            max-width: 420px;
+            margin: 60px auto;
+            padding: 2rem 2.5rem;
+            border-radius: 1.2rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            background: #fff;
+        }
+        .perfil-avatar {
+            display: block;
+            margin: 0 auto 1rem auto;
+            width: 80px;
+            border-radius: 50%;
+            transition: box-shadow 0.3s, transform 0.3s;
+            box-shadow: 0 2px 8px 0 rgba(31,38,135,0.07);
+            cursor: pointer;
+        }
+        .perfil-avatar:hover {
+            box-shadow: 0 8px 24px 0 rgba(31,38,135,0.25);
+            transform: translateY(-8px) scale(1.07);
+            outline: 2.5px solid #2575fc;
+            outline-offset: 2px;
+        }
+        .btn-editar {
+            background: #2575fc;
+            border: none;
+        }
+        .btn-editar:hover {
+            background: #6a11cb;
+        }
+        .alert {
+            font-size: 0.95rem;
+        }
+        #perfilInfo {
+            background: #f8f9fa;
+            border: 1.5px solid #d1d5db;
+            border-radius: 0.7rem;
+            box-shadow: 0 2px 8px 0 rgba(31,38,135,0.07);
+        }
+    </style>
+</head>
+<body>
+    <div class="perfil-card">
+        <img id="perfilAvatar" src="https://cdn-icons-png.flaticon.com/512/747/747376.png" alt="Avatar" class="perfil-avatar">
+        <h2 class="text-center mb-4">Meu Perfil</h2>
+        <div id="perfilInfo" class="border rounded p-3 mb-3 bg-light shadow-sm">
+            <p><strong>Nome:</strong> <span id="perfilNome"></span></p>
+            <p><strong>CPF:</strong> <span id="perfilCpf"></span></p>
+            <button class="btn btn-editar w-100 mt-3" id="btnEditarPerfil">Editar Perfil</button>
+        </div>
+        <form id="formEditarPerfil" class="d-none mt-3" enctype="multipart/form-data">
+            <div class="mb-3 text-center">
+                <label for="editarFotoPerfil" class="form-label">Foto de Perfil</label>
+                <input type="file" class="form-control" id="editarFotoPerfil" accept="image/*">
+                <img id="previewFotoPerfil" src="https://cdn-icons-png.flaticon.com/512/747/747376.png" alt="Prévia da foto" style="width: 80px; margin-top: 10px; border-radius: 50%;">
+            </div>
+            <div class="mb-3">
+                <label for="editarNome" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="editarNome" required>
+            </div>
+            <div class="mb-3">
+                <label for="editarSenha" class="form-label">Nova Senha</label>
+                <input type="password" class="form-control" id="editarSenha" placeholder="Deixe em branco para não alterar">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Salvar Alterações</button>
+            <button type="button" class="btn btn-secondary w-100 mt-2" id="btnCancelarEdicao">Cancelar</button>
+        </form>
+        <div id="alertaPerfil" class="alert d-none mt-3" role="alert"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="/assets/js/perfilHideMenu.js"></script>
+    <script>
+        let usuario = null;
+
+        function carregarPerfil() {
+            const usuarioLogado = localStorage.getItem('usuarioLogado');
+            if (!usuarioLogado) {
+                window.location.href = "/page/login.html";
+                return;
+            }
+            usuario = JSON.parse(usuarioLogado);
+            $('#perfilNome').text(usuario.nome);
+            $('#perfilCpf').text(usuario.id);
+            $('#editarNome').val(usuario.nome);
+            $('#editarSenha').val('');
+            // Atualiza avatar
+            $('#perfilAvatar').attr('src', usuario.fotoPerfil || 'https://cdn-icons-png.flaticon.com/512/747/747376.png');
+            $('#previewFotoPerfil').attr('src', usuario.fotoPerfil || 'https://cdn-icons-png.flaticon.com/512/747/747376.png');
+        }
+
+        $(document).ready(function() {
+            carregarPerfil();
+
+            $('#btnEditarPerfil').on('click', function() {
+                $('#perfilInfo').addClass('d-none');
+                $('#formEditarPerfil').removeClass('d-none');
+            });
+
+            $('#btnCancelarEdicao').on('click', function() {
+                $('#formEditarPerfil').addClass('d-none');
+                $('#perfilInfo').removeClass('d-none');
+                carregarPerfil();
+            });
+
+            // Pré-visualização da foto de perfil
+            $('#editarFotoPerfil').on('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (ev) {
+                        $('#previewFotoPerfil').attr('src', ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            $('#formEditarPerfil').on('submit', function(e) {
+                e.preventDefault();
+                const novoNome = $('#editarNome').val();
+                const novaSenha = $('#editarSenha').val();
+                const file = $('#editarFotoPerfil')[0].files[0];
+
+                // Função para upload da foto (caso selecionada)
+                function uploadFotoPerfil() {
+                    if (!file) return Promise.resolve(usuario.fotoPerfil || "");
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    return fetch('http://localhost:3037/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(result => result.url || usuario.fotoPerfil || "");
+                }
+
+                uploadFotoPerfil().then(fotoPerfilUrl => {
+                    const dadosAtualizados = {
+                        nome: novoNome,
+                        cpf: usuario.cpf,
+                        senha: novaSenha ? novaSenha : usuario.senha,
+                        fotoPerfil: fotoPerfilUrl,
+                        tipo: usuario.tipo
+                    };
+
+                    fetch('http://localhost:3000/usuarios/' + usuario.id, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dadosAtualizados)
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            usuario = { ...usuario, ...dadosAtualizados };
+                            localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+                            $('#alertaPerfil')
+                                .removeClass('d-none alert-danger')
+                                .addClass('alert-success')
+                                .text('Perfil atualizado com sucesso!');
+                            $('#formEditarPerfil').addClass('d-none');
+                            $('#perfilInfo').removeClass('d-none');
+                            carregarPerfil();
+                        } else {
+                            throw new Error('Erro ao atualizar perfil.');
+                        }
+                    })
+                    .catch(error => {
+                        $('#alertaPerfil')
+                            .removeClass('d-none alert-success')
+                            .addClass('alert-danger')
+                            .text(error.message);
+                    });
+                });
+            });
+        });
+
+        // Adicione este script nos arquivos de menu (ex: menu-admin.html, menu-logado.html)
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'usuarioLogado') {
+                location.reload(); // Recarrega a página/aba para refletir as mudanças
+            }
+        });
+    </script>
+</body>
+</html>

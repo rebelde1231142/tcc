@@ -1,0 +1,31 @@
+/* cadastroUsuario.css - estilos exclusivos para a página de cadastro de usuário */
+body {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    min-height: 100vh;
+}
+.card-cadastro {
+    max-width: 400px;
+    margin: 60px auto;
+    padding: 2rem 2.5rem 2rem 2.5rem;
+    border-radius: 1.2rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    background: #fff;
+}
+.form-label {
+    font-weight: 500;
+}
+.btn-primary {
+    background: #2575fc;
+    border: none;
+}
+.btn-primary:hover {
+    background: #6a11cb;
+}
+.alert {
+    font-size: 0.95rem;
+}
+.logo-cadastro {
+    display: block;
+    margin: 0 auto 1rem auto;
+    width: 60px;
+}
