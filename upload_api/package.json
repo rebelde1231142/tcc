@@ -8,7 +8,7 @@
     "start": "node index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Leonel Breno da Silva R. de Paula",
   "license": "ISC",
   "description": "",
   "dependencies": {

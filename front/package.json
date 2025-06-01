@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ."
   },
-  "author": "Eliton Camargo",
+  "author": "Leonel Breno da Silva R. de Paula",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",

@@ -1,69 +1,192 @@
-<link rel="stylesheet" href="/assets/css/menu.css">
-<link rel="stylesheet" href="/assets/css/component-footer.css">
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Adicionar Item</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-
-<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top position-relative">
-  <div class="container-fluid">
-    <!-- Logo à esquerda -->
-    <div>
-      <button class="btn btn-outline ms-2" id="themeToggle" title="Alternar tema" style="padding-top: 0px;">
-        <i class="bi bi-moon-fill" id="themeIcon"></i>
-      </button>
-      <a class="navbar-brand" href="#">OLX</a>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn btn-danger" id="btnSair" type="button">Sair</button>
+        </div>
+        <h5 class="mb-3">Adicionar Item</h5>
+        <div class="input-group mb-2">
+          <input type="text" id="novoItemNome" class="form-control" placeholder="Nome do item">
+        </div>
+        <div class="input-group mb-2">
+          <input type="number" id="novoItemQtd" class="form-control" placeholder="Quantidade">
+        </div>
+        <div class="input-group mb-2">
+          <select id="novoItemCategoria" class="form-select">
+            <option value="">Selecione a categoria</option>
+            <option value="1">Ds</option>
+            <option value="2">Administração</option>
+            <option value="3">Qui</option>
+          </select>
+        </div>
+        <div class="input-group mb-3">
+          <input type="text" id="novoItemDesc" class="form-control" placeholder="Descrição do item">
+        </div>
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary btn-lg" id="btnAdicionarItem" type="button">Adicionar</button>
+        </div>
+        <div id="itensCard" class="bg-light rounded p-3 border" style="min-height: 60px;">
+          <!-- Itens adicionados aparecerão aqui -->
+        </div>
+        <div id="itensBanco" class="mt-4"></div>
+      </div>
     </div>
-
-    <!-- Botão offcanvas (mobile) -->
-    <button id="btnMobile" class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
-      aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <!-- Campo de busca centralizado (desktop apenas) -->
-    <form class="d-none d-lg-flex justify-content-center flex-grow-1" role="search">
-      <div class="input-group rounded-pill shadow-sm mx-auto" style="background: #f8f9fa; border: 1.5px solid #d1d5db; min-width:340px; max-width:500px; width:100%;">
-        <input type="search" class="form-control border-0 bg-transparent" placeholder="Buscar..." aria-label="Search" style="box-shadow: none; background: transparent;">
-        <button class="btn btn-outline-success rounded-end-pill" type="submit"><i class="bi bi-search"></i></button>
-      </div>
-    </form>
-
-    <!-- Offcanvas Menu -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-      <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
-      </div>
-      <div class="offcanvas-body d-lg-flex justify-content-lg-end align-items-lg-center w-100">
-        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-            <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    Veículos
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/">Listar</a></li>
-                </ul>
-            </li>
-            <li class="nav-item"><a class="nav-link" href="#">Contato</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Projetos</a></li>                   
-            <li class="nav-item d-flex align-items-center gap-2">
-                <a class="nav-link" href="/usuario/login">
-                  <i class="bi bi-box-arrow-in-right"></i> Entrar
-                </a>
-            </li>
-        </ul>
-
-        <!-- Campo de busca em mobile -->
-        <form class="d-lg-none mt-3" role="search">
-          <div class="input-group">
-            <input class="form-control" type="search" placeholder="Buscar..." aria-label="Search">
-            <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
-          </div>
-        </form>
+    <div class="col-md-6">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-center mb-4">
+          <canvas id="graficoCategorias" width="300" height="300"></canvas>
+        </div>
+        <h5 class="mb-3">Gráfico de Itens por Categoria</h5>
       </div>
     </div>
   </div>
-</nav>
-<script src="/components/menu/menu.js"></script>
-<script src="/components/menu/alterar_tema.js"></script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const itensCombo = [];
+  document.getElementById('btnAdicionarItem').addEventListener('click', function() {
+    const nome = document.getElementById('novoItemNome').value.trim();
+    const qtd = document.getElementById('novoItemQtd').value.trim();
+    const desc = document.getElementById('novoItemDesc').value.trim();
+    const categoriaId = document.getElementById('novoItemCategoria').value;
+
+    console.log('Categoria selecionada:', categoriaId); // Log para verificar o valor da categoria
+
+    if (!categoriaId) {
+        alert('Por favor, selecione uma categoria válida.');
+        return;
+    }
+
+    if (nome && qtd && desc && categoriaId) {
+      // Salva no banco via API
+      fetch('http://localhost:3000/api/itens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, quantidade: qtd, descricao: desc, fk_Categoria_id: parseInt(categoriaId) }) // Garantir que categoriaId seja um número
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Erro ao salvar item no banco.');
+        return response.json();
+      })
+      .then(() => {
+        location.reload(); // Recarrega a página após adicionar o item
+      })
+      .catch(error => {
+        alert(error.message || 'Erro ao salvar item no banco.');
+      });
+    }
+});
+
+  function atualizarCard() {
+    const card = document.getElementById('itensCard');
+    card.innerHTML = '<span class="text-muted">Nenhum item adicionado.</span>';
+  }
+
+  function listarItensBanco() {
+    fetch('http://localhost:3000/api/itens')
+      .then(response => response.json())
+      .then(itens => {
+        const div = document.getElementById('itensBanco');
+        if (!itens || itens.length === 0) {
+          div.innerHTML = '<span class="text-muted">Nenhum item cadastrado no banco.</span>';
+          return;
+        }
+        div.innerHTML = '<h5 class="mb-3">Itens cadastrados no banco</h5>' +
+          itens.map((item, idx) => `
+            <div class="card mb-2 shadow-sm">
+              <div class="card-body p-2">
+                <h6 class="card-title mb-1">${item.nome}</h6>
+                <p class="card-text mb-1"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <button class="btn btn-sm btn-outline-info mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#desc-${idx}" aria-expanded="false" aria-controls="desc-${idx}">Descrição</button>
+                <div class="collapse" id="desc-${idx}">
+                  <div class="card card-body p-2 mt-1 mb-0">
+                    <strong>Descrição:</strong> ${item.descricao}
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end mt-2">
+                  <button class="btn btn-danger btn-sm" onclick="deletarItem(${item.id})">Deletar</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+      })
+      .catch(() => {
+        document.getElementById('itensBanco').innerHTML = '<span class="text-danger">Erro ao buscar itens do banco.</span>';
+      });
+}
+
+function deletarItem(id) {
+    if (confirm('Tem certeza que deseja deletar este item?')) {
+        fetch(`http://localhost:3000/api/itens/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao deletar item.');
+            location.reload(); // Recarrega a página após deletar o item
+        })
+        .catch(error => {
+            alert(error.message || 'Erro ao deletar item.');
+        });
+    }
+}
+  document.getElementById('btnSair').addEventListener('click', function() {
+    localStorage.removeItem('usuarioLogado');
+    window.location.href = '/tcc/front/public/page/usuario/login.html';
+  });
+  window.addEventListener('DOMContentLoaded', listarItensBanco);
+
+  async function carregarGrafico() {
+    try {
+      const response = await fetch('http://localhost:3000/api/itens/categorias');
+      if (!response.ok) throw new Error('Erro ao carregar dados do gráfico.');
+
+      const dados = await response.json();
+      const ctx = document.getElementById('graficoCategorias').getContext('2d');
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Ds', 'Administração', 'Qui'],
+          datasets: [{
+            data: [dados.ds, dados.administracao, dados.qui],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+          }],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function (tooltipItem) {
+                  const total = dados.ds + dados.administracao + dados.qui;
+                  const valor = tooltipItem.raw;
+                  const porcentagem = ((valor / total) * 100).toFixed(2);
+                  return `${tooltipItem.label}: ${porcentagem}%`;
+                },
+              },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', carregarGrafico);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

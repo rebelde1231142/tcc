@@ -57,15 +57,12 @@ export const loadPage = async (callBackPageReturned) => {
         const page = await response.text();
         callBackPageReturned(page);
 
-        // Ocultar o rodapé e o menu na página de login
+        // Ocultar o menu na página de login
         const currentPath = window.location.pathname;
-        const footer = document.getElementById('container-footer');
         const menu = document.getElementById('menu');
         if (currentPath === '/login' || currentPath === '/usuario/login') {
-            if (footer) footer.style.display = 'none';
             if (menu) menu.style.display = 'none';
         } else {
-            if (footer) footer.style.display = 'block';
             if (menu) menu.style.display = 'block';
         }
     } catch (error) {

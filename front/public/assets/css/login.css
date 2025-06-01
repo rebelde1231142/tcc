@@ -1,4 +1,5 @@
 body {
+    background-color: #007bff; /* Azul de fundo */
     background: linear-gradient(135deg, #6a11cb, #2575fc);
     height: 100vh;
     display: flex;
@@ -6,7 +7,10 @@ body {
     align-items: center;
     margin: 0;
     color: #fff;
+    font-family: Arial, sans-serif;
+    padding: 0;
 }
+
 .login-container {
     background: #fff;
     border-radius: 10px;
@@ -16,6 +20,7 @@ body {
     max-width: 400px;
     width: 100%;
 }
+
 .login-container h1 {
     font-size: 2rem;
     font-weight: bold;
@@ -23,13 +28,16 @@ body {
     text-align: center;
     color: #6a11cb;
 }
+
 .btn-primary {
     background: #6a11cb;
     border: none;
 }
+
 .btn-primary:hover {
     background: #2575fc;
 }
+
 .alert {
     font-size: 0.9rem;
 }
