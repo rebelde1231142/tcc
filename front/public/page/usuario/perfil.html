@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfil do Usuário</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-light bg-light justify-content-between px-3">
+    <span class="navbar-brand mb-0 h1">Perfil</span>
+    <a href="/tcc/front/public/components/menu/menu-default.html" class="btn btn-outline-primary">Voltar</a>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="card shadow-sm p-4">
+      <h5>Trocar Senha</h5>
+      <form id="formTrocarSenha">
+        <div class="mb-3">
+          <label for="novaSenha" class="form-label">Nova Senha</label>
+          <input type="password" class="form-control" id="novaSenha" placeholder="Digite sua nova senha" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Atualizar Senha</button>
+      </form>
+      <div id="alertaTrocaSenha" class="alert d-none mt-3" role="alert"></div>
+    </div>
+  </div>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('formTrocarSenha').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const novaSenha = document.getElementById('novaSenha').value;
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+
+      if (!usuarioLogado || !usuarioLogado.CPF) {
+        alert('Usuário não autenticado. Faça login novamente.');
+        return;
+      }
+
+      fetch('http://localhost:3000/api/usuarios/trocarSenha', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ CPF: usuarioLogado.CPF, novaSenha })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Erro ao atualizar senha.');
+        return response.json();
+      })
+      .then(data => {
+        const alerta = document.getElementById('alertaTrocaSenha');
+        alerta.classList.remove('d-none', 'alert-danger');
+        alerta.classList.add('alert-success');
+        alerta.textContent = data.mensagem;
+      })
+      .catch(error => {
+        const alerta = document.getElementById('alertaTrocaSenha');
+        alerta.classList.remove('d-none', 'alert-success');
+        alerta.classList.add('alert-danger');
+        alerta.textContent = error.message;
+      });
+    });
+  </script>
+</body>
+</html>
