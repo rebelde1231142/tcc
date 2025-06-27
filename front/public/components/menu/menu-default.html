@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <title>Adicionar Item</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/tcc/front/public/components/menu/menu.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar navbar-light bg-light justify-content-end px-3">
-  <a href="/tcc/front/public/page/usuario/perfil.html" class="btn btn-outline-secondary">Perfil</a>
+  <a href="/tcc/front/public/page/usuario/perfil.html" class="btn btn-outline-secondary">Configuração</a>
 </nav>
 
 <div class="container mt-4">
@@ -27,9 +28,9 @@
         <div class="input-group mb-2">
           <select id="novoItemCategoria" class="form-select">
             <option value="">Selecione a categoria</option>
-            <option value="1">Ds</option>
-            <option value="2">Administração</option>
-            <option value="3">Qui</option>
+            <option value="1">Desenvolvimento de sistemas</option>
+            <option value="2">Geral</option>
+            <option value="3">Quimica</option>
           </select>
         </div>
         <div class="input-group mb-3">
@@ -38,7 +39,7 @@
         <div class="d-grid gap-2">
           <button class="btn btn-primary btn-lg" id="btnAdicionarItem" type="button">Adicionar</button>
         </div>
-        <div id="itensCard" class="bg-light rounded p-3 border" style="min-height: 60px;">
+        <div id="itensCard" class="bg-light rounded p-3 border itens-card">
           <!-- Itens adicionados aparecerão aqui -->
         </div>
         <div id="itensBanco" class="mt-4"></div>
@@ -108,8 +109,8 @@
           itens.map((item, idx) => `
             <div class="card mb-2 shadow-sm">
               <div class="card-body p-2">
-                <h6 class="card-title mb-1">${item.nome}</h6>
-                <p class="card-text mb-1"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <h6 class="card-title mb-1"><strong>${item.nome}</strong></h6>
+                <p class="card-text mb-1">Quantidade: ${item.quantidade}</p>
                 <button class="btn btn-sm btn-outline-info mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#desc-${idx}" aria-expanded="false" aria-controls="desc-${idx}">Descrição</button>
                 <div class="collapse" id="desc-${idx}">
                   <div class="card card-body p-2 mt-1 mb-0">
@@ -159,7 +160,7 @@ function deletarItem(id) {
       new Chart(ctx, {
         type: 'pie',
         data: {
-          labels: ['Ds', 'Administração', 'Qui'],
+          labels: ['Desenvolvimento de sistemas', 'Geral', 'Quimica'],
           datasets: [{
             data: [dados.ds, dados.administracao, dados.qui],
             backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],

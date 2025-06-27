@@ -10,3 +10,7 @@
 #btnMobile{
   margin-left: auto;
 }
+
+.itens-card {
+  min-height: 60px;
+}
