@@ -1,12 +1,12 @@
 {
-  "name": "backend",
+  "name": "api_loja_veiculo",
   "version": "1.0.0",
-  "description": "",
+  "description": "Api via json-server para suporte a prototipagem da loja veículo",
   "main": "db.json",
   "scripts": {
     "start": "npx json-server db.json"
   },
-  "author": "Leonel Breno da Silva Ramos de Paula",
+  "author": "Eliton Camargo de Oliveira",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

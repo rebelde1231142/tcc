@@ -1,12 +1,12 @@
 {
-  "name": "frontend",
+  "name": "front",
   "version": "1.0.0",
-  "description": "",
+  "description": "front-end do projeto",
   "main": "index.js",
   "scripts": {
     "start": "node ."
   },
-  "author": "Leonel Breno da Silva Ramos de Paula",
+  "author": "Leonel Breno da Silva R. de Paula",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",
