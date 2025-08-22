@@ -80,16 +80,69 @@
     </div>
   </div>
 
+  <!-- Modal para Adicionar Item -->
+  <div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-labelledby="modalAdicionarItemLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAdicionarItemLabel">Adicionar Item</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-dismissible fade show d-none" id="alertaModal" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <span id="mensagemAlerta"></span>
+          </div>
+          <form id="formAdicionarItem">
+            <div class="mb-3">
+              <label for="nomeItem" class="form-label">Nome do Item</label>
+              <input type="text" class="form-control" id="nomeItem" required>
+            </div>
+            <div class="mb-3">
+              <label for="qtdItem" class="form-label">Quantidade</label>
+              <input type="number" class="form-control" id="qtdItem" required>
+            </div>
+            <div class="mb-3">
+              <label for="descItem" class="form-label">Descrição</label>
+              <textarea class="form-control" id="descItem" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="categoriaItem" class="form-label">Categoria</label>
+              <select class="form-select" id="categoriaItem" required>
+                <option value="">Selecione a categoria</option>
+                <option value="1">Ds</option>
+                <option value="2">Administração</option>
+                <option value="3">Qui</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Salvar Item</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.getElementById('btnAdicionarItem').addEventListener('click', function() {
-      const nome = prompt('Digite o nome do item:');
-      const qtd = prompt('Digite a quantidade:');
-      const desc = prompt('Digite a descrição:');
-      const categoriaId = prompt('Digite o ID da categoria (1: Ds, 2: Administração, 3: Qui):');
+      const modal = new bootstrap.Modal(document.getElementById('modalAdicionarItem'));
+      modal.show();
+    });
 
-      if (!categoriaId || !nome || !qtd || !desc) {
-        alert('Todos os campos são obrigatórios.');
+    document.getElementById('formAdicionarItem').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nome = document.getElementById('nomeItem').value.trim();
+      const qtd = document.getElementById('qtdItem').value.trim();
+      const desc = document.getElementById('descItem').value.trim();
+      const categoriaId = document.getElementById('categoriaItem').value;
+
+      const alerta = document.getElementById('alertaModal');
+      alerta.classList.add('d-none');
+
+      if (!nome || !qtd || !desc || !categoriaId) {
+        alerta.classList.remove('d-none', 'alert-success');
+        alerta.classList.add('alert-danger');
+        alerta.textContent = 'Todos os campos são obrigatórios.';
         return;
       }
 
@@ -103,10 +156,18 @@
         return response.json();
       })
       .then(() => {
-        location.reload();
+        alerta.classList.remove('d-none', 'alert-danger');
+        alerta.classList.add('alert-success');
+        alerta.textContent = 'Item adicionado com sucesso!';
+        setTimeout(() => {
+          bootstrap.Modal.getInstance(document.getElementById('modalAdicionarItem')).hide();
+          location.reload();
+        }, 800);
       })
       .catch(error => {
-        alert(error.message || 'Erro ao salvar item no banco.');
+        alerta.classList.remove('d-none', 'alert-success');
+        alerta.classList.add('alert-danger');
+        alerta.textContent = error.message || 'Erro ao salvar item no banco.';
       });
     });
 
