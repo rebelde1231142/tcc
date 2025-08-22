@@ -1,66 +1,222 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OLX de Veiculos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Gerenciamento de Itens</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    .card {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .card-header {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .btn-primary, .btn-success {
+      border: none;
+      border-radius: 5px;
+    }
+    .btn-primary:hover {
+      background-color: #5a0db3;
+    }
+    .btn-success:hover {
+      background-color: #1e7e34;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
-
 <body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Gerenciamento de Itens</a>
+      <button class="btn btn-danger" id="btnSair">Logout</button>
+    </div>
+  </nav>
 
-    <!-- Menu Navbar -->
-    <header id="menu"></header>
+  <div class="container mt-5">
+    <!-- Botões de ação -->
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="btnAdicionarItem">Adicionar Item</button>
+      <button class="btn btn-success" id="btnRelatorio">Baixar Relatório</button>
+    </div>
 
+    <div class="row">
+      <!-- Gráfico de Categorias -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            Gráfico de Itens por Categoria
+          </div>
+          <div class="card-body">
+            <canvas id="graficoCategorias" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
 
-    <!-- Conteúdo principal -->
-    <main class="container-fluid py-4 overflow-auto" id="root">
-        <!-- Conteúdo será carregado aqui via JavaScript -->
-    </main>
+      <!-- Lista de Itens -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            Itens Cadastrados
+          </div>
+          <div class="card-body" id="itensBanco">
+            <span class="text-muted">Carregando itens...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Rodapé -->
-    <footer id="container-footer">
-        
-    </footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.getElementById('btnAdicionarItem').addEventListener('click', function() {
+      const nome = prompt('Digite o nome do item:');
+      const qtd = prompt('Digite a quantidade:');
+      const desc = prompt('Digite a descrição:');
+      const categoriaId = prompt('Digite o ID da categoria (1: Ds, 2: Administração, 3: Qui):');
 
-    <!-- Bootstrap e ícones -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+      if (!categoriaId || !nome || !qtd || !desc) {
+        alert('Todos os campos são obrigatórios.');
+        return;
+      }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
- 
-    <script type="module">
-        import { loadMenu } from '/components/menu/menu.js';
-        import { loadPage } from '/route.js';
+      fetch('http://localhost:3000/api/itens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, quantidade: qtd, descricao: desc, fk_Categoria_id: parseInt(categoriaId) })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Erro ao salvar item no banco.');
+        return response.json();
+      })
+      .then(() => {
+        location.reload();
+      })
+      .catch(error => {
+        alert(error.message || 'Erro ao salvar item no banco.');
+      });
+    });
 
-        // Redireciona para login se não estiver logado
-        const usuarioLogado = localStorage.getItem('usuarioLogado');
-        if (!usuarioLogado && window.location.pathname !== '/usuario/login') {
-            window.location.replace('/usuario/login');
-        } else {
-            if (usuarioLogado) {
-                const usuario = JSON.parse(usuarioLogado);
-                if (usuario.tipo === 'admin') {
-                    loadMenu('menu', 'admin');
-                } else {
-                    loadMenu('menu', 'logado');
-                }
-            } else {
-                loadMenu('menu', 'default');
-            }
-            // Redireciona para a tela de login se não estiver logado
-            if (!usuarioLogado) {
-                window.history.replaceState({}, '', '/usuario/login');
-            }
-            loadPage((html_page)=> {
-                $('#root').html(html_page);
-            });
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    document.getElementById('btnRelatorio').addEventListener('click', function () {
+      fetch('http://localhost:3000/api/relatorio')
+        .then(response => {
+          if (!response.ok) throw new Error('Erro ao gerar relatório.');
+          return response.blob();
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'relatorio-itens.csv';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        })
+        .catch(error => {
+          alert(error.message || 'Erro ao baixar o relatório.');
+        });
+    });
 
+    async function carregarGrafico() {
+      try {
+        const response = await fetch('http://localhost:3000/api/itens/categorias');
+        if (!response.ok) throw new Error('Erro ao carregar dados do gráfico.');
+
+        const dados = await response.json();
+        const ctx = document.getElementById('graficoCategorias').getContext('2d');
+
+        new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: ['Ds', 'Administração', 'Qui'],
+            datasets: [{
+              data: [dados.ds, dados.administracao, dados.qui],
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+            }],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: {
+                callbacks: {
+                  label: function (tooltipItem) {
+                    const total = dados.ds + dados.administracao + dados.qui;
+                    const valor = tooltipItem.raw;
+                    const porcentagem = ((valor / total) * 100).toFixed(2);
+                    return `${tooltipItem.label}: ${porcentagem}%`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+
+    function listarItensBanco() {
+      fetch('http://localhost:3000/api/itens')
+        .then(response => response.json())
+        .then(itens => {
+          const div = document.getElementById('itensBanco');
+          if (!itens || itens.length === 0) {
+            div.innerHTML = '<span class="text-muted">Nenhum item cadastrado no banco.</span>';
+            return;
+          }
+          div.innerHTML = itens.map(item => `
+            <div class="card mb-2 shadow-sm">
+              <div class="card-body">
+                <h6 class="card-title">${item.nome}</h6>
+                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+                <button class="btn btn-danger btn-sm" onclick="deletarItem(${item.id})">Deletar</button>
+              </div>
+            </div>
+          `).join('');
+        })
+        .catch(() => {
+          document.getElementById('itensBanco').innerHTML = '<span class="text-danger">Erro ao buscar itens do banco.</span>';
+        });
+    }
+
+    function deletarItem(id) {
+      if (confirm('Tem certeza que deseja deletar este item?')) {
+        fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
+          .then(response => {
+            if (!response.ok) throw new Error('Erro ao deletar item.');
+            location.reload();
+          })
+          .catch(error => {
+            alert(error.message || 'Erro ao deletar item.');
+          });
+      }
+    }
+
+    document.getElementById('btnSair').addEventListener('click', function() {
+      localStorage.removeItem('usuarioLogado');
+      window.location.href = '/page/usuario/login.html';
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      listarItensBanco();
+      carregarGrafico();
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

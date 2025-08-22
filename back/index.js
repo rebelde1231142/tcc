@@ -2,6 +2,7 @@ const express = require('express');
 const loginRouter = require('./loginRouter');
 const usuarioRouter = require('./usuarioRouter');
 const pool = require('./db');
+const { Parser } = require('json2csv'); // Biblioteca para converter JSON para CSV
 const app = express();
 const cors = require('cors');
 
@@ -102,7 +103,48 @@ app.get('/api/itens/categorias', async (req, res) => {
   }
 });
 
+app.get('/api/relatorio', async (req, res) => {
+  try {
+    // Consulta SQL para buscar itens organizados por categoria e nome
+    const [itens] = await pool.query(`
+      SELECT 
+        Categoria.Nome AS categoriaNome,
+        Itens.nome AS itemNome,
+        Itens.quantidade AS quantidade,
+        Itens.descricao AS descricao
+      FROM Itens
+      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      ORDER BY Categoria.Nome ASC, Itens.nome ASC
+    `);
+
+    if (itens.length === 0) {
+      return res.status(404).json({ erro: 'Nenhum item encontrado no banco de dados.' });
+    }
+
+    // Configuração dos campos do CSV com cabeçalhos mais descritivos
+    const fields = [
+      { label: 'Categoria', value: 'categoriaNome' },
+      { label: 'Nome do Item', value: 'itemNome' },
+      { label: 'Quantidade', value: 'quantidade' },
+      { label: 'Descrição', value: 'descricao' }
+    ];
+
+    // Gerar o CSV usando json2csv
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(itens);
+
+    // Configurar o cabeçalho para download do arquivo
+    res.header('Content-Type', 'text/csv');
+    res.attachment('relatorio-itens.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error('Erro ao gerar relatório:', error);
+    res.status(500).json({ erro: 'Erro ao gerar relatório.', detalhes: error.message });
+  }
+});
+
 // Certifique-se de que o servidor está ouvindo corretamente
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Backend rodando em http://localhost:${PORT}`);
 });

@@ -2,191 +2,201 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Adicionar Item</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Gerenciamento de Itens</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card p-3 shadow-sm">
-        <div class="d-flex justify-content-end mb-3">
-          <button class="btn btn-danger" id="btnSair" type="button">Sair</button>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Gerenciamento de Itens</a>
+      <button class="btn btn-danger" id="btnSair">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="row">
+      <!-- Formulário de Adicionar Item -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Adicionar Novo Item</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="novoItemNome" class="form-label">Nome do Item</label>
+              <input type="text" id="novoItemNome" class="form-control" placeholder="Digite o nome do item">
+            </div>
+            <div class="mb-3">
+              <label for="novoItemQtd" class="form-label">Quantidade</label>
+              <input type="number" id="novoItemQtd" class="form-control" placeholder="Digite a quantidade">
+            </div>
+            <div class="mb-3">
+              <label for="novoItemCategoria" class="form-label">Categoria</label>
+              <select id="novoItemCategoria" class="form-select">
+                <option value="">Selecione a categoria</option>
+                <option value="1">Ds</option>
+                <option value="2">Administração</option>
+                <option value="3">Qui</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="novoItemDesc" class="form-label">Descrição</label>
+              <textarea id="novoItemDesc" class="form-control" rows="3" placeholder="Digite a descrição do item"></textarea>
+            </div>
+            <button class="btn btn-primary w-100" id="btnAdicionarItem">Adicionar Item</button>
+          </div>
         </div>
-        <h5 class="mb-3">Adicionar Item</h5>
-        <div class="input-group mb-2">
-          <input type="text" id="novoItemNome" class="form-control" placeholder="Nome do item">
+      </div>
+
+      <!-- Gráfico de Categorias -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Gráfico de Itens por Categoria</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="graficoCategorias" width="400" height="400"></canvas>
+          </div>
         </div>
-        <div class="input-group mb-2">
-          <input type="number" id="novoItemQtd" class="form-control" placeholder="Quantidade">
-        </div>
-        <div class="input-group mb-2">
-          <select id="novoItemCategoria" class="form-select">
-            <option value="">Selecione a categoria</option>
-            <option value="1">Ds</option>
-            <option value="2">Administração</option>
-            <option value="3">Qui</option>
-          </select>
-        </div>
-        <div class="input-group mb-3">
-          <input type="text" id="novoItemDesc" class="form-control" placeholder="Descrição do item">
-        </div>
-        <div class="d-grid gap-2">
-          <button class="btn btn-primary btn-lg" id="btnAdicionarItem" type="button">Adicionar</button>
-        </div>
-        <div id="itensCard" class="bg-light rounded p-3 border" style="min-height: 60px;">
-          <!-- Itens adicionados aparecerão aqui -->
-        </div>
-        <div id="itensBanco" class="mt-4"></div>
       </div>
     </div>
-    <div class="col-md-6">
-      <div class="card p-3 shadow-sm">
-        <div class="d-flex justify-content-center mb-4">
-          <canvas id="graficoCategorias" width="300" height="300"></canvas>
+
+    <!-- Lista de Itens -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Itens Cadastrados</h5>
+          </div>
+          <div class="card-body" id="itensBanco">
+            <span class="text-muted">Carregando itens...</span>
+          </div>
         </div>
-        <h5 class="mb-3">Gráfico de Itens por Categoria</h5>
       </div>
     </div>
   </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const itensCombo = [];
-  document.getElementById('btnAdicionarItem').addEventListener('click', function() {
-    const nome = document.getElementById('novoItemNome').value.trim();
-    const qtd = document.getElementById('novoItemQtd').value.trim();
-    const desc = document.getElementById('novoItemDesc').value.trim();
-    const categoriaId = document.getElementById('novoItemCategoria').value;
 
-    console.log('Categoria selecionada:', categoriaId); // Log para verificar o valor da categoria
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.getElementById('btnAdicionarItem').addEventListener('click', function() {
+      const nome = document.getElementById('novoItemNome').value.trim();
+      const qtd = document.getElementById('novoItemQtd').value.trim();
+      const desc = document.getElementById('novoItemDesc').value.trim();
+      const categoriaId = document.getElementById('novoItemCategoria').value;
 
-    if (!categoriaId) {
+      if (!categoriaId) {
         alert('Por favor, selecione uma categoria válida.');
         return;
-    }
+      }
 
-    if (nome && qtd && desc && categoriaId) {
-      // Salva no banco via API
-      fetch('http://localhost:3000/api/itens', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, quantidade: qtd, descricao: desc, fk_Categoria_id: parseInt(categoriaId) }) // Garantir que categoriaId seja um número
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Erro ao salvar item no banco.');
-        return response.json();
-      })
-      .then(() => {
-        location.reload(); // Recarrega a página após adicionar o item
-      })
-      .catch(error => {
-        alert(error.message || 'Erro ao salvar item no banco.');
-      });
-    }
-});
+      if (nome && qtd && desc && categoriaId) {
+        fetch('http://localhost:3000/api/itens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, quantidade: qtd, descricao: desc, fk_Categoria_id: parseInt(categoriaId) })
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Erro ao salvar item no banco.');
+          return response.json();
+        })
+        .then(() => {
+          location.reload();
+        })
+        .catch(error => {
+          alert(error.message || 'Erro ao salvar item no banco.');
+        });
+      }
+    });
 
-  function atualizarCard() {
-    const card = document.getElementById('itensCard');
-    card.innerHTML = '<span class="text-muted">Nenhum item adicionado.</span>';
-  }
-
-  function listarItensBanco() {
-    fetch('http://localhost:3000/api/itens')
-      .then(response => response.json())
-      .then(itens => {
-        const div = document.getElementById('itensBanco');
-        if (!itens || itens.length === 0) {
-          div.innerHTML = '<span class="text-muted">Nenhum item cadastrado no banco.</span>';
-          return;
-        }
-        div.innerHTML = '<h5 class="mb-3">Itens cadastrados no banco</h5>' +
-          itens.map((item, idx) => `
+    function listarItensBanco() {
+      fetch('http://localhost:3000/api/itens')
+        .then(response => response.json())
+        .then(itens => {
+          const div = document.getElementById('itensBanco');
+          if (!itens || itens.length === 0) {
+            div.innerHTML = '<span class="text-muted">Nenhum item cadastrado no banco.</span>';
+            return;
+          }
+          div.innerHTML = itens.map((item, idx) => `
             <div class="card mb-2 shadow-sm">
-              <div class="card-body p-2">
-                <h6 class="card-title mb-1">${item.nome}</h6>
-                <p class="card-text mb-1"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                <button class="btn btn-sm btn-outline-info mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#desc-${idx}" aria-expanded="false" aria-controls="desc-${idx}">Descrição</button>
-                <div class="collapse" id="desc-${idx}">
-                  <div class="card card-body p-2 mt-1 mb-0">
-                    <strong>Descrição:</strong> ${item.descricao}
-                  </div>
-                </div>
-                <div class="d-flex justify-content-end mt-2">
-                  <button class="btn btn-danger btn-sm" onclick="deletarItem(${item.id})">Deletar</button>
-                </div>
+              <div class="card-body">
+                <h6 class="card-title">${item.nome}</h6>
+                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+                <button class="btn btn-danger btn-sm" onclick="deletarItem(${item.id})">Deletar</button>
               </div>
             </div>
           `).join('');
-      })
-      .catch(() => {
-        document.getElementById('itensBanco').innerHTML = '<span class="text-danger">Erro ao buscar itens do banco.</span>';
-      });
-}
-
-function deletarItem(id) {
-    if (confirm('Tem certeza que deseja deletar este item?')) {
-        fetch(`http://localhost:3000/api/itens/${id}`, {
-            method: 'DELETE'
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Erro ao deletar item.');
-            location.reload(); // Recarrega a página após deletar o item
-        })
-        .catch(error => {
-            alert(error.message || 'Erro ao deletar item.');
+        .catch(() => {
+          document.getElementById('itensBanco').innerHTML = '<span class="text-danger">Erro ao buscar itens do banco.</span>';
         });
     }
-}
-  document.getElementById('btnSair').addEventListener('click', function() {
-    localStorage.removeItem('usuarioLogado');
-    window.location.href = '/tcc/front/public/page/usuario/login.html';
-  });
-  window.addEventListener('DOMContentLoaded', listarItensBanco);
 
-  async function carregarGrafico() {
-    try {
-      const response = await fetch('http://localhost:3000/api/itens/categorias');
-      if (!response.ok) throw new Error('Erro ao carregar dados do gráfico.');
+    function deletarItem(id) {
+      if (confirm('Tem certeza que deseja deletar este item?')) {
+        fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
+          .then(response => {
+            if (!response.ok) throw new Error('Erro ao deletar item.');
+            location.reload();
+          })
+          .catch(error => {
+            alert(error.message || 'Erro ao deletar item.');
+          });
+      }
+    }
 
-      const dados = await response.json();
-      const ctx = document.getElementById('graficoCategorias').getContext('2d');
+    async function carregarGrafico() {
+      try {
+        const response = await fetch('http://localhost:3000/api/itens/categorias');
+        if (!response.ok) throw new Error('Erro ao carregar dados do gráfico.');
 
-      new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: ['Ds', 'Administração', 'Qui'],
-          datasets: [{
-            data: [dados.ds, dados.administracao, dados.qui],
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-          }],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            tooltip: {
-              callbacks: {
-                label: function (tooltipItem) {
-                  const total = dados.ds + dados.administracao + dados.qui;
-                  const valor = tooltipItem.raw;
-                  const porcentagem = ((valor / total) * 100).toFixed(2);
-                  return `${tooltipItem.label}: ${porcentagem}%`;
+        const dados = await response.json();
+        const ctx = document.getElementById('graficoCategorias').getContext('2d');
+
+        new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: ['Ds', 'Administração', 'Qui'],
+            datasets: [{
+              data: [dados.ds, dados.administracao, dados.qui],
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+            }],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: {
+                callbacks: {
+                  label: function (tooltipItem) {
+                    const total = dados.ds + dados.administracao + dados.qui;
+                    const valor = tooltipItem.raw;
+                    const porcentagem = ((valor / total) * 100).toFixed(2);
+                    return `${tooltipItem.label}: ${porcentagem}%`;
+                  },
                 },
               },
             },
           },
-        },
-      });
-    } catch (error) {
-      console.error(error.message);
+        });
+      } catch (error) {
+        console.error(error.message);
+      }
     }
-  }
 
-  window.addEventListener('DOMContentLoaded', carregarGrafico);
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+    document.getElementById('btnSair').addEventListener('click', function() {
+      localStorage.removeItem('usuarioLogado');
+      window.location.href = '/tcc/front/public/page/usuario/login.html';
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      listarItensBanco();
+      carregarGrafico();
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",
+    "json2csv": "^6.0.0-alpha.2",
     "sortablejs": "^1.15.6"
   }
 }
