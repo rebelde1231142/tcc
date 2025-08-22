@@ -1,94 +1,202 @@
--- --------------------------------------------------------
--- Servidor:                     127.0.0.1
--- Versão do servidor:           8.4.3 - MySQL Community Server - GPL
--- OS do Servidor:               Win64
--- HeidiSQL Versão:              12.8.0.6908
--- --------------------------------------------------------
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: localhost:3306
+-- Tempo de geração: 22/08/2025 às 14:59
+-- Versão do servidor: 8.0.30
+-- Versão do PHP: 8.3.4
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
+--
+-- Banco de dados: `tcc`
+--
 
--- Copiando estrutura do banco de dados para tcc
-CREATE DATABASE IF NOT EXISTS `tcc` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `tcc`;
+-- --------------------------------------------------------
 
--- Copiando estrutura para tabela tcc.categoria
-CREATE TABLE IF NOT EXISTS `categoria` (
-  `Id` int NOT NULL AUTO_INCREMENT,
+--
+-- Estrutura para tabela `categoria`
+--
+
+CREATE TABLE `categoria` (
+  `Id` int NOT NULL,
   `Nome` varchar(250) DEFAULT NULL,
-  `Descricao` varchar(250) DEFAULT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `Descricao` varchar(250) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Copiando dados para a tabela tcc.categoria: ~2 rows (aproximadamente)
+--
+-- Despejando dados para a tabela `categoria`
+--
+
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
-	(1, 'Ds', 'itens de ds'),
-	(2, 'Administração', 'itens em geral'),
-	(3, 'Qui', 'Componentes do laboratório de quimica');
--- Copiando dados para a tabela tcc.saida: ~0 rows (aproximadamente)
+(1, 'Ds', 'itens de ds'),
+(2, 'Administração', 'itens em geral'),
+(3, 'Qui', 'Componentes do laboratório de quimica');
 
--- Copiando dados para a tabela tcc.entrada: ~0 rows (aproximadamente)
+-- --------------------------------------------------------
 
--- Copiando estrutura para tabela tcc.itens
-CREATE TABLE IF NOT EXISTS `itens` (
-  `id` int NOT NULL AUTO_INCREMENT,
+--
+-- Estrutura para tabela `entrada`
+--
+
+CREATE TABLE `entrada` (
+  `id` int NOT NULL,
+  `fk_Itens_id` int DEFAULT NULL,
+  `data` date DEFAULT NULL,
+  `quantidade` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `itens`
+--
+
+CREATE TABLE `itens` (
+  `id` int NOT NULL,
   `nome` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `quantidade` int DEFAULT NULL,
   `descricao` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `fk_Categoria_id` int DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_Categoria_id` (`fk_Categoria_id`),
-  CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `fk_Categoria_id` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Copiando dados para a tabela tcc.itens: ~3 rows (aproximadamente)
+--
+-- Despejando dados para a tabela `itens`
+--
+
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`) VALUES
-	(32, 'Lampada 1', 1, 'lampada da sala 1', 2),
-	(33, 'notebook 202', 1, 'notebook 2', 1),
-	(36, 'béquer', 1, 'asasssasaas', 3);
+(36, 'béquer', 10, 'asasssasaas', 3),
+(40, 'luminaria', 34, 'dghobbnçlvkjnbkbnjvc', 2),
+(41, 'arduino uno', 20, 'é microntolador', 1);
 
--- Copiando estrutura para tabela tcc.perfil
-CREATE TABLE IF NOT EXISTS `perfil` (
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `perfil`
+--
+
+CREATE TABLE `perfil` (
   `CPF` varchar(11) NOT NULL DEFAULT '',
-  `Senha` int DEFAULT NULL,
-  PRIMARY KEY (`CPF`)
+  `Senha` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Copiando dados para a tabela tcc.perfil: ~0 rows (aproximadamente)
+--
+-- Despejando dados para a tabela `perfil`
+--
+
 INSERT INTO `perfil` (`CPF`, `Senha`) VALUES
-	('52657628842', 1234);
+('52657628842', 1234);
 
--- Copiando estrutura para tabela tcc.entrada
-CREATE TABLE IF NOT EXISTS `entrada` (
-  `id` int NOT NULL AUTO_INCREMENT,
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `saida`
+--
+
+CREATE TABLE `saida` (
+  `id` int NOT NULL,
   `fk_Itens_id` int DEFAULT NULL,
   `data` date DEFAULT NULL,
-  `quantidade` int DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_Itens_id` (`fk_Itens_id`),
-  CONSTRAINT `entrada_ibfk_1` FOREIGN KEY (`fk_Itens_id`) REFERENCES `itens` (`id`)
+  `quantidade` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Copiando estrutura para tabela tcc.saida
-CREATE TABLE IF NOT EXISTS `saida` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `fk_Itens_id` int DEFAULT NULL,
-  `data` date DEFAULT NULL,
-  `quantidade` int DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_Itens_id` (`fk_Itens_id`),
-  CONSTRAINT `saida_ibfk_1` FOREIGN KEY (`fk_Itens_id`) REFERENCES `itens` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+--
+-- Índices para tabelas despejadas
+--
 
-/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+--
+-- Índices de tabela `categoria`
+--
+ALTER TABLE `categoria`
+  ADD PRIMARY KEY (`Id`);
+
+--
+-- Índices de tabela `entrada`
+--
+ALTER TABLE `entrada`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_Itens_id` (`fk_Itens_id`);
+
+--
+-- Índices de tabela `itens`
+--
+ALTER TABLE `itens`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
+
+--
+-- Índices de tabela `perfil`
+--
+ALTER TABLE `perfil`
+  ADD PRIMARY KEY (`CPF`);
+
+--
+-- Índices de tabela `saida`
+--
+ALTER TABLE `saida`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_Itens_id` (`fk_Itens_id`);
+
+--
+-- AUTO_INCREMENT para tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `categoria`
+--
+ALTER TABLE `categoria`
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de tabela `entrada`
+--
+ALTER TABLE `entrada`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `itens`
+--
+ALTER TABLE `itens`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+
+--
+-- AUTO_INCREMENT de tabela `saida`
+--
+ALTER TABLE `saida`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- Restrições para tabelas despejadas
+--
+
+--
+-- Restrições para tabelas `entrada`
+--
+ALTER TABLE `entrada`
+  ADD CONSTRAINT `entrada_ibfk_1` FOREIGN KEY (`fk_Itens_id`) REFERENCES `itens` (`id`);
+
+--
+-- Restrições para tabelas `itens`
+--
+ALTER TABLE `itens`
+  ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);
+
+--
+-- Restrições para tabelas `saida`
+--
+ALTER TABLE `saida`
+  ADD CONSTRAINT `saida_ibfk_1` FOREIGN KEY (`fk_Itens_id`) REFERENCES `itens` (`id`);
+COMMIT;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
