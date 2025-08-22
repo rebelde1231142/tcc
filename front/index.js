@@ -24,7 +24,7 @@ app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
 
-<!-- Modal de Adicionar Item -->
+<!-- Modal de, Adicionar Item, -->
 <div class="modal fade" id="modalAdicionarItem" tabindex="-1" aria-labelledby="modalAdicionarItemLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content text-dark">
