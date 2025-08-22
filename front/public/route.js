@@ -76,4 +76,62 @@ export const getRouteLink = (path) => {
     return rota ? rota.path : '/error';
 }
 
+// Abrir modal de edição e preencher campos
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('btn-editar-item')) {
+    const id = e.target.getAttribute('data-id');
+    fetch(`http://localhost:3000/api/itens/${id}`)
+      .then(res => res.json())
+      .then(item => {
+        document.getElementById('editarItemId').value = item.id;
+        document.getElementById('editarNomeItem').value = item.nome;
+        document.getElementById('editarQtdItem').value = item.quantidade;
+        document.getElementById('editarDescItem').value = item.descricao;
+        document.getElementById('editarCategoriaItem').value = item.fk_Categoria_id;
+        const modal = new bootstrap.Modal(document.getElementById('modalEditarItem'));
+        modal.show();
+      });
+  }
+});
+
+// Submeter edição
+document.getElementById('formEditarItem').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const id = document.getElementById('editarItemId').value;
+  const nome = document.getElementById('editarNomeItem').value.trim();
+  const quantidade = document.getElementById('editarQtdItem').value.trim();
+  const descricao = document.getElementById('editarDescItem').value.trim();
+  const categoria = document.getElementById('editarCategoriaItem').value;
+  const alerta = document.getElementById('alertaEditarModal');
+  alerta.classList.add('d-none');
+
+  if (!nome || !quantidade || !descricao || !categoria) {
+    alerta.classList.remove('d-none', 'alert-success');
+    alerta.classList.add('alert-danger');
+    alerta.textContent = 'Todos os campos são obrigatórios.';
+    return;
+  }
+
+  fetch(`http://localhost:3000/api/itens/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id: parseInt(categoria) })
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Erro ao editar item.');
+    alerta.classList.remove('d-none', 'alert-danger');
+    alerta.classList.add('alert-success');
+    alerta.textContent = 'Item editado com sucesso!';
+    setTimeout(() => {
+      bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
+      location.reload();
+    }, 800);
+  })
+  .catch(error => {
+    alerta.classList.remove('d-none', 'alert-success');
+    alerta.classList.add('alert-danger');
+    alerta.textContent = error.message || 'Erro ao editar item.';
+  });
+});
+
 
