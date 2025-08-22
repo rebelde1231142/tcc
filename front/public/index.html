@@ -50,6 +50,7 @@
     <!-- Botões de ação -->
     <div class="action-buttons">
       <button class="btn btn-primary" id="btnAdicionarItem">Adicionar Item</button>
+      <button class="btn btn-danger" id="btnDeletarMassa">Deletar Itens</button>
       <button class="btn btn-success" id="btnRelatorio">Baixar Relatório</button>
     </div>
 
@@ -116,6 +117,28 @@
               </select>
             </div>
             <button type="submit" class="btn btn-primary">Salvar Item</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Deletar em Massa -->
+  <div class="modal fade" id="modalDeletarMassa" tabindex="-1" aria-labelledby="modalDeletarMassaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content text-dark">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalDeletarMassaLabel">Deletar Itens</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formDeletarMassa">
+            <div class="mb-3">
+              <label class="form-label">Selecione os itens para deletar:</label>
+              <div id="listaItensDeletar" style="max-height:300px;overflow-y:auto;"></div>
+            </div>
+            <div id="alertaDeletarMassa" class="alert d-none" role="alert"></div>
+            <button type="submit" class="btn btn-danger w-100">Deletar Selecionados</button>
           </form>
         </div>
       </div>
@@ -245,7 +268,7 @@
                 <h6 class="card-title">${item.nome}</h6>
                 <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
                 <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-                <button class="btn btn-danger btn-sm" onclick="deletarItem(${item.id})">Deletar</button>
+                  <!-- Botão de deletar individual removido, agora só existe exclusão em massa pelo modal -->
               </div>
             </div>
           `).join('');
@@ -272,6 +295,60 @@
       localStorage.removeItem('usuarioLogado');
       window.location.href = '/page/usuario/login.html';
     });
+
+    document.getElementById('btnDeletarMassa').addEventListener('click', function() {
+  // Carrega os itens no modal
+  fetch('http://localhost:3000/api/itens')
+    .then(response => response.json())
+    .then(itens => {
+      const lista = document.getElementById('listaItensDeletar');
+      if (!itens || itens.length === 0) {
+        lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
+        return;
+      }
+      lista.innerHTML = itens.map(item => `
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="${item.id}" id="itemDel${item.id}">
+          <label class="form-check-label" for="itemDel${item.id}">
+            ${item.nome} (${item.quantidade}) - ${item.descricao}
+          </label>
+        </div>
+      `).join('');
+      const modal = new bootstrap.Modal(document.getElementById('modalDeletarMassa'));
+      modal.show();
+    });
+});
+
+document.getElementById('formDeletarMassa').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const alerta = document.getElementById('alertaDeletarMassa');
+  alerta.classList.add('d-none');
+  const selecionados = Array.from(document.querySelectorAll('#listaItensDeletar input:checked')).map(cb => cb.value);
+  if (selecionados.length === 0) {
+    alerta.classList.remove('d-none', 'alert-success');
+    alerta.classList.add('alert-danger');
+    alerta.textContent = 'Selecione pelo menos um item.';
+    return;
+  }
+  Promise.all(selecionados.map(id =>
+    fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
+  ))
+  .then(responses => {
+    if (responses.some(r => !r.ok)) throw new Error('Erro ao deletar um ou mais itens.');
+    alerta.classList.remove('d-none', 'alert-danger');
+    alerta.classList.add('alert-success');
+    alerta.textContent = 'Itens deletados com sucesso!';
+    setTimeout(() => {
+      bootstrap.Modal.getInstance(document.getElementById('modalDeletarMassa')).hide();
+      location.reload();
+    }, 800);
+  })
+  .catch(error => {
+    alerta.classList.remove('d-none', 'alert-success');
+    alerta.classList.add('alert-danger');
+    alerta.textContent = error.message || 'Erro ao deletar itens.';
+  });
+});
 
     window.addEventListener('DOMContentLoaded', () => {
       listarItensBanco();
