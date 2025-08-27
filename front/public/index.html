@@ -76,7 +76,30 @@
           </div>
           <div class="card-body" id="itensBanco">
             <span class="text-muted">Carregando itens...</span>
-          </div>
+            <script>
+              async function carregarItens() {
+                const lista = document.getElementById('itensBanco');
+                lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
+                try {
+                  const response = await fetch('http://localhost:3000/api/itens');
+                  const itens = await response.json();
+                  if (!Array.isArray(itens) || itens.length === 0) {
+                    lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
+                    return;
+                  }
+                  lista.innerHTML = '';
+                  itens.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "border rounded p-2 mb-2 bg-light text-dark";
+                    div.innerHTML = `<b>${item.nome}</b> - ${item.quantidade} <span class='badge bg-secondary'>${item.tipo_quantidade || 'unidade'}</span><br><span class='text-muted'>${item.descricao}</span>`;
+                    lista.appendChild(div);
+                  });
+                } catch (error) {
+                  lista.innerHTML = '<span class="text-danger">Erro ao carregar itens.</span>';
+                }
+              }
+              window.addEventListener('DOMContentLoaded', carregarItens);
+            </script>
         </div>
       </div>
     </div>
@@ -102,7 +125,19 @@
             </div>
             <div class="mb-3">
               <label for="qtdItem" class="form-label">Quantidade</label>
-              <input type="number" class="form-control" id="qtdItem" required>
+              <div class="input-group">
+                <input type="number" class="form-control" id="qtdItem" required placeholder="Quantidade">
+                <select class="form-select" id="tipoQtdItem" required>
+                  <option value="unidade">Unidade</option>
+                  <option value="kg">Kg</option>
+                  <option value="g">Gramas</option>
+                  <option value="l">Litros</option>
+                  <option value="ml">Mililitros</option>
+                  <option value="caixa">Caixa</option>
+                  <option value="pacote">Pacote</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
             </div>
             <div class="mb-3">
               <label for="descItem" class="form-label">Descrição</label>
@@ -119,6 +154,45 @@
             </div>
             <button type="submit" class="btn btn-primary">Salvar Item</button>
           </form>
+          <script>
+            document.getElementById('formAdicionarItem').addEventListener('submit', async function(e) {
+              e.preventDefault();
+              const nome = document.getElementById('nomeItem').value;
+              const quantidade = document.getElementById('qtdItem').value;
+              const tipo_quantidade = document.getElementById('tipoQtdItem').value;
+              const descricao = document.getElementById('descItem').value;
+              const fk_Categoria_id = document.getElementById('categoriaItem').value;
+
+              const alerta = document.getElementById('alertaModal');
+              alerta.classList.add('d-none');
+              alerta.classList.remove('alert-success', 'alert-danger');
+
+              try {
+                const response = await fetch('http://localhost:3000/api/itens', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ nome, quantidade, tipo_quantidade, descricao, fk_Categoria_id })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                  alerta.classList.remove('d-none');
+                  alerta.classList.add('alert-danger');
+                  alerta.innerText = data.erro || 'Erro ao cadastrar item.';
+                  return;
+                }
+                // Após cadastro, recarrega a lista para evitar duplicidade
+                await carregarItens();
+                alerta.classList.remove('d-none');
+                alerta.classList.add('alert-success');
+                alerta.innerText = 'Item cadastrado com sucesso!';
+                e.target.reset();
+              } catch (error) {
+                alerta.classList.remove('d-none');
+                alerta.classList.add('alert-danger');
+                alerta.innerText = 'Erro ao cadastrar item.';
+              }
+            });
+          </script>
         </div>
       </div>
     </div>

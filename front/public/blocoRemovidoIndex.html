@@ -1,0 +1,32 @@
+<!-- Bloco HTML removido do index.js -->
+<div class="mb-3">
+  <label for="qtdItem" class="form-label">Quantidade</label>
+  <div class="input-group">
+    <input type="number" class="form-control" id="qtdItem" required>
+    <select class="form-select" id="tipoQtdItem" required>
+      <option value="unidade">Unidade</option>
+      <option value="kg">Kg</option>
+      <option value="g">G</option>
+      <option value="l">Lt</option>
+      <option value="ml">Ml</option>
+      <!-- <option value="caixa">Caixa</option>
+      <option value="pacote">Pacote</option> -->
+      <option value="outro">Outro</option>
+    </select>
+  </div>
+</div>
+<div class="mb-3">
+  <label for="descItem" class="form-label">Descrição</label>
+  <textarea class="form-control" id="descItem" rows="2" required></textarea>
+</div>
+<div class="mb-3">
+  <label for="categoriaItem" class="form-label">Categoria</label>
+  <select class="form-select" id="categoriaItem" required>
+    <option value="">Selecione</option>
+    <option value="1">Ds</option>
+    <option value="2">Administração</option>
+    <option value="3">Qui</option>
+  </select>
+</div>
+<div id="alertaModal" class="alert d-none" role="alert"></div>
+<button type="submit" class="btn btn-primary w-100">Salvar</button>

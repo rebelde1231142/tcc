@@ -164,7 +164,7 @@ app.get('/api/relatorio-word', async (req, res) => {
 // Rota para editar um item pelo id
 app.put('/api/itens/:id', async (req, res) => {
   const { id } = req.params;
-  const { nome, quantidade, descricao, fk_Categoria_id } = req.body;
+  const { nome, quantidade, tipo_quantidade, descricao, fk_Categoria_id } = req.body;
   try {
     console.log('PUT /api/itens/:id - Recebido:', { id, nome, quantidade, descricao, fk_Categoria_id });
     // Verifica se o item existe
@@ -184,8 +184,8 @@ app.put('/api/itens/:id', async (req, res) => {
     }
     // Atualiza o item
     const [updateResult] = await pool.query(
-      'UPDATE Itens SET nome = ?, quantidade = ?, descricao = ?, fk_Categoria_id = ? WHERE id = ?',
-      [nome, quantidade, descricao, fk_Categoria_id, id]
+      'UPDATE Itens SET nome = ?, quantidade = ?, tipo_quantidade = ?, descricao = ?, fk_Categoria_id = ? WHERE id = ?',
+      [nome, quantidade, tipo_quantidade, descricao, fk_Categoria_id, id]
     );
     console.log('Resultado UPDATE:', updateResult);
     res.status(200).json({ mensagem: 'Item atualizado com sucesso.' });
@@ -197,11 +197,13 @@ app.put('/api/itens/:id', async (req, res) => {
 
 // Adicionando verificação de duplicidade antes de inserir o item
 app.post('/api/itens', async (req, res) => {
-  const { nome, quantidade, descricao, fk_Categoria_id } = req.body;
+  let { nome, quantidade, tipo_quantidade, descricao, fk_Categoria_id } = req.body;
+  // Normaliza o nome para evitar duplicidade
+  nome = nome.trim().toLowerCase();
   console.log('Dados recebidos:', { nome, quantidade, descricao, fk_Categoria_id }); // Log dos dados recebidos
   try {
-    // Verificar se o item já existe no banco de dados
-    const [itemExistente] = await pool.query('SELECT * FROM Itens WHERE nome = ?', [nome]);
+  // Verificar se o item já existe no banco de dados (normalizado)
+  const [itemExistente] = await pool.query('SELECT * FROM Itens WHERE LOWER(TRIM(nome)) = ?', [nome]);
     if (itemExistente.length > 0) {
       return res.status(400).json({ erro: `O item com o nome "${nome}" já existe no banco de dados.` });
     }
@@ -215,13 +217,13 @@ app.post('/api/itens', async (req, res) => {
 
     // Inserir o item no banco
     const [result] = await pool.query(
-      'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id) VALUES (?, ?, ?, ?)',
-      [nome, quantidade, descricao, fk_Categoria_id]
+      'INSERT INTO Itens (nome, quantidade, tipo_quantidade, descricao, fk_Categoria_id) VALUES (?, ?, ?, ?, ?)',
+      [nome, quantidade, tipo_quantidade, descricao, fk_Categoria_id]
     );
 
     // Buscar o item recém-adicionado com a categoria
     const [item] = await pool.query(
-      `SELECT Itens.id, Itens.nome, Itens.descricao, Itens.quantidade, Categoria.Nome AS categoriaNome
+      `SELECT Itens.id, Itens.nome, Itens.descricao, Itens.quantidade, Itens.tipo_quantidade, Categoria.Nome AS categoriaNome
        FROM Itens
        JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
        WHERE Itens.id = ?`,
