@@ -39,70 +39,88 @@
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Gerenciamento de Itens</a>
-      <button class="btn btn-danger" id="btnSair">Logout</button>
-    </div>
-  </nav>
-
-  <div class="container mt-5">
-    <!-- Botões de ação -->
-    <div class="action-buttons">
-  <button class="btn btn-primary" id="btnAdicionarItem">Adicionar Item</button>
-  <button class="btn btn-warning" id="btnEditarMassa">Editar itens</button>
-  <button class="btn btn-danger" id="btnDeletarMassa">Deletar Itens</button>
-  <button class="btn btn-success" id="btnRelatorio">Baixar Relatório</button>
-    </div>
-
-    <div class="row">
-      <!-- Gráfico de Categorias -->
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header bg-primary text-white">
-            Gráfico de Itens por Categoria
+  <script>
+    if (!localStorage.getItem('usuarioLogado')) {
+      window.location.href = '/page/usuario/login.html';
+    }
+  </script>
+  <div class="d-flex">
+    <aside class="kiwi-sidebar bg-primary text-white d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;">
+      <h4 class="mb-4"><i class="fa fa-lemon"></i> Meu Painel</h4>
+      <nav class="flex-grow-1">
+  <a href="#" class="d-block mb-2 text-white"><i class="fa fa-home"></i> Dashboard</a>
+  <a href="#" class="d-block mb-2 text-white"><i class="fa fa-list"></i> Itens</a>
+      </nav>
+      <div class="mt-auto">
+        <button class="btn btn-danger w-100" id="btnSair"><i class="fa fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+  <main class="flex-grow-1 p-4" style="background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;margin-left:220px;">
+      <div class="container-fluid">
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body p-2">
+                <canvas id="graficoMini1" width="80" height="80"></canvas>
+                  <div class="small text-white mt-2"><span style="color:#000000;">Itens/Categoria</span></div>
+              </div>
+            </div>
           </div>
-          <div class="card-body">
-            <canvas id="graficoCategorias" width="400" height="400"></canvas>
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body p-2">
+                <canvas id="graficoMini2" width="80" height="80"></canvas>
+                  <div class="small text-white mt-2"><span style="color:#000000;">Qtd/Categoria</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body p-2">
+                <canvas id="graficoMini3" width="80" height="80"></canvas>
+                  <div class="small text-white mt-2"><span style="color:#000000;">Itens/Dia</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body p-2">
+                <canvas id="graficoMini4" width="80" height="80"></canvas>
+                  <div class="small text-white mt-2"><span style="color:#000000;">% Categorias</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-4 align-items-center">
+          <div class="col-md-9">
+            <div class="action-buttons mb-0">
+              <button class="btn btn-primary" id="btnAdicionarItem">Adicionar Item</button>
+              <button class="btn btn-warning" id="btnEditarMassa">Editar itens</button>
+              <button class="btn btn-danger" id="btnDeletarMassa">Deletar Itens</button>
+              <button class="btn btn-success" id="btnRelatorio">Baixar Relatório</button>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control" id="barraPesquisa" placeholder="Pesquisar itens...">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-primary text-white">
+                Itens Salvos
+              </div>
+              <div class="card-body" id="itensBanco">
+                <span class="text-muted">Carregando itens...</span>
+                <div class="d-flex justify-content-center mt-3">
+                  <button class="btn btn-outline-primary" id="btnProximaPagina" style="display:none">Próxima página</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- Lista de Itens -->
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header bg-primary text-white">
-            Itens Cadastrados
-          </div>
-          <div class="card-body" id="itensBanco">
-            <span class="text-muted">Carregando itens...</span>
-            <script>
-              async function carregarItens() {
-                const lista = document.getElementById('itensBanco');
-                lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
-                try {
-                  const response = await fetch('http://localhost:3000/api/itens');
-                  const itens = await response.json();
-                  if (!Array.isArray(itens) || itens.length === 0) {
-                    lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
-                    return;
-                  }
-                  lista.innerHTML = '';
-                  itens.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = "border rounded p-2 mb-2 bg-light text-dark";
-                    div.innerHTML = `<b>${item.nome}</b> - ${item.quantidade} <span class='badge bg-secondary'>${item.tipo_quantidade || 'unidade'}</span><br><span class='text-muted'>${item.descricao}</span>`;
-                    lista.appendChild(div);
-                  });
-                } catch (error) {
-                  lista.innerHTML = '<span class="text-danger">Erro ao carregar itens.</span>';
-                }
-              }
-              window.addEventListener('DOMContentLoaded', carregarItens);
-            </script>
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
 
   <!-- Modal para Adicionar Item -->
@@ -125,19 +143,7 @@
             </div>
             <div class="mb-3">
               <label for="qtdItem" class="form-label">Quantidade</label>
-              <div class="input-group">
-                <input type="number" class="form-control" id="qtdItem" required placeholder="Quantidade">
-                <select class="form-select" id="tipoQtdItem" required>
-                  <option value="unidade">Unidade</option>
-                  <option value="kg">Kg</option>
-                  <option value="g">Gramas</option>
-                  <option value="l">Litros</option>
-                  <option value="ml">Mililitros</option>
-                  <option value="caixa">Caixa</option>
-                  <option value="pacote">Pacote</option>
-                  <option value="outro">Outro</option>
-                </select>
-              </div>
+              <input type="number" class="form-control" id="qtdItem" required placeholder="Quantidade">
             </div>
             <div class="mb-3">
               <label for="descItem" class="form-label">Descrição</label>
@@ -155,23 +161,122 @@
             <button type="submit" class="btn btn-primary">Salvar Item</button>
           </form>
           <script>
+// Função para carregar os 4 gráficos minimalistas
+async function carregarMiniGraficos() {
+  try {
+    const response = await fetch('http://localhost:3000/api/itens/categorias');
+    const dados = await response.json();
+    const labels = ['Ds', 'Administração', 'Qui'];
+    const values = [dados.ds||0, dados.administracao||0, dados.qui||0];
+    const cores = ['#FF6384', '#36A2EB', '#FFCE56'];
+    // Gráfico 1: Itens/Categoria
+    new Chart(document.getElementById('graficoMini1').getContext('2d'), {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: values, backgroundColor: cores }] },
+      options: {
+        plugins: {
+          legend: { display: false },
+          datalabels: { color: '#fff', font: { weight: 'bold' } }
+        },
+        cutout: '70%',
+        layout: {},
+        elements: {},
+        color: '#fff',
+        font: { color: '#fff' }
+      }
+    });
+    // Gráfico 2: Qtd/Categoria
+    new Chart(document.getElementById('graficoMini2').getContext('2d'), {
+      type: 'bar',
+      data: { labels, datasets: [{ data: values, backgroundColor: cores }] },
+      options: {
+        plugins: {
+          legend: { display: false },
+          datalabels: { color: '#fff', font: { weight: 'bold' } }
+        },
+        scales: { x: { display: false }, y: { display: false } },
+        color: '#fff',
+        font: { color: '#fff' }
+      }
+    });
+    // Gráfico 3: Itens/Dia (mock)
+    new Chart(document.getElementById('graficoMini3').getContext('2d'), {
+      type: 'line',
+      data: { labels: ['Seg', 'Ter', 'Qua'], datasets: [{ data: [2,4,3], borderColor: '#36A2EB', fill: false }] },
+      options: {
+        plugins: {
+          legend: { display: false },
+          datalabels: { color: '#fff', font: { weight: 'bold' } }
+        },
+        scales: { x: { display: false }, y: { display: false } },
+        color: '#fff',
+        font: { color: '#fff' }
+      }
+    });
+    // Gráfico 4: % Categorias
+    const total = values.reduce((a,b)=>a+b,0);
+    new Chart(document.getElementById('graficoMini4').getContext('2d'), {
+      type: 'pie',
+      data: { labels, datasets: [{ data: values.map(v=>total?((v/total)*100).toFixed(1):0), backgroundColor: cores }] },
+      options: {
+        plugins: {
+          legend: { display: false },
+          datalabels: { color: '#fff', font: { weight: 'bold' } }
+        },
+        color: '#fff',
+        font: { color: '#fff' }
+      }
+    });
+  } catch {}
+}
+// Função para filtrar itens pela barra de pesquisa
+document.getElementById('barraPesquisa').addEventListener('input', function() {
+  const termo = this.value.toLowerCase();
+  const lista = document.getElementById('itensBanco');
+  Array.from(lista.children).forEach(item => {
+    if (item.textContent.toLowerCase().includes(termo)) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+});
             document.getElementById('formAdicionarItem').addEventListener('submit', async function(e) {
               e.preventDefault();
-              const nome = document.getElementById('nomeItem').value;
-              const quantidade = document.getElementById('qtdItem').value;
-              const tipo_quantidade = document.getElementById('tipoQtdItem').value;
-              const descricao = document.getElementById('descItem').value;
+              const nome = document.getElementById('nomeItem').value.trim();
+              const quantidade = document.getElementById('qtdItem').value.trim();
+              const descricao = document.getElementById('descItem').value.trim();
               const fk_Categoria_id = document.getElementById('categoriaItem').value;
 
               const alerta = document.getElementById('alertaModal');
               alerta.classList.add('d-none');
               alerta.classList.remove('alert-success', 'alert-danger');
 
+              // Validação extra
+              if (!nome || !quantidade || !descricao || !fk_Categoria_id || fk_Categoria_id === "") {
+                alerta.classList.remove('d-none');
+                alerta.classList.add('alert-danger');
+                alerta.innerText = 'Preencha todos os campos corretamente.';
+                return;
+              }
+              if (isNaN(quantidade) || Number(quantidade) <= 0) {
+                alerta.classList.remove('d-none');
+                alerta.classList.add('alert-danger');
+                alerta.innerText = 'Quantidade deve ser um número maior que zero.';
+                return;
+              }
+              if (!["1","2","3"].includes(fk_Categoria_id)) {
+                alerta.classList.remove('d-none');
+                alerta.classList.add('alert-danger');
+                alerta.innerText = 'Selecione uma categoria válida.';
+                return;
+              }
+
               try {
                 const response = await fetch('http://localhost:3000/api/itens', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ nome, quantidade, tipo_quantidade, descricao, fk_Categoria_id })
+                  body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id })
                 });
                 const data = await response.json();
                 if (!response.ok) {
@@ -306,12 +411,22 @@
         const id = box.id.replace('itemEditBox','');
         const campos = document.getElementById('camposEdicao'+id);
         if (!campos.classList.contains('d-none')) {
+          const nome = document.getElementById('editNome'+id).value.trim();
+          const quantidade = document.getElementById('editQtd'+id).value.trim();
+          const descricao = document.getElementById('editDesc'+id).value.trim();
+          const fk_Categoria_id = parseInt(document.getElementById('editCat'+id).value);
+          if (!nome || !quantidade || !descricao || !fk_Categoria_id || isNaN(quantidade) || Number(quantidade) <= 0) {
+            alerta.classList.remove('d-none', 'alert-success');
+            alerta.classList.add('alert-danger');
+            alerta.textContent = 'Preencha todos os campos corretamente para cada item.';
+            return;
+          }
           edits.push({
             id,
-            nome: document.getElementById('editNome'+id).value.trim(),
-            quantidade: document.getElementById('editQtd'+id).value.trim(),
-            descricao: document.getElementById('editDesc'+id).value.trim(),
-            fk_Categoria_id: parseInt(document.getElementById('editCat'+id).value)
+            nome,
+            quantidade,
+            descricao,
+            fk_Categoria_id
           });
         }
       });
@@ -321,15 +436,17 @@
         alerta.textContent = 'Selecione pelo menos um item para editar (clique no +).';
         return;
       }
-      Promise.all(edits.map(edit =>
-        fetch(`http://localhost:3000/api/itens/${edit.id}`, {
+      Promise.all(edits.map(async edit => {
+        const response = await fetch(`http://localhost:3000/api/itens/${edit.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome: edit.nome, quantidade: edit.quantidade, descricao: edit.descricao, fk_Categoria_id: edit.fk_Categoria_id })
-        })
-      ))
-      .then(responses => {
-        if (responses.some(r => !r.ok)) throw new Error('Erro ao editar um ou mais itens.');
+          body: JSON.stringify(edit)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.erro || 'Erro ao editar item.');
+        return data;
+      }))
+      .then(() => {
         alerta.classList.remove('d-none', 'alert-danger');
         alerta.classList.add('alert-success');
         alerta.textContent = 'Itens editados com sucesso!';
@@ -340,6 +457,8 @@
       })
       .catch(error => {
         alerta.classList.remove('d-none', 'alert-success');
+        alerta.classList.add('alert-danger');
+        alerta.textContent = error.message || 'Erro ao editar item.';
         alerta.classList.add('alert-danger');
         alerta.textContent = error.message || 'Erro ao editar itens.';
       });
@@ -413,79 +532,73 @@
 
     let chartCategorias = null;
 
-async function carregarGrafico() {
-  try {
-    const response = await fetch('http://localhost:3000/api/itens/categorias');
-    if (!response.ok) throw new Error('Erro ao carregar dados do gráfico.');
-
-    const dados = await response.json();
-    const ctx = document.getElementById('graficoCategorias').getContext('2d');
-
-    // Destroi o gráfico anterior se existir
-    if (chartCategorias) {
-      chartCategorias.destroy();
+    async function carregarItens() {
+      const lista = document.getElementById('itensBanco');
+      lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
+      try {
+        const response = await fetch('http://localhost:3000/api/itens');
+        const itens = await response.json();
+        if (!Array.isArray(itens) || itens.length === 0) {
+          lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
+          return;
+        }
+        lista.innerHTML = '';
+        itens.forEach(item => {
+          const div = document.createElement('div');
+          div.className = "border rounded p-2 mb-2 bg-light text-dark";
+          div.innerHTML = `<b>${item.nome}</b> - ${item.quantidade} <span class='badge bg-secondary'>${item.tipo_quantidade || 'unidade'}</span><br><span class='text-muted'>${item.descricao}</span>`;
+          lista.appendChild(div);
+        });
+      } catch (error) {
+        lista.innerHTML = '<span class="text-danger">Erro ao carregar itens.</span>';
+      }
     }
-
-    chartCategorias = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['Ds', 'Administração', 'Qui'],
-        datasets: [{
-          data: [dados.ds, dados.administracao, dados.qui],
-          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        }],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: function (tooltipItem) {
-                const total = dados.ds + dados.administracao + dados.qui;
-                const valor = tooltipItem.raw;
-                const porcentagem = ((valor / total) * 100).toFixed(2);
-                return `${tooltipItem.label}: ${porcentagem}%`;
-              },
-            },
-          },
-        },
-      },
-    });
-  } catch (error) {
-    console.error(error.message);
-  }
-}
 
 // Redesenha o gráfico ao redimensionar a janela
 window.addEventListener('resize', () => {
-  carregarGrafico();
 });
 
     function listarItensBanco() {
+      let paginaAtual = 1;
+      let itensPorPagina = 10;
+      let todosItens = [];
+      const div = document.getElementById('itensBanco');
+      const btnProxima = document.getElementById('btnProximaPagina');
+      function renderizarPagina() {
+        const inicio = (paginaAtual-1)*itensPorPagina;
+        const fim = inicio+itensPorPagina;
+        const itensPagina = todosItens.slice(inicio, fim);
+        div.innerHTML = itensPagina.map(item => `
+          <div class="card mb-2 shadow-sm">
+            <div class="card-body">
+              <h6 class="card-title">${item.nome}</h6>
+              <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+              <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+            </div>
+          </div>
+        `).join('');
+        btnProxima.style.display = fim < todosItens.length ? '' : 'none';
+      }
       fetch('http://localhost:3000/api/itens')
         .then(response => response.json())
         .then(itens => {
-          const div = document.getElementById('itensBanco');
           if (!itens || itens.length === 0) {
             div.innerHTML = '<span class="text-muted">Nenhum item cadastrado no banco.</span>';
+            btnProxima.style.display = 'none';
             return;
           }
-          div.innerHTML = itens.map(item => `
-            <div class="card mb-2 shadow-sm">
-              <div class="card-body">
-                <h6 class="card-title">${item.nome}</h6>
-                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-                <!-- Botão de editar individual removido, agora só existe edição em massa pelo modal -->
-                  <!-- Botão de deletar individual removido, agora só existe exclusão em massa pelo modal -->
-              </div>
-            </div>
-          `).join('');
+          todosItens = itens;
+          paginaAtual = 1;
+          renderizarPagina();
         })
         .catch(() => {
-          document.getElementById('itensBanco').innerHTML = '<span class="text-danger">Erro ao buscar itens do banco.</span>';
+          div.innerHTML = '<span class="text-danger">Erro ao buscar itens do banco.</span>';
+          btnProxima.style.display = 'none';
         });
+      btnProxima.onclick = function() {
+        paginaAtual++;
+        renderizarPagina();
+      };
     }
 
     function deletarItem(id) {
@@ -561,8 +674,8 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
 });
 
     window.addEventListener('DOMContentLoaded', () => {
-      listarItensBanco();
-      carregarGrafico();
+  listarItensBanco();
+  carregarMiniGraficos();
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
