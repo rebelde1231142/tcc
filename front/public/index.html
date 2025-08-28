@@ -15,6 +15,7 @@
     .card {
       border-radius: 10px;
       overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     }
     .card-header {
       font-weight: bold;
@@ -23,6 +24,11 @@
     .btn-primary, .btn-success {
       border: none;
       border-radius: 5px;
+      outline: none;
+      transition: box-shadow 0.2s;
+    }
+    .btn-primary:focus, .btn-success:focus {
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2575fc;
     }
     .btn-primary:hover {
       background-color: #5a0db3;
@@ -33,8 +39,63 @@
     .action-buttons {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
       justify-content: flex-end;
       margin-bottom: 20px;
+    }
+    @media (max-width: 900px) {
+      aside.kiwi-sidebar {
+        display: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+      }
+      main {
+        margin-left: 0 !important;
+      }
+      .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+    @media (max-width: 600px) {
+      .container-fluid {
+        padding: 0 2px;
+      }
+      .card {
+        font-size: 0.95rem;
+      }
+      .card-header {
+        font-size: 1rem;
+      }
+    }
+    .alert {
+      font-size: 1rem;
+      font-weight: bold;
+      transition: opacity 0.5s;
+      opacity: 1;
+    }
+    .alert.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 80px;
+    }
+    .loading-spinner {
+      border: 6px solid #eee;
+      border-top: 6px solid #2575fc;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -48,8 +109,8 @@
     <aside class="kiwi-sidebar bg-primary text-white d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;">
       <h4 class="mb-4"><i class="fa fa-lemon"></i> Meu Painel</h4>
       <nav class="flex-grow-1">
-  <a href="#" class="d-block mb-2 text-white"><i class="fa fa-home"></i> Dashboard</a>
-  <a href="#" class="d-block mb-2 text-white"><i class="fa fa-list"></i> Itens</a>
+        <a href="#" class="d-block mb-2 text-white"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="#" class="d-block mb-2 text-white"><i class="fa fa-list"></i> Itens</a>
       </nav>
       <div class="mt-auto">
         <button class="btn btn-danger w-100" id="btnSair"><i class="fa fa-sign-out-alt"></i> Logout</button>
@@ -343,6 +404,7 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- ...existing code... -->
   <script>
 
     // Função de edição em massa reescrita
@@ -468,47 +530,7 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
       modal.show();
     });
 
-    document.getElementById('formAdicionarItem').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const nome = document.getElementById('nomeItem').value.trim();
-      const qtd = document.getElementById('qtdItem').value.trim();
-      const desc = document.getElementById('descItem').value.trim();
-      const categoriaId = document.getElementById('categoriaItem').value;
-
-      const alerta = document.getElementById('alertaModal');
-      alerta.classList.add('d-none');
-
-      if (!nome || !qtd || !desc || !categoriaId) {
-        alerta.classList.remove('d-none', 'alert-success');
-        alerta.classList.add('alert-danger');
-        alerta.textContent = 'Todos os campos são obrigatórios.';
-        return;
-      }
-
-      fetch('http://localhost:3000/api/itens', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, quantidade: qtd, descricao: desc, fk_Categoria_id: parseInt(categoriaId) })
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Erro ao salvar item no banco.');
-        return response.json();
-      })
-      .then(() => {
-        alerta.classList.remove('d-none', 'alert-danger');
-        alerta.classList.add('alert-success');
-        alerta.textContent = 'Item adicionado com sucesso!';
-        setTimeout(() => {
-          bootstrap.Modal.getInstance(document.getElementById('modalAdicionarItem')).hide();
-          location.reload();
-        }, 800);
-      })
-      .catch(error => {
-        alerta.classList.remove('d-none', 'alert-success');
-        alerta.classList.add('alert-danger');
-        alerta.textContent = error.message || 'Erro ao salvar item no banco.';
-      });
-    });
+  // ...existing code...
 
     document.getElementById('btnRelatorio').addEventListener('click', function () {
       fetch('http://localhost:3000/api/relatorio-word')
@@ -545,8 +567,14 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
         lista.innerHTML = '';
         itens.forEach(item => {
           const div = document.createElement('div');
-          div.className = "border rounded p-2 mb-2 bg-light text-dark";
-          div.innerHTML = `<b>${item.nome}</b> - ${item.quantidade} <span class='badge bg-secondary'>${item.tipo_quantidade || 'unidade'}</span><br><span class='text-muted'>${item.descricao}</span>`;
+          div.className = "card mb-2 shadow-sm";
+          div.innerHTML = `
+            <div class="card-body">
+              <h6 class="card-title">${item.nome}</h6>
+              <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+              <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+            </div>
+          `;
           lista.appendChild(div);
         });
       } catch (error) {
