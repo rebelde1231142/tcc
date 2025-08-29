@@ -31,12 +31,6 @@
     <script>
         // Limpa qualquer usuário antigo salvo ao abrir a tela de login
         localStorage.removeItem('usuarioLogado');
-        // Sempre que voltar para a página de login, redireciona para ela novamente
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
-                window.location.replace('/page/usuario/login.html');
-            }
-        });
         document.addEventListener('DOMContentLoaded', function() {
             const btnRegistrar = document.getElementById('btnRegistrar');
             if (btnRegistrar) {
