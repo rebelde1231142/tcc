@@ -23,6 +23,7 @@
                 <button type="submit" class="btn btn-primary w-100">Entrar</button>
             </form>
             <button id="btnRegistrar" class="btn btn-link w-100 mt-2">Não tem conta? Registrar</button>
+            <button id="btnTrocarSenha" class="btn btn-link w-100 mt-1">Esqueceu ou deseja trocar a senha?</button>
             <div id="alertaLogin" class="alert d-none mt-3" role="alert"></div>
         </div>
     </div>
@@ -30,11 +31,23 @@
     <script>
         // Limpa qualquer usuário antigo salvo ao abrir a tela de login
         localStorage.removeItem('usuarioLogado');
+        // Sempre que voltar para a página de login, redireciona para ela novamente
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.replace('/page/usuario/login.html');
+            }
+        });
         document.addEventListener('DOMContentLoaded', function() {
             const btnRegistrar = document.getElementById('btnRegistrar');
             if (btnRegistrar) {
                 btnRegistrar.addEventListener('click', function() {
                     window.location.href = '/page/usuario/registrar.html';
+                });
+            }
+            const btnTrocarSenha = document.getElementById('btnTrocarSenha');
+            if (btnTrocarSenha) {
+                btnTrocarSenha.addEventListener('click', function() {
+                    window.location.href = '/page/usuario/trocar-senha.html';
                 });
             }
         });

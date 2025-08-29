@@ -26,11 +26,11 @@
     <form id="formRegistro">
       <div class="mb-3">
         <label for="cpf" class="form-label">CPF</label>
-        <input type="text" class="form-control" id="cpf" maxlength="11" required>
+        <input type="text" class="form-control" id="cpf" maxlength="11" required placeholder="Digite seu CPF (apenas números)">
       </div>
       <div class="mb-3">
         <label for="senha" class="form-label">Senha</label>
-        <input type="password" class="form-control" id="senha" required>
+  <input type="password" class="form-control" id="senha" required placeholder="Digite sua senha" autocomplete="off">
       </div>
       <button type="submit" class="btn btn-primary w-100">Registrar</button>
     </form>
@@ -63,5 +63,18 @@
       }
     });
   </script>
-</body>
-</html>
+  <script>
+    function checkAuth() {
+      if (!localStorage.getItem('usuarioLogado')) {
+        window.location.replace('/page/usuario/login.html');
+      }
+    }
+    checkAuth();
+    window.addEventListener('pageshow', function(event) {
+      checkAuth();
+      if (event.persisted) {
+        window.location.reload();
+      }
+    });
+    window.addEventListener('focus', checkAuth);
+  </script>
