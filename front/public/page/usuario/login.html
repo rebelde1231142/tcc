@@ -67,12 +67,17 @@
                     return response.json();
                 })
                 .then(usuario => {
-                    localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+                    // Salva Email, CPF e outros dados recebidos do backend
+                    localStorage.setItem('usuarioLogado', JSON.stringify({
+                        CPF: usuario.CPF,
+                        Email: usuario.Email,
+                        // Adicione outros campos se necessário
+                    }));
                     $('#alertaLogin')
                         .removeClass('d-none alert-danger')
                         .addClass('alert-success')
                         .text('Login realizado com sucesso!');
-                    setTimeout(() => window.location.href = '/tcc/front/public/components/menu/menu-default.html', 1000);
+                    setTimeout(() => window.location.href = '/index.html', 1000);
                 })
                 .catch(error => {
                     $('#alertaLogin')

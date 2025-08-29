@@ -13,13 +13,15 @@
   <div class="card p-4">
     <h2 class="mb-3 text-center">Trocar Senha</h2>
     <form id="formTrocaSenha">
-      <div class="mb-3">
-        <label for="cpf" class="form-label">CPF</label>
-        <input type="text" class="form-control" id="cpf" maxlength="11" required placeholder="Digite seu CPF">
-      </div>
-      <div class="mb-3">
-        <label for="senhaAtual" class="form-label">Senha Atual</label>
-        <input type="password" class="form-control" id="senhaAtual" required placeholder="Senha atual">
+      <div id="camposTrocaPadrao">
+        <div class="mb-3">
+          <label for="cpf" class="form-label">CPF</label>
+          <input type="text" class="form-control" id="cpf" maxlength="11" required placeholder="Digite seu CPF">
+        </div>
+        <div class="mb-3">
+          <label for="senhaAtual" class="form-label">Senha Atual</label>
+          <input type="password" class="form-control" id="senhaAtual" required placeholder="Senha atual">
+        </div>
       </div>
       <div class="mb-3">
         <label for="novaSenha" class="form-label">Nova Senha</label>
@@ -32,32 +34,67 @@
   <script>
   // Removido: não exige mais autenticação para acessar a página de troca de senha
 
+    // Detecta token na URL
+    function getTokenFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('token');
+    }
+    const token = getTokenFromUrl();
+    if (token) {
+      // Esconde campos de CPF e senha atual
+      document.getElementById('camposTrocaPadrao').style.display = 'none';
+    }
     document.getElementById('formTrocaSenha').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const cpf = document.getElementById('cpf').value;
-      const senhaAtual = document.getElementById('senhaAtual').value;
       const novaSenha = document.getElementById('novaSenha').value;
       const msg = document.getElementById('msg');
       msg.textContent = '';
-      if (!cpf || !senhaAtual || !novaSenha) {
+      if (!novaSenha) {
         msg.textContent = 'Preencha todos os campos.';
         return;
       }
-      try {
-        const resp = await fetch('http://localhost:3000/api/usuarios/trocar-senha', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ CPF: cpf, senhaAtual, novaSenha })
-        });
-        if (resp.ok) {
-          msg.textContent = 'Senha alterada com sucesso!';
-          setTimeout(() => { window.location.href = '/page/usuario/login.html'; }, 1200);
-        } else {
-          const data = await resp.json();
-          msg.textContent = data.erro || 'Erro ao trocar senha.';
+      if (token) {
+        // Recuperação por email
+        try {
+          const resp = await fetch('http://localhost:3000/api/usuarios/redefinir-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, novaSenha })
+          });
+          if (resp.ok) {
+            msg.textContent = 'Senha redefinida com sucesso!';
+            setTimeout(() => { window.location.href = '/page/usuario/login.html'; }, 1200);
+          } else {
+            const data = await resp.json();
+            msg.textContent = data.erro || 'Erro ao redefinir senha.';
+          }
+        } catch (err) {
+          msg.textContent = 'Erro de conexão.';
         }
-      } catch (err) {
-        msg.textContent = 'Erro de conexão.';
+      } else {
+        // Troca normal
+        const cpf = document.getElementById('cpf').value;
+        const senhaAtual = document.getElementById('senhaAtual').value;
+        if (!cpf || !senhaAtual) {
+          msg.textContent = 'Preencha todos os campos.';
+          return;
+        }
+        try {
+          const resp = await fetch('http://localhost:3000/api/usuarios/trocar-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ CPF: cpf, senhaAtual, novaSenha })
+          });
+          if (resp.ok) {
+            msg.textContent = 'Senha alterada com sucesso!';
+            setTimeout(() => { window.location.href = '/page/usuario/login.html'; }, 1200);
+          } else {
+            const data = await resp.json();
+            msg.textContent = data.erro || 'Erro ao trocar senha.';
+          }
+        } catch (err) {
+          msg.textContent = 'Erro de conexão.';
+        }
       }
     });
   </script>
