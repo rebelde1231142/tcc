@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 29/08/2025 às 14:45
+-- Tempo de geração: 29/08/2025 às 15:15
 -- Versão do servidor: 8.0.30
 -- Versão do PHP: 8.3.4
 
@@ -79,7 +79,10 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`)
 (36, 'béquer', 1, 'asasssasaas', 3),
 (40, 'ssd', 12, 'safsdfsdfs', 1),
 (42, 'alura', 134, 'egfdgfgdfgfd', 2),
-(45, 'agua', 20, 'sgfsdgfsdg', 3);
+(44, 'uber', 40, 'adm chorão', 2),
+(45, 'agua', 20, 'sgfsdgfsdg', 3),
+(46, 'pedra', 20, '20 kilos de pedra', 3),
+(47, 'clash', 12, 'sfgdgdfgfd', 1);
 
 -- --------------------------------------------------------
 
@@ -89,6 +92,7 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`)
 
 CREATE TABLE `perfil` (
   `CPF` varchar(14) NOT NULL,
+  `Email` varchar(255) NOT NULL,
   `Senha` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -96,8 +100,8 @@ CREATE TABLE `perfil` (
 -- Despejando dados para a tabela `perfil`
 --
 
-INSERT INTO `perfil` (`CPF`, `Senha`) VALUES
-('52657628846', '$2b$10$9RCQCXvjbd0uuvLUAjgY5O0V1LynkRAQ7.DlqeQZpdBn4XcJ6qAAW');
+INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
+('52657628842', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$PyflRAhI8f8MNNAj0RzBSen2FOh1HN1Pt2.xO0GeNuOlbQaa2F7TK');
 
 -- --------------------------------------------------------
 
@@ -140,7 +144,8 @@ ALTER TABLE `itens`
 -- Índices de tabela `perfil`
 --
 ALTER TABLE `perfil`
-  ADD PRIMARY KEY (`CPF`);
+  ADD PRIMARY KEY (`CPF`),
+  ADD UNIQUE KEY `Email` (`Email`);
 
 --
 -- Índices de tabela `saida`
@@ -169,7 +174,7 @@ ALTER TABLE `entrada`
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
