@@ -13,7 +13,13 @@ app.use((req, res, next) => {
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Roteamento SPA: redireciona todas as requisições desconhecidas para index.html
+
+// Página inicial: visitantes veem index-visitante.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index-visitante.html'));
+});
+
+// Roteamento SPA: demais rotas caem no index.html (após login)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

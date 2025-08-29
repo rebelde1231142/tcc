@@ -64,17 +64,5 @@
     });
   </script>
   <script>
-    function checkAuth() {
-      if (!localStorage.getItem('usuarioLogado')) {
-        window.location.replace('/page/usuario/login.html');
-      }
-    }
-    checkAuth();
-    window.addEventListener('pageshow', function(event) {
-      checkAuth();
-      if (event.persisted) {
-        window.location.reload();
-      }
-    });
-    window.addEventListener('focus', checkAuth);
+  // Removido: não exige mais autenticação para acessar a página de registro
   </script>

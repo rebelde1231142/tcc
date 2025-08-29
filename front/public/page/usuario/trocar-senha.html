@@ -30,19 +30,7 @@
     <div id="msg" class="mt-3 text-center"></div>
   </div>
   <script>
-    function checkAuth() {
-      if (!localStorage.getItem('usuarioLogado')) {
-        window.location.replace('/page/usuario/login.html');
-      }
-    }
-    checkAuth();
-    window.addEventListener('pageshow', function(event) {
-      checkAuth();
-      if (event.persisted) {
-        window.location.reload();
-      }
-    });
-    window.addEventListener('focus', checkAuth);
+  // Removido: não exige mais autenticação para acessar a página de troca de senha
 
     document.getElementById('formTrocaSenha').addEventListener('submit', async function(e) {
       e.preventDefault();

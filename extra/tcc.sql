@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 28, 2025 at 10:57 PM
--- Server version: 8.4.3
--- PHP Version: 8.3.16
+-- Tempo de geração: 29/08/2025 às 14:16
+-- Versão do servidor: 8.0.30
+-- Versão do PHP: 8.3.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `tcc`
+-- Banco de dados: `tcc`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `categoria`
+-- Estrutura para tabela `categoria`
 --
 
 CREATE TABLE `categoria` (
@@ -34,7 +34,7 @@ CREATE TABLE `categoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `categoria`
+-- Despejando dados para a tabela `categoria`
 --
 
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
@@ -45,7 +45,7 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `entrada`
+-- Estrutura para tabela `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -58,7 +58,7 @@ CREATE TABLE `entrada` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `itens`
+-- Estrutura para tabela `itens`
 --
 
 CREATE TABLE `itens` (
@@ -70,7 +70,7 @@ CREATE TABLE `itens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `itens`
+-- Despejando dados para a tabela `itens`
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`) VALUES
@@ -79,34 +79,30 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`)
 (36, 'béquer', 1, 'asasssasaas', 3),
 (40, 'ssd', 12, 'safsdfsdfs', 1),
 (42, 'alura', 134, 'egfdgfgdfgfd', 2),
-(44, 'uber', 40, 'adm chorão', 2),
-(45, 'agua', 20, 'sgfsdgfsdg', 3),
-(46, 'pedra', 20, '20 kilos de pedra', 3),
-(47, 'clash', 12, 'sfgdgdfgfd', 1);
+(45, 'agua', 20, 'sgfsdgfsdg', 3);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `perfil`
+-- Estrutura para tabela `perfil`
 --
 
 CREATE TABLE `perfil` (
-  `CPF` varchar(11) NOT NULL DEFAULT '',
-  `Senha` int DEFAULT NULL
+  `CPF` varchar(14) NOT NULL,
+  `Senha` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `perfil`
+-- Despejando dados para a tabela `perfil`
 --
 
 INSERT INTO `perfil` (`CPF`, `Senha`) VALUES
-('52657628842', 1234),
-('52657628846', 12345);
+('52657628842', '$2b$10$W.8ij2i7TZmBt.q0Y3k0TesHPBBYrFlA/JvQsxXr8iouhGHTKJ7fS');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `saida`
+-- Estrutura para tabela `saida`
 --
 
 CREATE TABLE `saida` (
@@ -117,88 +113,88 @@ CREATE TABLE `saida` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Indexes for dumped tables
+-- Índices para tabelas despejadas
 --
 
 --
--- Indexes for table `categoria`
+-- Índices de tabela `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Indexes for table `entrada`
+-- Índices de tabela `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- Indexes for table `itens`
+-- Índices de tabela `itens`
 --
 ALTER TABLE `itens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
 
 --
--- Indexes for table `perfil`
+-- Índices de tabela `perfil`
 --
 ALTER TABLE `perfil`
   ADD PRIMARY KEY (`CPF`);
 
 --
--- Indexes for table `saida`
+-- Índices de tabela `saida`
 --
 ALTER TABLE `saida`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
--- AUTO_INCREMENT for table `categoria`
+-- AUTO_INCREMENT de tabela `categoria`
 --
 ALTER TABLE `categoria`
   MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `entrada`
+-- AUTO_INCREMENT de tabela `entrada`
 --
 ALTER TABLE `entrada`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `itens`
+-- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
--- AUTO_INCREMENT for table `saida`
+-- AUTO_INCREMENT de tabela `saida`
 --
 ALTER TABLE `saida`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Constraints for dumped tables
+-- Restrições para tabelas despejadas
 --
 
 --
--- Constraints for table `entrada`
+-- Restrições para tabelas `entrada`
 --
 ALTER TABLE `entrada`
   ADD CONSTRAINT `entrada_ibfk_1` FOREIGN KEY (`fk_Itens_id`) REFERENCES `itens` (`id`);
 
 --
--- Constraints for table `itens`
+-- Restrições para tabelas `itens`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);
 
 --
--- Constraints for table `saida`
+-- Restrições para tabelas `saida`
 --
 ALTER TABLE `saida`
   ADD CONSTRAINT `saida_ibfk_1` FOREIGN KEY (`fk_Itens_id`) REFERENCES `itens` (`id`);
