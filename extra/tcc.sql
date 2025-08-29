@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 29/08/2025 às 14:16
+-- Tempo de geração: 29/08/2025 às 14:45
 -- Versão do servidor: 8.0.30
 -- Versão do PHP: 8.3.4
 
@@ -97,7 +97,7 @@ CREATE TABLE `perfil` (
 --
 
 INSERT INTO `perfil` (`CPF`, `Senha`) VALUES
-('52657628842', '$2b$10$W.8ij2i7TZmBt.q0Y3k0TesHPBBYrFlA/JvQsxXr8iouhGHTKJ7fS');
+('52657628846', '$2b$10$9RCQCXvjbd0uuvLUAjgY5O0V1LynkRAQ7.DlqeQZpdBn4XcJ6qAAW');
 
 -- --------------------------------------------------------
 
