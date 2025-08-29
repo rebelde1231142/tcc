@@ -32,7 +32,7 @@
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoMini1" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2">Itens/Categoria</div>
+                  <div class="small text-white mt-2"><span style="color:#000000;">Itens/Categoria</span></div>
               </div>
             </div>
           </div>
@@ -40,7 +40,7 @@
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoMini2" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2">Qtd/Categoria</div>
+                  <div class="small text-white mt-2"><span style="color:#000000;">Qtd/Categoria</span></div>
               </div>
             </div>
           </div>
@@ -48,7 +48,7 @@
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoMini3" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2">Itens/Dia</div>
+                  <div class="small text-white mt-2"><span style="color:#000000;">Itens/Dia</span></div>
               </div>
             </div>
           </div>
@@ -56,7 +56,7 @@
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoMini4" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2">% Categorias</div>
+                  <div class="small text-white mt-2"><span style="color:#000000;">% Categorias</span></div>
               </div>
             </div>
           </div>
@@ -259,6 +259,9 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
                 alerta.classList.add('alert-success');
                 alerta.innerText = 'Item cadastrado com sucesso!';
                 e.target.reset();
+                setTimeout(() => {
+                  alerta.classList.add('d-none');
+                }, 2000);
               } catch (error) {
                 alerta.classList.remove('d-none');
                 alerta.classList.add('alert-danger');
@@ -495,57 +498,30 @@ window.addEventListener('resize', () => {
 
     function listarItensBanco() {
       const div = document.getElementById('itensBanco');
-      const btnProxima = document.getElementById('btnProximaPagina');
-      let paginaAtual = 1;
-      const itensPorPagina = 10;
-      let todosItens = [];
-
-      function renderizarPagina() {
-        // Remove todos os filhos
-        while (div.firstChild) {
-          div.removeChild(div.firstChild);
-        }
-        const inicio = (paginaAtual - 1) * itensPorPagina;
-        const fim = inicio + itensPorPagina;
-        const itensPagina = todosItens.slice(inicio, fim);
-        itensPagina.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'card mb-2 shadow-sm';
-          card.innerHTML = `
-            <div class="card-body">
-              <h6 class="card-title">${item.nome}</h6>
-              <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-              <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-            </div>
-          `;
-          div.appendChild(card);
-        });
-        if (btnProxima) btnProxima.style.display = fim < todosItens.length ? '' : 'none';
-      }
-
       fetch('http://localhost:3000/api/itens')
         .then(response => response.json())
         .then(itens => {
           if (!itens || itens.length === 0) {
             div.innerHTML = '<span class="text-muted">Nenhum item cadastrado no banco.</span>';
-            if (btnProxima) btnProxima.style.display = 'none';
             return;
           }
-          todosItens = itens;
-          paginaAtual = 1;
-          renderizarPagina();
+          div.innerHTML = '';
+          itens.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card mb-2 shadow-sm';
+            card.innerHTML = `
+              <div class="card-body">
+                <h6 class="card-title">${item.nome}</h6>
+                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+              </div>
+            `;
+            div.appendChild(card);
+          });
         })
         .catch(() => {
           div.innerHTML = '<span class="text-danger">Erro ao buscar itens do banco.</span>';
-          if (btnProxima) btnProxima.style.display = 'none';
         });
-
-      if (btnProxima) {
-        btnProxima.onclick = function() {
-          paginaAtual++;
-          renderizarPagina();
-        };
-      }
     }
 
     function deletarItem(id) {
