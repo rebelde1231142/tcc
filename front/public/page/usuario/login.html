@@ -22,6 +22,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Entrar</button>
             </form>
+            <button id="btnRegistrar" class="btn btn-link w-100 mt-2">Não tem conta? Registrar</button>
             <div id="alertaLogin" class="alert d-none mt-3" role="alert"></div>
         </div>
     </div>
@@ -29,6 +30,14 @@
     <script>
         // Limpa qualquer usuário antigo salvo ao abrir a tela de login
         localStorage.removeItem('usuarioLogado');
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnRegistrar = document.getElementById('btnRegistrar');
+            if (btnRegistrar) {
+                btnRegistrar.addEventListener('click', function() {
+                    window.location.href = '/page/usuario/registrar.html';
+                });
+            }
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
