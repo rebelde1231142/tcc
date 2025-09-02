@@ -32,8 +32,9 @@
       </select>
     </div>
     <button class="btn btn-primary w-100" id="btnSalvar">Salvar Configurações</button>
-    <div id="msg" class="mt-3 text-center"></div>
-    <a href="/index.html" class="btn btn-link w-100 mt-2">Voltar ao painel</a>
+  <div id="msg" class="mt-3 text-center"></div>
+  <button class="btn btn-warning w-100 mt-2" id="btnTrocarSenha">Trocar senha</button>
+  <a href="/index.html" class="btn btn-link w-100 mt-2">Voltar ao painel</a>
   </div>
   <script>
     document.getElementById('btnSalvar').addEventListener('click', function() {
@@ -60,6 +61,13 @@
         }
       } else {
         document.getElementById('emailUsuario').value = '';
+      }
+      // Botão para troca de senha
+      const btnTrocarSenha = document.getElementById('btnTrocarSenha');
+      if (btnTrocarSenha) {
+        btnTrocarSenha.addEventListener('click', function() {
+          window.location.href = '/page/usuario/trocar-senha.html';
+        });
       }
     });
   </script>
