@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 02/09/2025 às 11:44
+-- Tempo de geração: 05/09/2025 às 14:59
 -- Versão do servidor: 8.0.30
 -- Versão do PHP: 8.3.4
 
@@ -74,15 +74,9 @@ CREATE TABLE `itens` (
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`) VALUES
-(32, 'Lampada 1', 1, 'lampada da sala 1', 2),
-(33, 'notebook 202', 1, 'notebook 2', 1),
-(36, 'béquer', 1, 'asasssasaas', 3),
-(40, 'ssd', 12, 'safsdfsdfs', 1),
-(42, 'alura', 134, 'egfdgfgdfgfd', 2),
-(44, 'uber', 40, 'adm chorão', 2),
-(45, 'agua', 20, 'sgfsdgfsdg', 3),
-(46, 'pedra', 20, '20 kilos de pedra', 3),
-(47, 'clash', 12, 'sfgdgdfgfd', 1);
+(48, 'arduino uno', 12, 'tecnologia comum escolar', 1),
+(49, 'luminaria', 1, 'sdffsfdsd', 2),
+(50, 'fluoreto de potassio', 12, 'fgdfgdfg', 3);
 
 -- --------------------------------------------------------
 
@@ -101,7 +95,8 @@ CREATE TABLE `perfil` (
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
-('52657628842', 'leonelbrenodasilvagithub1@gmail.com', '$2b$10$z71RVwcDA/lybvwt0CH66O6NYfum31UCZZWEWlJJOG9LEmp.b1Zhu');
+('52657628842', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$b.AWwoBhboOIVLakWLZvluIyzrO8j.YKlxqBUPBNXECRrW9H8J2Le'),
+('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$4Ai3qKiqcdnAzd.b7E.rW.vdW2dmj5scjjNmoTHMt2fEKN77CQhu6');
 
 -- --------------------------------------------------------
 
@@ -174,7 +169,7 @@ ALTER TABLE `entrada`
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
