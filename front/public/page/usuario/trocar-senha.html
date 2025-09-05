@@ -10,9 +10,12 @@
   </style>
 </head>
 <body>
-  <div class="card p-4">
-    <h2 class="mb-3 text-center">Trocar Senha</h2>
+  <div class="card p-4 shadow-lg" style="border-radius: 16px;">
+    <h2 id="tituloTroca" class="mb-3 text-center" style="font-weight:700; color:#2575fc;">Trocar Senha</h2>
     <form id="formSolicitarEmail">
+      <div class="mb-3 text-center">
+        <img src="https://cdn-icons-png.flaticon.com/512/2950/2950736.png" alt="Troca de senha" width="48" height="48">
+      </div>
       <div class="mb-3">
         <label for="emailSolicitado" class="form-label">Informe seu email cadastrado</label>
         <input type="email" class="form-control" id="emailSolicitado" required placeholder="Digite seu email">
@@ -20,11 +23,15 @@
       <button type="submit" class="btn btn-primary w-100">Enviar link de troca</button>
     </form>
     <form id="formTrocaSenha" style="display:none;">
+      <div class="mb-3 text-center">
+        <img src="https://cdn-icons-png.flaticon.com/512/2950/2950736.png" alt="Troca de senha" width="48" height="48">
+      </div>
       <div class="mb-3">
         <label for="novaSenha" class="form-label">Nova Senha</label>
         <input type="password" class="form-control" id="novaSenha" required placeholder="Nova senha">
       </div>
-      <button type="submit" class="btn btn-primary w-100">Trocar Senha</button>
+      <button type="submit" class="btn btn-success w-100">Trocar Senha</button>
+      <div class="mt-2 text-muted text-center" style="font-size:0.95em;">Digite sua nova senha abaixo</div>
     </form>
     <div id="msg" class="mt-3 text-center"></div>
   </div>
@@ -39,6 +46,8 @@
     const token = getTokenFromUrl();
     if (!token) {
       document.getElementById('formTrocaSenha').style.display = 'none';
+      document.getElementById('formSolicitarEmail').style.display = '';
+      document.getElementById('tituloTroca').style.display = '';
       const msg = document.getElementById('msg');
       let email = '';
       try {
@@ -48,7 +57,6 @@
           email = user.Email || '';
         }
       } catch {}
-      document.getElementById('formSolicitarEmail').style.display = '';
       msg.textContent = '';
       document.getElementById('formSolicitarEmail').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -70,8 +78,10 @@
         }
       });
     } else {
-      // Exibe formulário de troca de senha
+      // Exibe apenas o formulário de troca de senha
       document.getElementById('formTrocaSenha').style.display = '';
+      document.getElementById('formSolicitarEmail').style.display = 'none';
+      document.getElementById('tituloTroca').style.display = 'none';
     }
     document.getElementById('formTrocaSenha').addEventListener('submit', async function(e) {
       e.preventDefault();
