@@ -2,10 +2,6 @@
 back/node_modules/
 front/node_modules/
 
-# Ignorar arquivos de ambiente
-back/.env
-front/.env
-
 # Ignorar arquivos de log
 *.log
 
