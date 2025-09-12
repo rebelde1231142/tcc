@@ -142,6 +142,10 @@
           </form>
           <script>
 // Função para carregar os 4 gráficos minimalistas
+let chartMini1 = null;
+let chartMini2 = null;
+let chartMini3 = null;
+let chartMini4 = null;
 async function carregarMiniGraficos() {
   try {
     const response = await fetch('http://localhost:3000/api/itens/categorias');
@@ -149,8 +153,13 @@ async function carregarMiniGraficos() {
     const labels = ['Ds', 'Administração', 'Qui'];
     const values = [dados.ds||0, dados.administracao||0, dados.qui||0];
     const cores = ['#FF6384', '#36A2EB', '#FFCE56'];
+    // Destroi gráficos antigos se existirem
+    if (chartMini1) { chartMini1.destroy(); }
+    if (chartMini2) { chartMini2.destroy(); }
+    if (chartMini3) { chartMini3.destroy(); }
+    if (chartMini4) { chartMini4.destroy(); }
     // Gráfico 1: Itens/Categoria
-    new Chart(document.getElementById('graficoMini1').getContext('2d'), {
+    chartMini1 = new Chart(document.getElementById('graficoMini1').getContext('2d'), {
       type: 'doughnut',
       data: { labels, datasets: [{ data: values, backgroundColor: cores }] },
       options: {
@@ -166,7 +175,7 @@ async function carregarMiniGraficos() {
       }
     });
     // Gráfico 2: Qtd/Categoria
-    new Chart(document.getElementById('graficoMini2').getContext('2d'), {
+    chartMini2 = new Chart(document.getElementById('graficoMini2').getContext('2d'), {
       type: 'bar',
       data: { labels, datasets: [{ data: values, backgroundColor: cores }] },
       options: {
@@ -180,7 +189,7 @@ async function carregarMiniGraficos() {
       }
     });
     // Gráfico 3: Itens/Dia (mock)
-    new Chart(document.getElementById('graficoMini3').getContext('2d'), {
+    chartMini3 = new Chart(document.getElementById('graficoMini3').getContext('2d'), {
       type: 'line',
       data: { labels: ['Seg', 'Ter', 'Qua'], datasets: [{ data: [2,4,3], borderColor: '#36A2EB', fill: false }] },
       options: {
@@ -195,7 +204,7 @@ async function carregarMiniGraficos() {
     });
     // Gráfico 4: % Categorias
     const total = values.reduce((a,b)=>a+b,0);
-    new Chart(document.getElementById('graficoMini4').getContext('2d'), {
+    chartMini4 = new Chart(document.getElementById('graficoMini4').getContext('2d'), {
       type: 'pie',
       data: { labels, datasets: [{ data: values.map(v=>total?((v/total)*100).toFixed(1):0), backgroundColor: cores }] },
       options: {
@@ -265,8 +274,9 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
                   alerta.innerText = data.erro || 'Erro ao cadastrar item.';
                   return;
                 }
-                // Após cadastro, recarrega a lista para evitar duplicidade
+                // Após cadastro, atualiza itens e gráficos sem recarregar a página
                 await carregarItens();
+                await carregarMiniGraficos();
                 alerta.classList.remove('d-none');
                 alerta.classList.add('alert-success');
                 alerta.innerText = 'Item cadastrado com sucesso!';
@@ -434,9 +444,10 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
         alerta.classList.remove('d-none', 'alert-danger');
         alerta.classList.add('alert-success');
         alerta.textContent = 'Itens editados com sucesso!';
-        setTimeout(() => {
+        setTimeout(async () => {
           bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
-          location.reload();
+          await carregarItens();
+          await carregarMiniGraficos();
         }, 800);
       })
       .catch(error => {
@@ -539,9 +550,10 @@ window.addEventListener('resize', () => {
     function deletarItem(id) {
       if (confirm('Tem certeza que deseja deletar este item?')) {
         fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
-          .then(response => {
+          .then(async response => {
             if (!response.ok) throw new Error('Erro ao deletar item.');
-            location.reload();
+            await carregarItens();
+            await carregarMiniGraficos();
           })
           .catch(error => {
             alert(error.message || 'Erro ao deletar item.');
