@@ -6,6 +6,26 @@ const crypto = require('crypto');
 const { enviarEmail } = require('./emailService');
 const router = express.Router();
 
+// Alteração de e-mail do usuário
+router.post('/usuarios/alterar-email', async (req, res) => {
+  const { cpf, novoEmail } = req.body;
+  if (!cpf || !novoEmail) {
+    return res.status(400).json({ erro: 'CPF e novo email são obrigatórios.' });
+  }
+  try {
+    // Verifica se o novo e-mail já está em uso
+    const [existe] = await pool.query('SELECT 1 FROM Perfil WHERE Email = ?', [novoEmail]);
+    if (existe.length > 0) {
+      return res.status(400).json({ erro: 'Este e-mail já está em uso.' });
+    }
+    // Atualiza o e-mail do usuário
+    await pool.query('UPDATE Perfil SET Email = ? WHERE CPF = ?', [novoEmail, cpf]);
+    res.json({ mensagem: 'E-mail alterado com sucesso!' });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao alterar e-mail', detalhes: error.message });
+  }
+});
+
 // Confirmação de troca de senha por email
 router.post('/usuarios/confirmar-troca', async (req, res) => {
   const { token } = req.body;

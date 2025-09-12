@@ -1,14 +1,23 @@
 body {
-    background-color: #007bff; /* Azul de fundo */
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0;
-    color: #fff;
     font-family: Arial, sans-serif;
     padding: 0;
+}
+body[data-tema="escuro"] {
+    background: linear-gradient(135deg, #232526, #414345);
+    color: #fff;
+}
+body[data-tema="claro"] {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #222;
+}
+body[data-tema="padrao"] {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
 }
 
 .login-container {
