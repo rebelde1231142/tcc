@@ -14,6 +14,9 @@ app.use(express.json());
 app.use('/api', loginRouter);
 app.use('/api', usuarioRouter);
 
+// Rota para listar locais
+
+
 // Exemplo de rota teste
 app.get('/', (req, res) => {
   res.send('API rodando!');
@@ -23,14 +26,15 @@ app.get('/', (req, res) => {
 app.get('/api/relatorio-pdf', async (req, res) => {
   try {
     const [itens] = await pool.query(`
-      SELECT 
-        Categoria.Nome AS categoriaNome,
-        Itens.nome AS itemNome,
-        Itens.quantidade AS quantidade,
-        Itens.descricao AS descricao
-      FROM Itens
-      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
-      ORDER BY Categoria.Nome ASC, Itens.nome ASC
+          SELECT 
+            Categoria.Nome AS categoriaNome,
+            Itens.nome AS itemNome,
+            Itens.quantidade AS quantidade,
+            Itens.descricao AS descricao,
+            Itens.local AS local
+          FROM Itens
+          JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+          ORDER BY Categoria.Nome ASC, Itens.nome ASC
     `);
 
     if (itens.length === 0) {
@@ -48,20 +52,22 @@ app.get('/api/relatorio-pdf', async (req, res) => {
 
     // Cabeçalho da tabela
     doc.fontSize(12).font('Helvetica-Bold');
-    doc.text('Categoria', 50, doc.y, { continued: true, width: 120 });
-    doc.text('Nome', 170, doc.y, { continued: true, width: 120 });
-    doc.text('Quantidade', 290, doc.y, { continued: true, width: 80 });
-    doc.text('Descrição', 370, doc.y, { width: 180 });
+    doc.text('Categoria', 50, doc.y, { continued: true, width: 100 });
+    doc.text('Nome', 150, doc.y, { continued: true, width: 100 });
+    doc.text('Local', 250, doc.y, { continued: true, width: 100 });
+    doc.text('Quantidade', 350, doc.y, { continued: true, width: 80 });
+    doc.text('Descrição', 430, doc.y, { width: 180 });
     doc.moveDown(0.5);
     doc.font('Helvetica');
 
     // Linhas da tabela
-    itens.forEach(item => {
-      doc.text(item.categoriaNome, 50, doc.y, { continued: true, width: 120 });
-      doc.text(item.itemNome, 170, doc.y, { continued: true, width: 120 });
-      doc.text(String(item.quantidade), 290, doc.y, { continued: true, width: 80 });
-      doc.text(item.descricao || '', 370, doc.y, { width: 180 });
-    });
+      itens.forEach(item => {
+    doc.text(item.categoriaNome, 50, doc.y, { continued: true, width: 100 });
+    doc.text(item.itemNome, 150, doc.y, { continued: true, width: 100 });
+    doc.text(item.local, 250, doc.y, { continued: true, width: 100 });
+    doc.text(String(item.quantidade), 350, doc.y, { continued: true, width: 80 });
+    doc.text(item.descricao || '', 430, doc.y, { width: 180 });
+      });
 
     doc.end();
   } catch (error) {
@@ -74,13 +80,14 @@ app.get('/api/relatorio-pdf', async (req, res) => {
 app.get('/api/relatorio-word', async (req, res) => {
   try {
     const [itens] = await pool.query(`
-      SELECT 
-        Categoria.Nome AS categoriaNome,
-        Itens.nome AS itemNome,
-        Itens.quantidade AS quantidade
-      FROM Itens
-      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
-      ORDER BY Categoria.Nome ASC, Itens.nome ASC
+          SELECT 
+            Categoria.Nome AS categoriaNome,
+            Itens.nome AS itemNome,
+            Itens.quantidade AS quantidade,
+            Itens.local AS local
+          FROM Itens
+          JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+          ORDER BY Categoria.Nome ASC, Itens.nome ASC
     `);
 
     if (itens.length === 0) {
@@ -88,39 +95,45 @@ app.get('/api/relatorio-word', async (req, res) => {
     }
 
     // Cabeçalho da tabela
-    const tableRows = [
-      new TableRow({
-        children: [
-          new TableCell({
-            children: [new Paragraph({ text: 'Categoria', bold: true })],
-            width: { size: 33, type: WidthType.PERCENTAGE },
-            shading: { fill: 'D9E1F2' },
-          }),
-          new TableCell({
-            children: [new Paragraph({ text: 'Nome', bold: true })],
-            width: { size: 34, type: WidthType.PERCENTAGE },
-            shading: { fill: 'D9E1F2' },
-          }),
-          new TableCell({
-            children: [new Paragraph({ text: 'Quantidade', bold: true })],
-            width: { size: 33, type: WidthType.PERCENTAGE },
-            shading: { fill: 'D9E1F2' },
-          }),
-        ],
-        tableHeader: true,
-      })
-    ];
+      const tableRows = [
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: 'Categoria', bold: true })],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: 'D9E1F2' },
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: 'Nome', bold: true })],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: 'D9E1F2' },
+            }),
+            new TableCell({
+                children: [new Paragraph({ text: 'Local', bold: true })],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: 'D9E1F2' },
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: 'Quantidade', bold: true })],
+              width: { size: 25, type: WidthType.PERCENTAGE },
+              shading: { fill: 'D9E1F2' },
+            }),
+          ],
+          tableHeader: true,
+        })
+      ];
 
     // Linhas da tabela
-    itens.forEach(item => {
-      tableRows.push(new TableRow({
-        children: [
-          new TableCell({ children: [new Paragraph(item.categoriaNome)], width: { size: 33, type: WidthType.PERCENTAGE } }),
-          new TableCell({ children: [new Paragraph(item.itemNome)], width: { size: 34, type: WidthType.PERCENTAGE } }),
-          new TableCell({ children: [new Paragraph(String(item.quantidade))], width: { size: 33, type: WidthType.PERCENTAGE } }),
-        ]
-      }));
-    });
+      itens.forEach(item => {
+          tableRows.push(new TableRow({
+            children: [
+              new TableCell({ children: [new Paragraph(item.categoriaNome)], width: { size: 25, type: WidthType.PERCENTAGE } }),
+              new TableCell({ children: [new Paragraph(item.itemNome)], width: { size: 25, type: WidthType.PERCENTAGE } }),
+              new TableCell({ children: [new Paragraph(item.local)], width: { size: 25, type: WidthType.PERCENTAGE } }),
+              new TableCell({ children: [new Paragraph(String(item.quantidade))], width: { size: 25, type: WidthType.PERCENTAGE } }),
+            ]
+          }));
+        });
 
     // Criar documento Word
     const doc = new Document({
@@ -164,7 +177,7 @@ app.get('/api/relatorio-word', async (req, res) => {
 // Rota para editar um item pelo id
 app.put('/api/itens/:id', async (req, res) => {
   const { id } = req.params;
-  const { nome, quantidade, descricao, fk_Categoria_id } = req.body;
+  const { nome, quantidade, descricao, fk_Categoria_id, local } = req.body;
   try {
     console.log('PUT /api/itens/:id - Recebido:', { id, nome, quantidade, descricao, fk_Categoria_id });
     // Verifica se o item existe
@@ -183,10 +196,10 @@ app.put('/api/itens/:id', async (req, res) => {
       }
     }
     // Atualiza o item
-    const [updateResult] = await pool.query(
-      'UPDATE Itens SET nome = ?, quantidade = ?, descricao = ?, fk_Categoria_id = ? WHERE id = ?',
-      [nome, quantidade, descricao, fk_Categoria_id, id]
-    );
+      const [updateResult] = await pool.query(
+    'UPDATE Itens SET nome = ?, quantidade = ?, descricao = ?, fk_Categoria_id = ?, local = ? WHERE id = ?',
+    [nome, quantidade, descricao, fk_Categoria_id, local, id]
+      );
     console.log('Resultado UPDATE:', updateResult);
     res.status(200).json({ mensagem: 'Item atualizado com sucesso.' });
   } catch (error) {
@@ -197,7 +210,7 @@ app.put('/api/itens/:id', async (req, res) => {
 
 // Adicionando verificação de duplicidade antes de inserir o item
 app.post('/api/itens', async (req, res) => {
-  let { nome, quantidade, descricao, fk_Categoria_id } = req.body;
+  let { nome, quantidade, descricao, fk_Categoria_id, local } = req.body;
   // Normaliza o nome para evitar duplicidade
   nome = nome.trim().toLowerCase();
   console.log('Dados recebidos:', { nome, quantidade, descricao, fk_Categoria_id }); // Log dos dados recebidos
@@ -216,19 +229,19 @@ app.post('/api/itens', async (req, res) => {
     }
 
     // Inserir o item no banco
-    const [result] = await pool.query(
-      'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id) VALUES (?, ?, ?, ?)',
-      [nome, quantidade, descricao, fk_Categoria_id]
-    );
+      const [result] = await pool.query(
+    'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id, local) VALUES (?, ?, ?, ?, ?)',
+    [nome, quantidade, descricao, fk_Categoria_id, local]
+      );
 
     // Buscar o item recém-adicionado com a categoria
-    const [item] = await pool.query(
-      `SELECT Itens.id, Itens.nome, Itens.descricao, Itens.quantidade, Categoria.Nome AS categoriaNome
-       FROM Itens
-       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
-       WHERE Itens.id = ?`,
-      [result.insertId]
-    );
+      const [item] = await pool.query(
+    `SELECT Itens.id, Itens.nome, Itens.descricao, Itens.quantidade, Categoria.Nome AS categoriaNome, Itens.local AS local
+     FROM Itens
+     JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+     WHERE Itens.id = ?`,
+    [result.insertId]
+      );
 
     console.log('Item retornado:', item[0]); // Log do item retornado
     res.status(201).json({ mensagem: 'Item cadastrado com sucesso!', item: item[0] }); // Retorna o item com a categoria e mensagem de sucesso
@@ -240,7 +253,12 @@ app.post('/api/itens', async (req, res) => {
 
 app.get('/api/itens', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM Itens');
+    const [rows] = await pool.query(`
+      SELECT Itens.*, Categoria.Nome AS categoriaNome
+      FROM Itens
+      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      ORDER BY Categoria.Nome ASC, Itens.nome ASC
+    `);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao buscar itens', detalhes: error.message });

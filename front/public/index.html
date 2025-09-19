@@ -80,6 +80,7 @@
               <button class="btn btn-warning" id="btnEditarMassa">Editar itens</button>
               <button class="btn btn-danger" id="btnDeletarMassa">Deletar Itens</button>
               <button class="btn btn-success" id="btnRelatorio">Baixar Relatório</button>
+              <button class="btn btn-info" id="btnFiltro"><i class="fa fa-filter"></i> Filtro</button>
             </div>
           </div>
           <div class="col-md-3">
@@ -101,6 +102,30 @@
         </div>
       </div>
     </main>
+  <!-- Modal Filtro -->
+  <div class="modal fade" id="modalFiltro" tabindex="-1" aria-labelledby="modalFiltroLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalFiltroLabel">Filtrar Itens</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltro">
+            <div class="mb-3">
+              <label for="filtroLocal" class="form-label">Filtrar por Local</label>
+              <select class="form-select" id="filtroLocal">
+                <option value="">Todos</option>
+                <option value="Almoxarifado">Almoxarifado</option>
+                <option value="Laboratório">Laboratório</option>
+                <option value="Sala de Aula">Sala de Aula</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-info">Aplicar Filtro</button>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Modal para Adicionar Item -->
@@ -117,28 +142,37 @@
             <span id="mensagemAlerta"></span>
           </div>
           <form id="formAdicionarItem">
-            <div class="mb-3">
-              <label for="nomeItem" class="form-label">Nome do Item</label>
-              <input type="text" class="form-control" id="nomeItem" required>
-            </div>
-            <div class="mb-3">
-              <label for="qtdItem" class="form-label">Quantidade</label>
-              <input type="number" class="form-control" id="qtdItem" required placeholder="Quantidade">
-            </div>
-            <div class="mb-3">
-              <label for="descItem" class="form-label">Descrição</label>
-              <textarea class="form-control" id="descItem" rows="3" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="categoriaItem" class="form-label">Categoria</label>
-              <select class="form-select" id="categoriaItem" required>
-                <option value="">Selecione a categoria</option>
-                <option value="1">Ds</option>
-                <option value="2">Administração</option>
-                <option value="3">Qui</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Salvar Item</button>
+                      <div class="mb-3">
+                        <label for="nomeItem" class="form-label">Nome do Item</label>
+                        <input type="text" class="form-control" id="nomeItem" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="qtdItem" class="form-label">Quantidade</label>
+                        <input type="number" class="form-control" id="qtdItem" required placeholder="Quantidade">
+                      </div>
+                      <div class="mb-3">
+                        <label for="descItem" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descItem" rows="3" required></textarea>
+                      </div>
+                      <div class="mb-3">
+                        <label for="categoriaItem" class="form-label">Categoria</label>
+                        <select class="form-select" id="categoriaItem" required>
+                          <option value="">Selecione a categoria</option>
+                          <option value="1">Ds</option>
+                          <option value="2">Administração</option>
+                          <option value="3">Qui</option>
+                        </select>
+                      </div>
+                      <div class="mb-3">
+                        <label for="localItem" class="form-label">Local de Armazenamento</label>
+                        <select class="form-select" id="localItem" required>
+                          <option value="">Selecione o local</option>
+                          <option value="Almoxarifado">Almoxarifado</option>
+                          <option value="Laboratório">Laboratório</option>
+                          <option value="Sala de Aula">Sala de Aula</option>
+                        </select>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Salvar Item</button>
           </form>
           <script>
 // Função para carregar os 4 gráficos minimalistas
@@ -236,6 +270,7 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
               const quantidade = document.getElementById('qtdItem').value.trim();
               const descricao = document.getElementById('descItem').value.trim();
               const fk_Categoria_id = document.getElementById('categoriaItem').value;
+              const local = document.getElementById('localItem').value;
 
               const alerta = document.getElementById('alertaModal');
               alerta.classList.add('d-none');
@@ -263,9 +298,9 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
 
               try {
                 const response = await fetch('http://localhost:3000/api/itens', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id })
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id, local })
                 });
                 const data = await response.json();
                 if (!response.ok) {
@@ -350,30 +385,37 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
             return;
           }
           lista.innerHTML = itens.map(item => `
-            <div class="border rounded p-2 mb-2" id="itemEditBox${item.id}">
-              <div class="d-flex align-items-center justify-content-between">
-                <span><b>${item.nome}</b> (${item.quantidade}) - ${item.descricao}</span>
-                <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-expand-edicao" data-id="${item.id}">+</button>
-              </div>
-              <div class="row g-2 mt-2 d-none campos-edicao" id="camposEdicao${item.id}">
-                <div class="col-md-3">
-                  <input type="text" class="form-control" placeholder="Nome" value="${item.nome}" id="editNome${item.id}">
-                </div>
-                <div class="col-md-2">
-                  <input type="number" class="form-control" placeholder="Qtd" value="${item.quantidade}" id="editQtd${item.id}">
-                </div>
-                <div class="col-md-4">
-                  <input type="text" class="form-control" placeholder="Descrição" value="${item.descricao}" id="editDesc${item.id}">
-                </div>
-                <div class="col-md-3">
-                  <select class="form-select" id="editCat${item.id}">
-                    <option value="1" ${item.fk_Categoria_id==1?'selected':''}>Ds</option>
-                    <option value="2" ${item.fk_Categoria_id==2?'selected':''}>Administração</option>
-                    <option value="3" ${item.fk_Categoria_id==3?'selected':''}>Qui</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+                      <div class="border rounded p-2 mb-2" id="itemEditBox${item.id}">
+                        <div class="d-flex align-items-center justify-content-between">
+                          <span><b>${item.nome}</b> (${item.quantidade}) - ${item.descricao} <span class="badge bg-info">${item.local}</span></span>
+                          <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-expand-edicao" data-id="${item.id}">+</button>
+                        </div>
+                        <div class="row g-2 mt-2 d-none campos-edicao" id="camposEdicao${item.id}">
+                          <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Nome" value="${item.nome}" id="editNome${item.id}">
+                          </div>
+                          <div class="col-md-2">
+                            <input type="number" class="form-control" placeholder="Qtd" value="${item.quantidade}" id="editQtd${item.id}">
+                          </div>
+                          <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="Descrição" value="${item.descricao}" id="editDesc${item.id}">
+                          </div>
+                          <div class="col-md-2">
+                            <select class="form-select" id="editCat${item.id}">
+                              <option value="1" ${item.fk_Categoria_id==1?'selected':''}>Ds</option>
+                              <option value="2" ${item.fk_Categoria_id==2?'selected':''}>Administração</option>
+                              <option value="3" ${item.fk_Categoria_id==3?'selected':''}>Qui</option>
+                            </select>
+                          </div>
+                          <div class="col-md-2">
+                            <select class="form-select" id="editLocal${item.id}">
+                              <option value="Almoxarifado" ${item.local=='Almoxarifado'?'selected':''}>Almoxarifado</option>
+                              <option value="Laboratório" ${item.local=='Laboratório'?'selected':''}>Laboratório</option>
+                              <option value="Sala de Aula" ${item.local=='Sala de Aula'?'selected':''}>Sala de Aula</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
           `).join('');
           // Adiciona evento para expandir/ocultar campos
           lista.querySelectorAll('.btn-expand-edicao').forEach(btn => {
@@ -416,11 +458,12 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
             return;
           }
           edits.push({
-            id,
-            nome,
-            quantidade,
-            descricao,
-            fk_Categoria_id
+              id,
+              nome,
+              quantidade,
+              descricao,
+              fk_Categoria_id,
+              local: document.getElementById('editLocal'+id).value
           });
         }
       });
@@ -499,16 +542,16 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
         }
         lista.innerHTML = '';
         itens.forEach(item => {
-          const div = document.createElement('div');
-          div.className = "card mb-2 shadow-sm";
-          div.innerHTML = `
-            <div class="card-body">
-              <h6 class="card-title">${item.nome}</h6>
-              <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-              <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-            </div>
-          `;
-          lista.appendChild(div);
+            const div = document.createElement('div');
+            div.className = "card mb-2 shadow-sm";
+            div.innerHTML = `
+              <div class="card-body">
+                <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+              </div>
+            `;
+            lista.appendChild(div);
         });
       } catch (error) {
         lista.innerHTML = '<span class="text-danger">Erro ao carregar itens.</span>';
@@ -532,13 +575,13 @@ window.addEventListener('resize', () => {
           itens.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card mb-2 shadow-sm';
-            card.innerHTML = `
-              <div class="card-body">
-                <h6 class="card-title">${item.nome}</h6>
-                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-              </div>
-            `;
+              card.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+                </div>
+              `;
             div.appendChild(card);
           });
         })
@@ -621,10 +664,42 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
 });
 
     window.addEventListener('DOMContentLoaded', () => {
-  listarItensBanco();
-  carregarMiniGraficos();
+    listarItensBanco();
+    if (typeof carregarMiniGraficos === 'function') carregarMiniGraficos();
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('btnFiltro').addEventListener('click', function() {
+      const modal = new bootstrap.Modal(document.getElementById('modalFiltro'));
+      modal.show();
+    });
+
+    document.getElementById('formFiltro').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const local = document.getElementById('filtroLocal').value;
+      const lista = document.getElementById('itensBanco');
+      lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
+      fetch('http://localhost:3000/api/itens')
+        .then(response => response.json())
+        .then(itens => {
+          lista.innerHTML = '';
+          itens.filter(item => !local || item.local === local)
+            .forEach(item => {
+              const div = document.createElement('div');
+              div.className = "card mb-2 shadow-sm";
+              div.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+                </div>
+              `;
+              lista.appendChild(div);
+            });
+        });
+      bootstrap.Modal.getInstance(document.getElementById('modalFiltro')).hide();
+    });
+  </script>
 </body>
 </html>
