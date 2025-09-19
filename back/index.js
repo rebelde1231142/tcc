@@ -211,6 +211,7 @@ app.put('/api/itens/:id', async (req, res) => {
 // Adicionando verificação de duplicidade antes de inserir o item
 app.post('/api/itens', async (req, res) => {
   let { nome, quantidade, descricao, fk_Categoria_id, local } = req.body;
+  const dataAdicionado = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
   // Normaliza o nome para evitar duplicidade
   nome = nome.trim().toLowerCase();
   console.log('Dados recebidos:', { nome, quantidade, descricao, fk_Categoria_id }); // Log dos dados recebidos
@@ -230,13 +231,13 @@ app.post('/api/itens', async (req, res) => {
 
     // Inserir o item no banco
       const [result] = await pool.query(
-    'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id, local) VALUES (?, ?, ?, ?, ?)',
-    [nome, quantidade, descricao, fk_Categoria_id, local]
+    'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id, local, dataAdicionado) VALUES (?, ?, ?, ?, ?, ?)',
+    [nome, quantidade, descricao, fk_Categoria_id, local, dataAdicionado]
       );
 
     // Buscar o item recém-adicionado com a categoria
       const [item] = await pool.query(
-    `SELECT Itens.id, Itens.nome, Itens.descricao, Itens.quantidade, Categoria.Nome AS categoriaNome, Itens.local AS local
+    `SELECT Itens.id, Itens.nome, Itens.descricao, Itens.quantidade, Categoria.Nome AS categoriaNome, Itens.local AS local, Itens.dataAdicionado
      FROM Itens
      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
      WHERE Itens.id = ?`,
@@ -254,7 +255,7 @@ app.post('/api/itens', async (req, res) => {
 app.get('/api/itens', async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT Itens.*, Categoria.Nome AS categoriaNome
+      SELECT Itens.*, Categoria.Nome AS categoriaNome, Itens.dataAdicionado
       FROM Itens
       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
       ORDER BY Categoria.Nome ASC, Itens.nome ASC

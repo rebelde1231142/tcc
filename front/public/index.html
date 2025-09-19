@@ -22,6 +22,35 @@
   </script>
 </head>
 <body>
+  <!-- Botão flutuante para abrir menu de gráficos -->
+  <button id="btnMenuGraficos" class="btn btn-info position-fixed d-block d-md-none" style="top:20px;right:20px;z-index:1050;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+    <i class="fa fa-chart-bar fa-lg"></i>
+  </button>
+
+  <!-- Menu lateral de gráficos -->
+  <div id="menuGraficos" class="offcanvas offcanvas-end" tabindex="-1" aria-labelledby="menuGraficosLabel" style="width:340px;">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="menuGraficosLabel">Gráficos do Sistema</h5>
+    </div>
+    <div class="offcanvas-body">
+      <div class="mb-4">
+        <canvas id="graficoPorLocalMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Itens por Local</div>
+      </div>
+      <div class="mb-4">
+        <canvas id="graficoPorCategoriaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Itens por Categoria</div>
+      </div>
+      <div class="mb-4">
+        <canvas id="graficoQtdPorCategoriaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Quantidade por Categoria</div>
+      </div>
+      <div class="mb-4">
+        <canvas id="graficoItensPorDiaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Itens Adicionados por Dia</div>
+      </div>
+    </div>
+  </div>
   <!-- Removido: redirecionamento automático para login. Agora, visitantes não autenticados não são redirecionados ao acessar o site. -->
   <div class="d-flex">
     <aside class="kiwi-sidebar bg-primary text-white d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;">
@@ -40,51 +69,56 @@
   <main class="flex-grow-1 p-4" style="background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;margin-left:220px;">
       <div class="container-fluid">
         <div class="row mb-4">
-          <div class="col-md-3">
+          <div class="col-12 col-md-3 mb-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
-                <canvas id="graficoMini1" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2"><span style="color:#000000;">Itens/Categoria</span></div>
+                <canvas id="graficoPorLocal" width="80" height="80"></canvas>
+                <div class="small text-white mt-2"><span style="color:#000000;">Itens por Local</span></div>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-12 col-md-3 mb-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
-                <canvas id="graficoMini2" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2"><span style="color:#000000;">Qtd/Categoria</span></div>
+                <canvas id="graficoPorCategoria" width="80" height="80"></canvas>
+                <div class="small text-white mt-2"><span style="color:#000000;">Itens por Categoria</span></div>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-12 col-md-3 mb-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
-                <canvas id="graficoMini3" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2"><span style="color:#000000;">Itens/Dia</span></div>
+                <canvas id="graficoQtdPorCategoria" width="80" height="80"></canvas>
+                <div class="small text-white mt-2"><span style="color:#000000;">Quantidade por Categoria</span></div>
               </div>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-12 col-md-3 mb-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
-                <canvas id="graficoMini4" width="80" height="80"></canvas>
-                  <div class="small text-white mt-2"><span style="color:#000000;">% Categorias</span></div>
+                <canvas id="graficoItensPorDia" width="80" height="80"></canvas>
+                <div class="small text-white mt-2"><span style="color:#000000;">Itens Adicionados por Dia</span></div>
               </div>
             </div>
           </div>
         </div>
         <div class="row mb-4 align-items-center">
-          <div class="col-md-9">
-            <div class="action-buttons mb-0">
-              <button class="btn btn-primary" id="btnAdicionarItem">Adicionar Item</button>
-              <button class="btn btn-warning" id="btnEditarMassa">Editar itens</button>
-              <button class="btn btn-danger" id="btnDeletarMassa">Deletar Itens</button>
-              <button class="btn btn-success" id="btnRelatorio">Baixar Relatório</button>
-              <button class="btn btn-info" id="btnFiltro"><i class="fa fa-filter"></i> Filtro</button>
-            </div>
+          <div class="col-md-9 order-2 order-md-1 mb-3 mb-md-0">
+            <!-- vazio para alinhamento -->
           </div>
-          <div class="col-md-3">
+          <div class="col-md-3 order-1 order-md-2 mb-3 mb-md-0">
             <input type="text" class="form-control" id="barraPesquisa" placeholder="Pesquisar itens...">
+          </div>
+        </div>
+        <div class="row mb-4 justify-content-center">
+          <div class="col-12">
+            <div class="d-flex flex-wrap gap-2 justify-content-center py-2 rounded shadow-sm bg-white">
+              <button class="btn btn-primary px-4 py-2" id="btnAdicionarItem"><i class="fa fa-plus"></i> Adicionar Item</button>
+              <button class="btn btn-warning px-4 py-2" id="btnEditarMassa"><i class="fa fa-edit"></i> Editar Itens</button>
+              <button class="btn btn-danger px-4 py-2" id="btnDeletarMassa"><i class="fa fa-trash"></i> Deletar Itens</button>
+              <button class="btn btn-success px-4 py-2" id="btnRelatorio"><i class="fa fa-download"></i> Baixar Relatório</button>
+              <button class="btn btn-info px-4 py-2" id="btnFiltro"><i class="fa fa-filter"></i> Filtro</button>
+            </div>
           </div>
         </div>
         <div class="row">
@@ -311,7 +345,7 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
                 }
                 // Após cadastro, atualiza itens e gráficos sem recarregar a página
                 await carregarItens();
-                await carregarMiniGraficos();
+                await carregarGraficosPrincipais();
                 alerta.classList.remove('d-none');
                 alerta.classList.add('alert-success');
                 alerta.innerText = 'Item cadastrado com sucesso!';
@@ -371,6 +405,80 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Função para carregar os 4 gráficos principais
+let chartPorLocal = null;
+let chartPorCategoria = null;
+let chartQtdPorCategoria = null;
+let chartItensPorDia = null;
+
+async function carregarGraficosPrincipais() {
+  try {
+    const response = await fetch('http://localhost:3000/api/itens');
+    const itens = await response.json();
+    // 1. Itens por Local
+    const locais = {};
+    itens.forEach(item => {
+      locais[item.local] = (locais[item.local] || 0) + 1;
+    });
+    const locaisLabels = Object.keys(locais);
+    const locaisValues = Object.values(locais);
+    if (chartPorLocal) chartPorLocal.destroy();
+    chartPorLocal = new Chart(document.getElementById('graficoPorLocal').getContext('2d'), {
+      type: 'pie',
+      data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      options: { plugins: { legend: { display: true } } }
+    });
+
+    // 2. Itens por Categoria
+    const categorias = {};
+    itens.forEach(item => {
+      categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
+    });
+    const catLabels = Object.keys(categorias);
+    const catValues = Object.values(categorias);
+    if (chartPorCategoria) chartPorCategoria.destroy();
+    chartPorCategoria = new Chart(document.getElementById('graficoPorCategoria').getContext('2d'), {
+      type: 'pie',
+      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      options: { plugins: { legend: { display: true } } }
+    });
+
+    // 3. Quantidade total por Categoria
+    const qtdPorCategoria = {};
+    itens.forEach(item => {
+      qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
+    });
+    const qtdCatLabels = Object.keys(qtdPorCategoria);
+    const qtdCatValues = Object.values(qtdPorCategoria);
+    if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
+    chartQtdPorCategoria = new Chart(document.getElementById('graficoQtdPorCategoria').getContext('2d'), {
+      type: 'bar',
+      data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
+    });
+
+    // 4. Itens adicionados por dia (usando campo real dataAdicionado)
+    const dias = {};
+    itens.forEach(item => {
+      if (item.dataAdicionado) {
+        dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
+      }
+    });
+    // Ordena as datas
+    const diasLabels = Object.keys(dias).sort();
+    const diasValues = diasLabels.map(d => dias[d]);
+    if (chartItensPorDia) chartItensPorDia.destroy();
+    chartItensPorDia = new Chart(document.getElementById('graficoItensPorDia').getContext('2d'), {
+      type: 'line',
+      data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
+      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
+    });
+  } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
+</script>
   <!-- ...existing code... -->
   <script>
 
@@ -490,7 +598,7 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
         setTimeout(async () => {
           bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
           await carregarItens();
-          await carregarMiniGraficos();
+          await carregarGraficosPrincipais();
         }, 800);
       })
       .catch(error => {
@@ -596,7 +704,7 @@ window.addEventListener('resize', () => {
           .then(async response => {
             if (!response.ok) throw new Error('Erro ao deletar item.');
             await carregarItens();
-            await carregarMiniGraficos();
+            await carregarGraficosPrincipais();
           })
           .catch(error => {
             alert(error.message || 'Erro ao deletar item.');
@@ -664,11 +772,88 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
 });
 
     window.addEventListener('DOMContentLoaded', () => {
-    listarItensBanco();
-    if (typeof carregarMiniGraficos === 'function') carregarMiniGraficos();
+  listarItensBanco();
+  if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais();
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Botão para abrir menu lateral de gráficos
+    document.getElementById('btnMenuGraficos').addEventListener('click', function() {
+      const offcanvas = new bootstrap.Offcanvas(document.getElementById('menuGraficos'));
+      offcanvas.show();
+      carregarGraficosMenu();
+    });
+
+    // Função para carregar gráficos no menu lateral
+    let chartPorLocalMenu = null;
+    let chartPorCategoriaMenu = null;
+    let chartQtdPorCategoriaMenu = null;
+    let chartItensPorDiaMenu = null;
+    async function carregarGraficosMenu() {
+      try {
+        const response = await fetch('http://localhost:3000/api/itens');
+        const itens = await response.json();
+        // 1. Itens por Local
+        const locais = {};
+        itens.forEach(item => {
+          locais[item.local] = (locais[item.local] || 0) + 1;
+        });
+        const locaisLabels = Object.keys(locais);
+        const locaisValues = Object.values(locais);
+        if (chartPorLocalMenu) chartPorLocalMenu.destroy();
+        chartPorLocalMenu = new Chart(document.getElementById('graficoPorLocalMenu').getContext('2d'), {
+          type: 'pie',
+          data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+          options: { plugins: { legend: { display: true } }, responsive: true }
+        });
+
+        // 2. Itens por Categoria
+        const categorias = {};
+        itens.forEach(item => {
+          categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
+        });
+        const catLabels = Object.keys(categorias);
+        const catValues = Object.values(categorias);
+        if (chartPorCategoriaMenu) chartPorCategoriaMenu.destroy();
+        chartPorCategoriaMenu = new Chart(document.getElementById('graficoPorCategoriaMenu').getContext('2d'), {
+          type: 'pie',
+          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+          options: { plugins: { legend: { display: true } }, responsive: true }
+        });
+
+        // 3. Quantidade total por Categoria
+        const qtdPorCategoria = {};
+        itens.forEach(item => {
+          qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
+        });
+        const qtdCatLabels = Object.keys(qtdPorCategoria);
+        const qtdCatValues = Object.values(qtdPorCategoria);
+        if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();
+        chartQtdPorCategoriaMenu = new Chart(document.getElementById('graficoQtdPorCategoriaMenu').getContext('2d'), {
+          type: 'bar',
+          data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+          options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } }, responsive: true }
+        });
+
+        // 4. Itens adicionados por dia
+        const dias = {};
+        itens.forEach(item => {
+          if (item.dataAdicionado) {
+            dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
+          }
+        });
+        const diasLabels = Object.keys(dias).sort();
+        const diasValues = diasLabels.map(d => dias[d]);
+        if (chartItensPorDiaMenu) chartItensPorDiaMenu.destroy();
+        chartItensPorDiaMenu = new Chart(document.getElementById('graficoItensPorDiaMenu').getContext('2d'), {
+          type: 'line',
+          data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
+          options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } }, responsive: true }
+        });
+      } catch (e) {}
+    }
+  </script>
   <script>
     document.getElementById('btnFiltro').addEventListener('click', function() {
       const modal = new bootstrap.Modal(document.getElementById('modalFiltro'));
