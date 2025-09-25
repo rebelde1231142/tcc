@@ -67,7 +67,8 @@ CREATE TABLE `itens` (
   `quantidade` int DEFAULT NULL,
   `descricao` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `fk_Categoria_id` int DEFAULT NULL,
-  `local` varchar(50) DEFAULT NULL
+  `local` varchar(50) DEFAULT NULL,
+  `dataAdicionado` DATE DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
