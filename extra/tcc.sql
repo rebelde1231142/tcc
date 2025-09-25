@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 19-Set-2025 às 14:36
+-- Tempo de geração: 25-Set-2025 às 17:24
 -- Versão do servidor: 8.0.30
 -- versão do PHP: 8.3.4
 
@@ -68,17 +68,18 @@ CREATE TABLE `itens` (
   `descricao` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `fk_Categoria_id` int DEFAULT NULL,
   `local` varchar(50) DEFAULT NULL,
-  `dataAdicionado` DATE DEFAULT NULL
+  `dataAdicionado` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Extraindo dados da tabela `itens`
 --
 
-INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`) VALUES
-(1, 'arduino uno', 12, 'tecnologia comum escolar', 1, 'Almoxarifado'),
-(2, 'clash', 23, 'gfhghjhgjgh', 2, 'Laboratório'),
-(3, 'hc-sr04', 11, 'fdsfdsdfgdfgfd', 3, 'Sala de Aula');
+INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`) VALUES
+(1, 'arduino uno', 12, 'tecnologia comum escolar', 1, 'Almoxarifado', NULL),
+(2, 'clash', 23, 'gfhghjhgjgh', 2, 'Laboratório', NULL),
+(3, 'hc-sr04', 11, 'fdsfdsdfgdfgfd', 3, 'Sala de Aula', NULL),
+(4, 'ssd2', 55, 'hgfhfgh', 1, 'Sala de Aula', '2025-09-25');
 
 -- --------------------------------------------------------
 
@@ -171,7 +172,7 @@ ALTER TABLE `entrada`
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
