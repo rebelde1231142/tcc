@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 25-Set-2025 às 17:24
+-- Tempo de geração: 26-Set-2025 às 15:15
 -- Versão do servidor: 8.0.30
 -- versão do PHP: 8.3.4
 
@@ -76,10 +76,10 @@ CREATE TABLE `itens` (
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`) VALUES
-(1, 'arduino uno', 12, 'tecnologia comum escolar', 1, 'Almoxarifado', NULL),
-(2, 'clash', 23, 'gfhghjhgjgh', 2, 'Laboratório', NULL),
-(3, 'hc-sr04', 11, 'fdsfdsdfgdfgfd', 3, 'Sala de Aula', NULL),
-(4, 'ssd2', 55, 'hgfhfgh', 1, 'Sala de Aula', '2025-09-25');
+(4, 'ssd2', 20, 'armazenamento veloz sendo utilizado no laboratorio de informatica 2', 1, 'Sala de Aula', '2025-09-25'),
+(5, 'béquer', 20, 'utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório', '2025-09-26'),
+(6, 'mapa mundi', 1, 'Mapa mundial utilizado nas aulas de geografia e historia.', 2, 'Sala de Aula', '2025-09-26'),
+(7, 'panos', 50, 'Panos utilizados para realizar a limpeza da escola.', 2, 'Almoxarifado', '2025-09-26');
 
 -- --------------------------------------------------------
 
@@ -98,6 +98,7 @@ CREATE TABLE `perfil` (
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
+('50316526336', 'fjberton@gmail.com', '$2b$10$DhKSmckghpCByA5qBr3QMu0KUbrgv9wwCvq3RKmgFI1k.kufw9piK'),
 ('52657628842', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$b.AWwoBhboOIVLakWLZvluIyzrO8j.YKlxqBUPBNXECRrW9H8J2Le'),
 ('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$4Ai3qKiqcdnAzd.b7E.rW.vdW2dmj5scjjNmoTHMt2fEKN77CQhu6');
 
@@ -172,7 +173,7 @@ ALTER TABLE `entrada`
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
