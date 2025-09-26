@@ -17,6 +17,46 @@
   </script>
 </head>
 <body>
+  <!-- Botão flutuante para login/registro (mobile) -->
+  <div id="btnMenuUsuario" class="d-block d-md-none position-fixed" style="top:20px;left:20px;z-index:1050;">
+    <button class="btn btn-light" style="border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+      <i class="fa fa-user fa-lg"></i>
+    </button>
+    <div id="menuUsuario" class="card shadow-sm" style="display:none;position:absolute;top:70px;left:0;width:160px;">
+      <a href="/page/usuario/login.html" class="btn btn-light w-100">Login</a>
+      <a href="/page/usuario/registrar.html" class="btn btn-outline-primary w-100">Criar Conta</a>
+    </div>
+  </div>
+  <!-- Botão flutuante para abrir menu de gráficos (mobile) -->
+  <button id="btnMenuGraficos" class="btn btn-info position-fixed d-block d-md-none" style="top:20px;right:20px;z-index:1050;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+    <i class="fa fa-chart-bar fa-lg"></i>
+  </button>
+
+  <!-- Menu lateral de gráficos -->
+  <div id="menuGraficos" class="offcanvas offcanvas-end" tabindex="-1" aria-labelledby="menuGraficosLabel" style="width:340px;">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="menuGraficosLabel">Gráficos do Sistema</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="mb-4">
+        <canvas id="graficoPorLocalMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Itens por Local</div>
+      </div>
+      <div class="mb-4">
+        <canvas id="graficoPorCategoriaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Itens por Categoria</div>
+      </div>
+      <div class="mb-4">
+        <canvas id="graficoQtdPorCategoriaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Quantidade por Categoria</div>
+      </div>
+      <div class="mb-4">
+        <canvas id="graficoItensPorDiaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <div class="small text-dark mt-2">Itens Adicionados por Dia</div>
+      </div>
+    </div>
+  </div>
   <div class="d-flex">
     <aside class="kiwi-sidebar bg-primary text-white d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;">
       <h4 class="mb-4"><i class="fa fa-lemon"></i> Visitante</h4>
@@ -32,7 +72,7 @@
     <main class="flex-grow-1 p-4" style="background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;margin-left:220px;">
       <div class="container-fluid">
         <div class="row mb-4">
-          <div class="col-md-3">
+          <div class="col-md-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoPorLocal" width="80" height="80"></canvas>
@@ -40,7 +80,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoPorCategoria" width="80" height="80"></canvas>
@@ -48,7 +88,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoQtdPorCategoria" width="80" height="80"></canvas>
@@ -56,7 +96,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-3 d-none d-md-block">
             <div class="card text-center shadow-sm">
               <div class="card-body p-2">
                 <canvas id="graficoItensPorDia" width="80" height="80"></canvas>
@@ -66,7 +106,7 @@
           </div>
         </div>
         <div class="row mb-4 align-items-center">
-          <div class="col-md-9">
+          <div class="col-md-9 mt-4 mt-md-0">
             <!-- Botões removidos para visitantes -->
           </div>
           <div class="col-md-3">
@@ -74,7 +114,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-12">
+          <div class="col-12 mt-2 mt-md-0">
             <div class="card shadow-sm">
               <div class="card-header bg-primary text-white">
                 Itens Salvos
@@ -188,7 +228,7 @@ async function carregarItens() {
       div.className = "card mb-2 shadow-sm";
       div.innerHTML = `
         <div class="card-body">
-          <h6 class="card-title">${item.nome}</h6>
+          <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
           <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
           <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
         </div>
@@ -205,5 +245,102 @@ window.addEventListener('DOMContentLoaded', () => {
 });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Botão flutuante de usuário (mobile)
+const btnMenuUsuario = document.getElementById('btnMenuUsuario');
+const menuUsuario = document.getElementById('menuUsuario');
+btnMenuUsuario.querySelector('button').addEventListener('click', function(e) {
+  e.stopPropagation();
+  menuUsuario.style.display = menuUsuario.style.display === 'none' ? 'block' : 'none';
+});
+// Fecha o menu se clicar fora
+document.addEventListener('click', function(e) {
+  if (menuUsuario.style.display === 'block' && !btnMenuUsuario.contains(e.target)) {
+    menuUsuario.style.display = 'none';
+  }
+});
+</script>
+<script>
+// Botão para abrir menu lateral de gráficos
+document.getElementById('btnMenuGraficos').addEventListener('click', function() {
+  const offcanvas = new bootstrap.Offcanvas(document.getElementById('menuGraficos'));
+  offcanvas.show();
+  document.getElementById('btnMenuGraficos').style.display = 'none';
+  carregarGraficosMenu();
+  // Quando fechar, mostrar o botão novamente
+  document.getElementById('menuGraficos').addEventListener('hidden.bs.offcanvas', function() {
+    document.getElementById('btnMenuGraficos').style.display = 'flex';
+  }, { once: true });
+});
+
+// Função para carregar gráficos no menu lateral
+let chartPorLocalMenu = null;
+let chartPorCategoriaMenu = null;
+let chartQtdPorCategoriaMenu = null;
+let chartItensPorDiaMenu = null;
+async function carregarGraficosMenu() {
+  try {
+    const response = await fetch('http://localhost:3000/api/itens');
+    const itens = await response.json();
+    // 1. Itens por Local
+    const locais = {};
+    itens.forEach(item => {
+      locais[item.local] = (locais[item.local] || 0) + 1;
+    });
+    const locaisLabels = Object.keys(locais);
+    const locaisValues = Object.values(locais);
+    if (chartPorLocalMenu) chartPorLocalMenu.destroy();
+    chartPorLocalMenu = new Chart(document.getElementById('graficoPorLocalMenu').getContext('2d'), {
+      type: 'pie',
+      data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      options: { plugins: { legend: { display: true } }, responsive: true }
+    });
+
+    // 2. Itens por Categoria
+    const categorias = {};
+    itens.forEach(item => {
+      categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
+    });
+    const catLabels = Object.keys(categorias);
+    const catValues = Object.values(categorias);
+    if (chartPorCategoriaMenu) chartPorCategoriaMenu.destroy();
+    chartPorCategoriaMenu = new Chart(document.getElementById('graficoPorCategoriaMenu').getContext('2d'), {
+      type: 'pie',
+      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      options: { plugins: { legend: { display: true } }, responsive: true }
+    });
+
+    // 3. Quantidade total por Categoria
+    const qtdPorCategoria = {};
+    itens.forEach(item => {
+      qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
+    });
+    const qtdCatLabels = Object.keys(qtdPorCategoria);
+    const qtdCatValues = Object.values(qtdPorCategoria);
+    if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();
+    chartQtdPorCategoriaMenu = new Chart(document.getElementById('graficoQtdPorCategoriaMenu').getContext('2d'), {
+      type: 'bar',
+      data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } }, responsive: true }
+    });
+
+    // 4. Itens adicionados por dia
+    const dias = {};
+    itens.forEach(item => {
+      if (item.dataAdicionado) {
+        dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
+      }
+    });
+    const diasLabels = Object.keys(dias).sort();
+    const diasValues = diasLabels.map(d => dias[d]);
+    if (chartItensPorDiaMenu) chartItensPorDiaMenu.destroy();
+    chartItensPorDiaMenu = new Chart(document.getElementById('graficoItensPorDiaMenu').getContext('2d'), {
+      type: 'line',
+      data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
+      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } }, responsive: true }
+    });
+  } catch (e) {}
+}
+</script>
 </body>
 </html>

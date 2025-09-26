@@ -22,6 +22,12 @@
   </script>
 </head>
 <body>
+  <!-- Botão flutuante para configuração (mobile) -->
+  <div id="btnConfigMobile" class="d-block d-md-none position-fixed" style="top:20px;left:20px;z-index:1050;">
+    <a href="/page/configuracao.html" class="btn btn-light" style="border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+      <i class="fa fa-gear fa-lg"></i>
+    </a>
+  </div>
   <!-- Botão flutuante para abrir menu de gráficos -->
   <button id="btnMenuGraficos" class="btn btn-info position-fixed d-block d-md-none" style="top:20px;right:20px;z-index:1050;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
     <i class="fa fa-chart-bar fa-lg"></i>
@@ -106,7 +112,7 @@
           <div class="col-md-9 order-2 order-md-1 mb-3 mb-md-0">
             <!-- vazio para alinhamento -->
           </div>
-          <div class="col-md-3 order-1 order-md-2 mb-3 mb-md-0">
+          <div class="col-md-3 order-1 order-md-2 mt-4 mt-md-0 mb-3 mb-md-0">
             <input type="text" class="form-control" id="barraPesquisa" placeholder="Pesquisar itens...">
           </div>
         </div>
@@ -122,14 +128,13 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-12">
+          <div class="col-12 mt-4 mt-md-0">
             <div class="card shadow-sm">
               <div class="card-header bg-primary text-white">
                 Itens Salvos
               </div>
               <div class="card-body" id="itensBanco">
                 <span class="text-muted">Carregando itens...</span>
-              </div>
               </div>
             </div>
           </div>
