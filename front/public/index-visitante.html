@@ -107,7 +107,10 @@
         </div>
         <div class="row mb-4 align-items-center">
           <div class="col-md-9 mt-4 mt-md-0">
-            <!-- Botões removidos para visitantes -->
+            <div class="card shadow-sm p-3 d-flex flex-row align-items-center gap-2" style="background:#fff;">
+              <button id="btnFiltrar" class="btn btn-outline-primary"><i class="fa fa-filter"></i> Filtrar</button>
+              <button id="btnBaixarRelatorio" class="btn btn-outline-success"><i class="fa fa-download"></i> Baixar Relatório</button>
+            </div>
           </div>
           <div class="col-md-3">
             <input type="text" class="form-control" id="barraPesquisa" placeholder="Pesquisar itens...">
@@ -242,6 +245,38 @@ async function carregarItens() {
 window.addEventListener('DOMContentLoaded', () => {
   carregarItens();
   carregarGraficosPrincipais();
+});
+// Botão de filtro (apenas exibe alerta de exemplo)
+document.getElementById('btnFiltrar').addEventListener('click', function() {
+  alert('Função de filtro para visitantes em desenvolvimento.');
+});
+
+// Botão de baixar relatório (exemplo: baixa os itens em CSV)
+document.getElementById('btnBaixarRelatorio').addEventListener('click', async function() {
+  try {
+    const response = await fetch('http://localhost:3000/api/itens');
+    const itens = await response.json();
+    if (!Array.isArray(itens) || itens.length === 0) {
+      alert('Nenhum item para baixar.');
+      return;
+    }
+    // Gera CSV simples
+    let csv = 'Nome,Local,Quantidade,Descrição\n';
+    itens.forEach(item => {
+      csv += `"${item.nome}","${item.local}","${item.quantidade}","${item.descricao}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'relatorio-itens.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Erro ao baixar relatório.');
+  }
 });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
