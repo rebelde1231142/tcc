@@ -106,14 +106,14 @@
           </div>
         </div>
         <div class="row mb-4 align-items-center">
-          <div class="col-md-9 mt-4 mt-md-0">
-            <div class="card shadow-sm p-3 d-flex flex-row align-items-center gap-2" style="background:#fff;">
-              <button id="btnFiltrar" class="btn btn-outline-primary"><i class="fa fa-filter"></i> Filtrar</button>
-              <button id="btnBaixarRelatorio" class="btn btn-outline-success"><i class="fa fa-download"></i> Baixar Relatório</button>
-            </div>
-          </div>
-          <div class="col-md-3">
+          <div class="col-12 col-md-3 order-2 order-md-1 mb-3 mb-md-0">
             <input type="text" class="form-control" id="barraPesquisa" placeholder="Pesquisar itens...">
+          </div>
+          <div class="col-12 col-md-9 order-1 order-md-2 mb-3 mb-md-0">
+            <div class="d-flex flex-wrap gap-2 justify-content-center py-2 rounded shadow-sm bg-white">
+              <button id="btnFiltrar" class="btn btn-outline-primary px-4 py-2"><i class="fa fa-filter"></i> Filtrar</button>
+              <button id="btnRelatorio" class="btn btn-outline-secondary px-4 py-2"><i class="fa fa-file-word"></i> Baixar Relatório Word</button>
+            </div>
           </div>
         </div>
         <div class="row">
@@ -132,6 +132,7 @@
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
   <script>
 // Função para carregar os 4 gráficos principais igual à dashboard
 let chartPorLocal = null;
@@ -243,16 +244,84 @@ async function carregarItens() {
   }
 }
 window.addEventListener('DOMContentLoaded', () => {
+  // Botão para abrir modal de filtro (se existir)
+  const btnFiltrarEl = document.getElementById('btnFiltrar');
+  if (btnFiltrarEl) {
+    btnFiltrarEl.addEventListener('click', function() {
+      const modalEl = document.getElementById('modalFiltro');
+      if (modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }
+    });
+  }
+
+  // Função de filtro igual ao dashboard principal (se existir)
+  const formFiltroEl = document.getElementById('formFiltro');
+  if (formFiltroEl) {
+    formFiltroEl.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const local = document.getElementById('filtroLocal') ? document.getElementById('filtroLocal').value : '';
+      const lista = document.getElementById('itensBanco');
+      if (!lista) return;
+      lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
+      fetch('http://localhost:3000/api/itens')
+        .then(response => response.json())
+        .then(itens => {
+          lista.innerHTML = '';
+          itens.filter(item => !local || item.local === local)
+            .forEach(item => {
+              const div = document.createElement('div');
+              div.className = "card mb-2 shadow-sm";
+              div.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+                </div>
+              `;
+              lista.appendChild(div);
+            });
+        })
+        .catch(() => {
+          lista.innerHTML = '<span class="text-danger">Erro ao carregar itens.</span>';
+        });
+      const modalInst = bootstrap.Modal.getInstance(document.getElementById('modalFiltro'));
+      if (modalInst) modalInst.hide();
+    });
+  }
+
+  // Botão de baixar relatório Word igual à dashboard principal (se existir)
+  const btnRelatorioEl = document.getElementById('btnRelatorio');
+  if (btnRelatorioEl) {
+    btnRelatorioEl.addEventListener('click', function () {
+      fetch('http://localhost:3000/api/relatorio-word')
+        .then(response => {
+          if (!response.ok) throw new Error('Erro ao gerar relatório Word.');
+          return response.blob();
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'relatorio-itens.docx';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        })
+        .catch(error => {
+          alert(error.message || 'Erro ao baixar o relatório Word.');
+        });
+    });
+  }
+
   carregarItens();
   carregarGraficosPrincipais();
 });
-// Botão de filtro (apenas exibe alerta de exemplo)
-document.getElementById('btnFiltrar').addEventListener('click', function() {
-  alert('Função de filtro para visitantes em desenvolvimento.');
-});
-
-// Botão de baixar relatório (exemplo: baixa os itens em CSV)
-document.getElementById('btnBaixarRelatorio').addEventListener('click', async function() {
+// Botões auxiliares: adiciona listeners apenas se os elementos existirem
+const btnBaixarCsv = document.getElementById('btnBaixarRelatorio');
+if (btnBaixarCsv) {
+  btnBaixarCsv.addEventListener('click', async function() {
   try {
     const response = await fetch('http://localhost:3000/api/itens');
     const itens = await response.json();
@@ -277,9 +346,30 @@ document.getElementById('btnBaixarRelatorio').addEventListener('click', async fu
   } catch (err) {
     alert('Erro ao baixar relatório.');
   }
-});
+  });
+}
+
+const btnBaixarWord = document.getElementById('btnBaixarRelatorioWord');
+if (btnBaixarWord) {
+  btnBaixarWord.addEventListener('click', async function() {
+    try {
+      const response = await fetch('http://localhost:3000/api/relatorio-word');
+      if (!response.ok) throw new Error('Erro ao baixar relatório Word');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'relatorio-itens.docx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Erro ao baixar relatório Word.');
+    }
+  });
+}
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // Botão flutuante de usuário (mobile)
 const btnMenuUsuario = document.getElementById('btnMenuUsuario');
@@ -377,5 +467,30 @@ async function carregarGraficosMenu() {
   } catch (e) {}
 }
 </script>
+  <!-- Modal Filtro (movido para o final do body) -->
+  <div class="modal fade" id="modalFiltro" tabindex="-1" aria-labelledby="modalFiltroLabel" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalFiltroLabel">Filtrar Itens</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formFiltro">
+            <div class="mb-3">
+              <label for="filtroLocal" class="form-label">Filtrar por Local</label>
+              <select class="form-select" id="filtroLocal">
+                <option value="">Todos</option>
+                <option value="Almoxarifado">Almoxarifado</option>
+                <option value="Laboratório">Laboratório</option>
+                <option value="Sala de Aula">Sala de Aula</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-info">Aplicar Filtro</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
