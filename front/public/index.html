@@ -961,6 +961,9 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
             if (open && open.id !== 'modalLocalidades') {
               // guarda id do modal pai e esconde-o
               window._modalParentBeforeLocal = open.id;
+              // remove foco do elemento ativo para evitar que um elemento dentro do modal pai
+              // permaneça focado enquanto o pai recebe aria-hidden=true
+              try { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
               const parentInst = bootstrap.Modal.getInstance(open) || bootstrap.Modal.getOrCreateInstance(open);
               if (parentInst) parentInst.hide();
             }
