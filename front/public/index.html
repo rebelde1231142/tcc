@@ -19,6 +19,27 @@ function selecionarLocalidade(local) {
     modalEl.removeEventListener('hidden.bs.modal', handler);
   }, { once: true });
 }
+
+// Função para selecionar localidade quando usada pelo modal de filtro
+function selecionarLocalidadeParaFiltro(local) {
+  const filtroInput = document.getElementById('filtroLocal');
+  if (filtroInput) filtroInput.value = local;
+  var modalEl = document.getElementById('modalLocalidades');
+  if (!modalEl) return;
+  // força que o modalFiltro seja considerado o modal pai antes de fechar
+  try { window._modalParentBeforeLocal = 'modalFiltro'; } catch (e) {}
+  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  if (modal) modal.hide();
+  modalEl.addEventListener('hidden.bs.modal', function handler() {
+    const modalFiltro = document.getElementById('modalFiltro');
+    if (modalFiltro) {
+      bootstrap.Modal.getOrCreateInstance(modalFiltro).show();
+    }
+    // limpar variável auxiliar para evitar efeitos colaterais
+    try { window._modalParentBeforeLocal = null; } catch (e) {}
+    modalEl.removeEventListener('hidden.bs.modal', handler);
+  }, { once: true });
+}
     if (!localStorage.getItem('usuarioLogado')) {
       window.location.href = '/index-visitante.html';
     }
@@ -173,7 +194,11 @@ function selecionarLocalidade(local) {
           <form id="formFiltro">
             <div class="mb-3">
               <label for="filtroLocal" class="form-label">Filtrar por Local</label>
-              <select class="form-select" id="filtroLocal">
+                      <div class="input-group">
+                        <input type="text" class="form-control" id="filtroLocal" readonly placeholder="Selecione ou escolha um local">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalLocalidades" onclick="window._modalParentBeforeLocal='modalFiltro'">Selecionar</button>
+                      </div>
+                    <select class="form-select d-none" id="filtroLocalSelect" aria-hidden="true">
                 <option value="">Todos</option>
                 <option value="Almoxarifado">Almoxarifado</option>
                 <option value="Laboratório">Laboratório</option>
@@ -237,8 +262,8 @@ function selecionarLocalidade(local) {
                       <div class="mb-3">
                         <label for="localItem" class="form-label">Local de Armazenamento</label>
                         <div class="input-group">
-                          <input type="text" class="form-control" id="localItem" name="localItem" required readonly placeholder="Selecione o local" data-bs-toggle="modal" data-bs-target="#modalLocalidades">
-                          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalLocalidades">Selecionar</button>
+                          <input type="text" class="form-control" id="localItem" name="localItem" required readonly placeholder="Selecione o local" data-bs-toggle="modal" data-bs-target="#modalLocalidades" onclick="window._modalParentBeforeLocal='modalAdicionarItem'">
+                          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalLocalidades" onclick="window._modalParentBeforeLocal='modalAdicionarItem'">Selecionar</button>
                         </div>
                         <!-- Modal de seleção de localidade (movido para o final do body) -->
                       </div>
@@ -932,67 +957,108 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
         </div>
         <div class="modal-body" style="max-height:300px;overflow-y:auto;">
           <ul class="list-group">
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Almoxarifado')">Almoxarifado</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório')">Laboratório</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Sala de Aula')">Sala de Aula</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Biblioteca')">Biblioteca</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Sala dos Professores')">Sala dos Professores</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Diretoria')">Diretoria</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Quadra')">Quadra</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Cantina')">Cantina</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Recepção')">Recepção</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Banheiro')">Banheiro</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Auditório')">Pátio</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Informática')">Laboratório de Informática</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Quimica')">Laboratório de Quimica</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Informática 2')">Laboratório de Informática 2</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Informática 3')">Laboratório de Informática 3</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('__TODOS__')"><strong>Todos</strong></li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Almoxarifado')">Almoxarifado</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório')">Laboratório</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Sala de Aula')">Sala de Aula</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Biblioteca')">Biblioteca</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Sala dos Professores')">Sala dos Professores</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Diretoria')">Diretoria</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Quadra')">Quadra</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Cantina')">Cantina</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Recepção')">Recepção</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Banheiro')">Banheiro</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Auditório')">Pátio</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática')">Laboratório de Informática</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Quimica')">Laboratório de Quimica</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática 2')">Laboratório de Informática 2</li>
+                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática 3')">Laboratório de Informática 3</li>
           </ul>
         </div>
       </div>
     </div>
-      <script>
-        // Se um outro modal estiver aberto ao abrir modalLocalidades, escondemos temporariamente e reabrimos depois
-        (function() {
-          const modalEl = document.getElementById('modalLocalidades');
-          if (!modalEl) return;
-          modalEl.addEventListener('show.bs.modal', function () {
-            const open = document.querySelector('.modal.show');
-            if (open && open.id !== 'modalLocalidades') {
-              // guarda id do modal pai e esconde-o
-              window._modalParentBeforeLocal = open.id;
-              // remove foco do elemento ativo para evitar que um elemento dentro do modal pai
-              // permaneça focado enquanto o pai recebe aria-hidden=true
-              try { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-              const parentInst = bootstrap.Modal.getInstance(open) || bootstrap.Modal.getOrCreateInstance(open);
-              if (parentInst) parentInst.hide();
-            }
-          });
-
-          modalEl.addEventListener('hidden.bs.modal', function () {
-            if (window._modalParentBeforeLocal) {
-              const parentId = window._modalParentBeforeLocal;
-              const parent = document.getElementById(parentId);
-              if (parent) {
-                // Reabre o modal pai
-                const parentInst = bootstrap.Modal.getOrCreateInstance(parent);
-                parentInst.show();
-                // Só foca o input depois que o modal pai disparar 'shown.bs.modal'
-                parent.addEventListener('shown.bs.modal', function onShown() {
-                  try {
-                    if (parentId === 'modalAdicionarItem') {
-                      const localInput = document.getElementById('localItem');
-                      if (localInput) localInput.focus();
-                    }
-                  } catch (e) {}
-                  parent.removeEventListener('shown.bs.modal', onShown);
-                }, { once: true });
+            <script>
+              // Dispatcher: escolhe a função correta dependendo do modal pai (filtro vs adicionar)
+              function selecionarLocalidadeEscolhida(local) {
+                // Se o modalLocalidades foi aberto a partir de outro modal, o código de show.bs.modal
+                // já armazenou o id do modal pai em window._modalParentBeforeLocal.
+                const parentId = window._modalParentBeforeLocal || (document.querySelector('.modal.show') ? document.querySelector('.modal.show').id : null);
+                if (parentId === 'modalFiltro') {
+                  // caso especial: Todos deve limpar o filtro
+                  if (local === '__TODOS__') {
+                    const filtroInput = document.getElementById('filtroLocal');
+                    if (filtroInput) filtroInput.value = '';
+                    const modalEl = document.getElementById('modalLocalidades');
+                    if (!modalEl) return;
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    try { window._modalParentBeforeLocal = 'modalFiltro'; } catch (e) {}
+                    if (modal) modal.hide();
+                    modalEl.addEventListener('hidden.bs.modal', function handler() {
+                      const modalFiltro = document.getElementById('modalFiltro');
+                      if (modalFiltro) bootstrap.Modal.getOrCreateInstance(modalFiltro).show();
+                      try { window._modalParentBeforeLocal = null; } catch (e) {}
+                      modalEl.removeEventListener('hidden.bs.modal', handler);
+                    }, { once: true });
+                    return;
+                  }
+                  // usa a função específica de filtro
+                  if (typeof selecionarLocalidadeParaFiltro === 'function') {
+                    selecionarLocalidadeParaFiltro(local);
+                    return;
+                  }
+                }
+                // fallback para o comportamento de adicionar item
+                if (local === '__TODOS__') {
+                  // Se Selecionado 'Todos' vindo do contexto de adicionar, limpa o campo
+                  if (typeof selecionarLocalidade === 'function') selecionarLocalidade('');
+                  return;
+                }
+                if (typeof selecionarLocalidade === 'function') {
+                  selecionarLocalidade(local);
+                }
               }
-              window._modalParentBeforeLocal = null;
-            }
-          });
-        })();
-      </script>
+
+              // Se um outro modal estiver aberto ao abrir modalLocalidades, escondemos temporariamente e reabrimos depois
+              (function() {
+                const modalEl = document.getElementById('modalLocalidades');
+                if (!modalEl) return;
+                modalEl.addEventListener('show.bs.modal', function () {
+                  const open = document.querySelector('.modal.show');
+                  if (open && open.id !== 'modalLocalidades') {
+                    // guarda id do modal pai e esconde-o
+                    window._modalParentBeforeLocal = open.id;
+                    // remove foco do elemento ativo para evitar que um elemento dentro do modal pai
+                    // permaneça focado enquanto o pai recebe aria-hidden=true
+                    try { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                    const parentInst = bootstrap.Modal.getInstance(open) || bootstrap.Modal.getOrCreateInstance(open);
+                    if (parentInst) parentInst.hide();
+                  }
+                });
+
+                modalEl.addEventListener('hidden.bs.modal', function () {
+                  if (window._modalParentBeforeLocal) {
+                    const parentId = window._modalParentBeforeLocal;
+                    const parent = document.getElementById(parentId);
+                    if (parent) {
+                      // Reabre o modal pai
+                      const parentInst = bootstrap.Modal.getOrCreateInstance(parent);
+                      parentInst.show();
+                      // Só foca o input depois que o modal pai disparar 'shown.bs.modal'
+                      parent.addEventListener('shown.bs.modal', function onShown() {
+                        try {
+                          if (parentId === 'modalAdicionarItem') {
+                            const localInput = document.getElementById('localItem');
+                            if (localInput) localInput.focus();
+                          }
+                        } catch (e) {}
+                        parent.removeEventListener('shown.bs.modal', onShown);
+                      }, { once: true });
+                    }
+                    window._modalParentBeforeLocal = null;
+                  }
+                });
+              })();
+            </script>
   </div>
 </body>
 </html>
