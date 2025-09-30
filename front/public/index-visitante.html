@@ -61,8 +61,7 @@
     <aside class="kiwi-sidebar bg-primary text-white d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;">
       <h4 class="mb-4"><i class="fa fa-lemon"></i> Visitante</h4>
       <nav class="flex-grow-1">
-        <a href="#" class="d-block mb-2 text-white"><i class="fa fa-home"></i> Dashboard</a>
-        <a href="#" class="d-block mb-2 text-white"><i class="fa fa-list"></i> Itens</a>
+    <a href="#" class="d-block mb-2 text-white"><i class="fa fa-home"></i> Dashboard</a>
       </nav>
       <div class="mt-auto d-flex flex-column gap-2">
         <a href="/page/usuario/login.html" class="btn btn-light btn-sm w-100 mb-1">Login</a>
@@ -111,8 +110,8 @@
           </div>
           <div class="col-12 col-md-9 order-1 order-md-2 mb-3 mb-md-0">
             <div class="d-flex flex-wrap gap-2 justify-content-center py-2 rounded shadow-sm bg-white">
-              <button id="btnFiltrar" class="btn btn-outline-primary px-4 py-2"><i class="fa fa-filter"></i> Filtrar</button>
-              <button id="btnRelatorio" class="btn btn-outline-secondary px-4 py-2"><i class="fa fa-file-word"></i> Baixar Relatório Word</button>
+              <button id="btnFiltrar" class="btn btn-info px-4 py-2"><i class="fa fa-filter"></i> Filtrar</button>
+              <button id="btnRelatorio" class="btn btn-success px-4 py-2"><i class="fa fa-download"></i> Baixar Relatório</button>
             </div>
           </div>
         </div>
@@ -310,7 +309,7 @@ window.addEventListener('DOMContentLoaded', () => {
           a.remove();
         })
         .catch(error => {
-          alert(error.message || 'Erro ao baixar o relatório Word.');
+          alert(error.message || 'Erro ao baixar o relatório.');
         });
     });
   }
@@ -484,6 +483,18 @@ async function carregarGraficosMenu() {
                 <option value="Almoxarifado">Almoxarifado</option>
                 <option value="Laboratório">Laboratório</option>
                 <option value="Sala de Aula">Sala de Aula</option>
+                <option value="Biblioteca">Biblioteca</option>
+                <option value="Sala dos Professores">Sala dos Professores</option>
+                <option value="Diretoria">Diretoria</option>
+                <option value="Quadra">Quadra</option>
+                <option value="Cantina">Cantina</option>
+                <option value="Recepção">Recepção</option>
+                <option value="Banheiro">Banheiro</option>
+                <option value="Auditório">Pátio</option>
+                <option value="Laboratório de Informática">Laboratório de Informática</option>
+                <option value="Laboratório de Quimica">Laboratório de Quimica</option>
+                <option value="Laboratório de Informática 2">Laboratório de Informática 2</option>
+                <option value="Laboratório de Informática 3">Laboratório de Informática 3</option>
               </select>
             </div>
             <button type="submit" class="btn btn-info">Aplicar Filtro</button>

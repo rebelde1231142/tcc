@@ -1,4 +1,24 @@
   <script>
+// Função para selecionar localidade no modal
+function selecionarLocalidade(local) {
+  document.getElementById('localItem').value = local;
+  var modalEl = document.getElementById('modalLocalidades');
+  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  if (modal) modal.hide();
+  // Reabre o modal de cadastro de item (ou o modal pai salvo) somente após o modalLocalidades ter sido completamente escondido
+  modalEl.addEventListener('hidden.bs.modal', function handler() {
+    const parentId = window._modalParentBeforeLocal || 'modalAdicionarItem';
+    const parent = document.getElementById(parentId);
+    if (parent) {
+      bootstrap.Modal.getOrCreateInstance(parent).show();
+      const localInput = document.getElementById('localItem');
+      if (localInput) localInput.focus();
+    }
+    window._modalParentBeforeLocal = null;
+    // remove o listener (one-shot)
+    modalEl.removeEventListener('hidden.bs.modal', handler);
+  }, { once: true });
+}
     if (!localStorage.getItem('usuarioLogado')) {
       window.location.href = '/index-visitante.html';
     }
@@ -123,7 +143,7 @@
               <button class="btn btn-warning px-4 py-2" id="btnEditarMassa"><i class="fa fa-edit"></i> Editar Itens</button>
               <button class="btn btn-danger px-4 py-2" id="btnDeletarMassa"><i class="fa fa-trash"></i> Deletar Itens</button>
               <button class="btn btn-success px-4 py-2" id="btnRelatorio"><i class="fa fa-download"></i> Baixar Relatório</button>
-              <button class="btn btn-info px-4 py-2" id="btnFiltro"><i class="fa fa-filter"></i> Filtro</button>
+              <button class="btn btn-info px-4 py-2" id="btnFiltro"><i class="fa fa-filter"></i> Filtrar</button>
             </div>
           </div>
         </div>
@@ -158,6 +178,18 @@
                 <option value="Almoxarifado">Almoxarifado</option>
                 <option value="Laboratório">Laboratório</option>
                 <option value="Sala de Aula">Sala de Aula</option>
+                <option value="Biblioteca">Biblioteca</option>
+                <option value="Sala dos Professores">Sala dos Professores</option>
+                <option value="Diretoria">Diretoria</option>
+                <option value="Quadra">Quadra</option>
+                <option value="Cantina">Cantina</option>
+                <option value="Recepção">Recepção</option>
+                <option value="Banheiro">Banheiro</option>
+                <option value="Auditório">Pátio</option>
+                <option value="Laboratório de Informática">Laboratório de Informática</option>
+                <option value="Laboratório de Quimica">Laboratório de Quimica</option>
+                <option value="Laboratório de Informática 2">Laboratório de Informática 2</option>
+                <option value="Laboratório de Informática 3">Laboratório de Informática 3</option>
               </select>
             </div>
             <button type="submit" class="btn btn-info">Aplicar Filtro</button>
@@ -204,12 +236,11 @@
                       </div>
                       <div class="mb-3">
                         <label for="localItem" class="form-label">Local de Armazenamento</label>
-                        <select class="form-select" id="localItem" required>
-                          <option value="">Selecione o local</option>
-                          <option value="Almoxarifado">Almoxarifado</option>
-                          <option value="Laboratório">Laboratório</option>
-                          <option value="Sala de Aula">Sala de Aula</option>
-                        </select>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="localItem" name="localItem" required readonly placeholder="Selecione o local" data-bs-toggle="modal" data-bs-target="#modalLocalidades">
+                          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalLocalidades">Selecionar</button>
+                        </div>
+                        <!-- Modal de seleção de localidade (movido para o final do body) -->
                       </div>
                       <button type="submit" class="btn btn-primary">Salvar Item</button>
           </form>
@@ -891,5 +922,74 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
       bootstrap.Modal.getInstance(document.getElementById('modalFiltro')).hide();
     });
   </script>
+  <!-- Modal de seleção de localidade (colocado no final do body para evitar problemas de stacking context) -->
+  <div class="modal fade" id="modalLocalidades" tabindex="-1" aria-labelledby="modalLocalidadesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLocalidadesLabel">Selecione a Localidade</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" style="max-height:300px;overflow-y:auto;">
+          <ul class="list-group">
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Almoxarifado')">Almoxarifado</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório')">Laboratório</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Sala de Aula')">Sala de Aula</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Biblioteca')">Biblioteca</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Sala dos Professores')">Sala dos Professores</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Diretoria')">Diretoria</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Quadra')">Quadra</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Cantina')">Cantina</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Recepção')">Recepção</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Banheiro')">Banheiro</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Auditório')">Pátio</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Informática')">Laboratório de Informática</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Quimica')">Laboratório de Quimica</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Informática 2')">Laboratório de Informática 2</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidade('Laboratório de Informática 3')">Laboratório de Informática 3</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+      <script>
+        // Se um outro modal estiver aberto ao abrir modalLocalidades, escondemos temporariamente e reabrimos depois
+        (function() {
+          const modalEl = document.getElementById('modalLocalidades');
+          if (!modalEl) return;
+          modalEl.addEventListener('show.bs.modal', function () {
+            const open = document.querySelector('.modal.show');
+            if (open && open.id !== 'modalLocalidades') {
+              // guarda id do modal pai e esconde-o
+              window._modalParentBeforeLocal = open.id;
+              const parentInst = bootstrap.Modal.getInstance(open) || bootstrap.Modal.getOrCreateInstance(open);
+              if (parentInst) parentInst.hide();
+            }
+          });
+
+          modalEl.addEventListener('hidden.bs.modal', function () {
+            if (window._modalParentBeforeLocal) {
+              const parentId = window._modalParentBeforeLocal;
+              const parent = document.getElementById(parentId);
+              if (parent) {
+                // Reabre o modal pai
+                const parentInst = bootstrap.Modal.getOrCreateInstance(parent);
+                parentInst.show();
+                // Só foca o input depois que o modal pai disparar 'shown.bs.modal'
+                parent.addEventListener('shown.bs.modal', function onShown() {
+                  try {
+                    if (parentId === 'modalAdicionarItem') {
+                      const localInput = document.getElementById('localItem');
+                      if (localInput) localInput.focus();
+                    }
+                  } catch (e) {}
+                  parent.removeEventListener('shown.bs.modal', onShown);
+                }, { once: true });
+              }
+              window._modalParentBeforeLocal = null;
+            }
+          });
+        })();
+      </script>
+  </div>
 </body>
 </html>
