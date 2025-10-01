@@ -33,6 +33,9 @@
     </button>
     <div id="menuUsuario" class="card shadow-sm" style="display:none;position:absolute;top:70px;left:0;width:160px;">
       <a href="/page/usuario/login.html" class="btn btn-light w-100">Login</a>
+      <a href="/page/usuario/registrar.html" class="btn btn-outline-primary w-100 d-block d-md-none mt-2">Criar Conta</a>
+    </div>
+    <div class="w-100 px-3 mt-2 d-none d-md-block">
       <a href="/page/usuario/registrar.html" class="btn btn-outline-primary w-100">Criar Conta</a>
     </div>
   </div>
@@ -70,7 +73,7 @@
     <!-- Copiado layout da dashboard principal, porém removidas ações de escrita (adicionar/editar/deletar) -->
     <aside class="kiwi-sidebar bg-primary text-white d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;">
       <h4 class="mb-4">
-        <a href="/page/configuracao.html" id="btnConfig" title="Configurações" style="color:inherit;text-decoration:none;">
+  <a id="btnConfig" title="Configurações" style="color:inherit;text-decoration:none; pointer-events: none;" class="disabled">
           <i class="fa fa-gear"></i> Meu Painel
         </a>
       </h4>
@@ -79,6 +82,7 @@
       </nav>
       <div class="mt-auto">
         <a href="/page/usuario/login.html" class="btn btn-light w-100 mb-2">Login</a>
+  <a href="/page/usuario/registrar.html" class="btn btn-light w-100">Criar Conta</a>
       </div>
     </aside>
     <main class="flex-grow-1 p-4" style="background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;margin-left:220px;">
@@ -157,68 +161,126 @@ let chartPorCategoria = null;
 let chartQtdPorCategoria = null;
 let chartItensPorDia = null;
 
+function renderizarGraficosPrincipais(itens, ids = {
+  porLocal: 'graficoPorLocal',
+  porCategoria: 'graficoPorCategoria',
+  qtdPorCategoria: 'graficoQtdPorCategoria',
+  itensPorDia: 'graficoItensPorDia'
+}) {
+  // 1. Itens por Local
+  const locais = {};
+  itens.forEach(item => {
+    locais[item.local] = (locais[item.local] || 0) + 1;
+  });
+  const nomesLocais = {
+    'Almoxarifado': 'Sala de limpeza',
+    'Sala de Aula': 'Sala de Aula',
+    'Biblioteca': 'Biblioteca',
+    'Sala dos Professores': 'Sala dos Professores',
+    'Diretoria': 'Diretoria',
+    'Quadra': 'Sala de material esportivo',
+    'Cantina': 'Cantina',
+    'Laboratório de Quimica': 'Laboratório de Quimica',
+    'Laboratório de Informática': 'Laboratório de Informática',
+    'Laboratório de Informática 2': 'Laboratório de Informática 2',
+    'Laboratório de Informática 3': 'Laboratório de Informática 3'
+  };
+  const locaisLabels = Object.keys(locais).map(l => nomesLocais[l] || l);
+  const locaisValues = Object.values(locais);
+  try {
+    const elLocal = document.getElementById(ids.porLocal);
+    if (elLocal) {
+      if (chartPorLocal) chartPorLocal.destroy();
+      chartPorLocal = new Chart(elLocal.getContext('2d'), {
+        type: 'pie',
+        data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+        options: { plugins: { legend: { display: true } } }
+      });
+    } else console.warn('Canvas ' + ids.porLocal + ' não encontrado');
+  } catch (err) { console.error('Erro ao criar ' + ids.porLocal, err); }
+
+  // 2. Itens por Categoria
+  const categorias = {};
+  itens.forEach(item => {
+    categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
+  });
+  const nomesCategorias = {
+    'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+    'Administração Escolar': 'Administração Escolar',
+    'Quimica': 'Química',
+    'Ds': 'Desenvolvimento de Sistemas',
+    'Administração': 'Administração Escolar',
+    'Qui': 'Química'
+  };
+  const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
+  const catValues = Object.values(categorias);
+  const catColors = ['#1976d2','#43a047','#e53935'];
+  try {
+    const elCat = document.getElementById(ids.porCategoria);
+    if (elCat) {
+      if (chartPorCategoria) chartPorCategoria.destroy();
+      chartPorCategoria = new Chart(elCat.getContext('2d'), {
+        type: 'pie',
+        data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors }] },
+        options: { plugins: { legend: { display: true } } }
+      });
+    } else console.warn('Canvas ' + ids.porCategoria + ' não encontrado');
+  } catch (err) { console.error('Erro ao criar ' + ids.porCategoria, err); }
+
+  // 3. Quantidade total por Categoria
+  const qtdPorCategoria = {};
+  itens.forEach(item => {
+    qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
+  });
+  const qtdCatLabels = Object.keys(qtdPorCategoria).map(c => nomesCategorias[c] || c);
+  const qtdCatValues = Object.values(qtdPorCategoria);
+  try {
+    const elQtd = document.getElementById(ids.qtdPorCategoria);
+    if (elQtd) {
+      if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
+      chartQtdPorCategoria = new Chart(elQtd.getContext('2d'), {
+        type: 'bar',
+        data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: catColors }] },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: { label: function(context) { return `${context.label}: ${context.parsed.y}`; } }
+            }
+          },
+          scales: { x: { display: true }, y: { display: true } }
+        }
+      });
+    } else console.warn('Canvas ' + ids.qtdPorCategoria + ' não encontrado');
+  } catch (err) { console.error('Erro ao criar ' + ids.qtdPorCategoria, err); }
+
+  // 4. Itens adicionados por dia
+  const dias = {};
+  itens.forEach(item => {
+    if (item.dataAdicionado) {
+      dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
+    }
+  });
+  const diasLabels = Object.keys(dias).sort();
+  const diasValues = diasLabels.map(d => dias[d]);
+  try {
+    const elDia = document.getElementById(ids.itensPorDia);
+    if (elDia) {
+      if (chartItensPorDia) chartItensPorDia.destroy();
+      chartItensPorDia = new Chart(elDia.getContext('2d'), {
+        type: 'line',
+        data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
+        options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
+      });
+    } else console.warn('Canvas ' + ids.itensPorDia + ' não encontrado');
+  } catch (err) { console.error('Erro ao criar ' + ids.itensPorDia, err); }
+}
+
 async function carregarGraficosPrincipais() {
   try {
     const response = await fetch('http://localhost:3000/api/itens');
     const itens = await response.json();
-    // 1. Itens por Local
-    const locais = {};
-    itens.forEach(item => {
-      locais[item.local] = (locais[item.local] || 0) + 1;
-    });
-    const locaisLabels = Object.keys(locais);
-    const locaisValues = Object.values(locais);
-    if (chartPorLocal) chartPorLocal.destroy();
-    chartPorLocal = new Chart(document.getElementById('graficoPorLocal').getContext('2d'), {
-      type: 'pie',
-      data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-      options: { plugins: { legend: { display: true } } }
-    });
-
-    // 2. Itens por Categoria
-    const categorias = {};
-    itens.forEach(item => {
-      categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
-    });
-    const catLabels = Object.keys(categorias);
-    const catValues = Object.values(categorias);
-    if (chartPorCategoria) chartPorCategoria.destroy();
-    chartPorCategoria = new Chart(document.getElementById('graficoPorCategoria').getContext('2d'), {
-      type: 'pie',
-      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-      options: { plugins: { legend: { display: true } } }
-    });
-
-    // 3. Quantidade total por Categoria
-    const qtdPorCategoria = {};
-    itens.forEach(item => {
-      qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
-    });
-    const qtdCatLabels = Object.keys(qtdPorCategoria);
-    const qtdCatValues = Object.values(qtdPorCategoria);
-    if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
-    chartQtdPorCategoria = new Chart(document.getElementById('graficoQtdPorCategoria').getContext('2d'), {
-      type: 'bar',
-      data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
-    });
-
-    // 4. Itens adicionados por dia (usando campo real dataAdicionado)
-    const dias = {};
-    itens.forEach(item => {
-      if (item.dataAdicionado) {
-        dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
-      }
-    });
-    // Ordena as datas
-    const diasLabels = Object.keys(dias).sort();
-    const diasValues = diasLabels.map(d => dias[d]);
-    if (chartItensPorDia) chartItensPorDia.destroy();
-    chartItensPorDia = new Chart(document.getElementById('graficoItensPorDia').getContext('2d'), {
-      type: 'line',
-      data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
-      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
-    });
+    renderizarGraficosPrincipais(itens);
   } catch (e) {}
 }
 // Função para filtrar itens pela barra de pesquisa
@@ -244,12 +306,27 @@ async function carregarItens() {
       return;
     }
     lista.innerHTML = '';
+    // Mapeamento dos nomes reais para nomes amigáveis
+    const nomesLocais = {
+      'Almoxarifado': 'Sala de limpeza',
+      'Sala de Aula': 'Sala de Aula',
+      'Biblioteca': 'Biblioteca',
+      'Sala dos Professores': 'Sala dos Professores',
+      'Diretoria': 'Diretoria',
+      'Quadra': 'Sala de material esportivo',
+      'Cantina': 'Cantina',
+      'Laboratório de Quimica': 'Laboratório de Quimica',
+      'Laboratório de Informática': 'Laboratório de Informática',
+      'Laboratório de Informática 2': 'Laboratório de Informática 2',
+      'Laboratório de Informática 3': 'Laboratório de Informática 3'
+    };
     itens.forEach(item => {
       const div = document.createElement('div');
       div.className = "card mb-2 shadow-sm";
+      const nomeLocal = nomesLocais[item.local] || item.local || '';
       div.innerHTML = `
         <div class="card-body">
-          <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+          <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span></h6>
           <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
           <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
         </div>
@@ -293,13 +370,28 @@ window.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(itens => {
           lista.innerHTML = '';
+          // Mapeamento dos nomes reais para nomes amigáveis
+          const nomesLocais = {
+            'Almoxarifado': 'Sala de limpeza',
+            'Sala de Aula': 'Sala de Aula',
+            'Biblioteca': 'Biblioteca',
+            'Sala dos Professores': 'Sala dos Professores',
+            'Diretoria': 'Diretoria',
+            'Quadra': 'Sala de material esportivo',
+            'Cantina': 'Cantina',
+            'Laboratório de Quimica': 'Laboratório de Quimica',
+            'Laboratório de Informática': 'Laboratório de Informática',
+            'Laboratório de Informática 2': 'Laboratório de Informática 2',
+            'Laboratório de Informática 3': 'Laboratório de Informática 3'
+          };
           itens.filter(item => !local || item.local === local)
             .forEach(item => {
               const div = document.createElement('div');
               div.className = "card mb-2 shadow-sm";
+              const nomeLocal = nomesLocais[item.local] || item.local || '';
               div.innerHTML = `
                 <div class="card-body">
-                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span></h6>
                   <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
                   <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
                 </div>
@@ -436,7 +528,21 @@ async function carregarGraficosMenu() {
     itens.forEach(item => {
       locais[item.local] = (locais[item.local] || 0) + 1;
     });
-    const locaisLabels = Object.keys(locais);
+    // Mapeamento dos nomes reais para nomes amigáveis
+    const nomesLocais = {
+      'Almoxarifado': 'Sala de limpeza',
+      'Sala de Aula': 'Sala de Aula',
+      'Biblioteca': 'Biblioteca',
+      'Sala dos Professores': 'Sala dos Professores',
+      'Diretoria': 'Diretoria',
+      'Quadra': 'Sala de material esportivo',
+      'Cantina': 'Cantina',
+      'Laboratório de Quimica': 'Laboratório de Quimica',
+      'Laboratório de Informática': 'Laboratório de Informática',
+      'Laboratório de Informática 2': 'Laboratório de Informática 2',
+      'Laboratório de Informática 3': 'Laboratório de Informática 3'
+    };
+    const locaisLabels = Object.keys(locais).map(l => nomesLocais[l] || l);
     const locaisValues = Object.values(locais);
     if (chartPorLocalMenu) chartPorLocalMenu.destroy();
     chartPorLocalMenu = new Chart(document.getElementById('graficoPorLocalMenu').getContext('2d'), {
@@ -450,12 +556,22 @@ async function carregarGraficosMenu() {
     itens.forEach(item => {
       categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
     });
-    const catLabels = Object.keys(categorias);
+    // Mapeamento dos nomes reais para nomes amigáveis de categoria
+    const nomesCategorias = {
+      'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+      'Administração Escolar': 'Administração Escolar',
+      'Quimica': 'Química',
+      'Ds': 'Desenvolvimento de Sistemas',
+      'Administração': 'Administração Escolar',
+      'Qui': 'Química'
+    };
+    const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
     const catValues = Object.values(categorias);
+    const catColors = ['#1976d2','#43a047','#e53935'];
     if (chartPorCategoriaMenu) chartPorCategoriaMenu.destroy();
     chartPorCategoriaMenu = new Chart(document.getElementById('graficoPorCategoriaMenu').getContext('2d'), {
       type: 'pie',
-      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors }] },
       options: { plugins: { legend: { display: true } }, responsive: true }
     });
 
@@ -464,12 +580,13 @@ async function carregarGraficosMenu() {
     itens.forEach(item => {
       qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
     });
-    const qtdCatLabels = Object.keys(qtdPorCategoria);
+    const qtdCatLabels = Object.keys(qtdPorCategoria).map(c => nomesCategorias[c] || c);
     const qtdCatValues = Object.values(qtdPorCategoria);
+    const catColorsQtd = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'];
     if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();
     chartQtdPorCategoriaMenu = new Chart(document.getElementById('graficoQtdPorCategoriaMenu').getContext('2d'), {
       type: 'bar',
-      data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+      data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: catColorsQtd }] },
       options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } }, responsive: true }
     });
 
@@ -509,19 +626,15 @@ async function carregarGraficosMenu() {
                 </div>
                 <select class="form-select d-none" id="filtroLocalSelect" aria-hidden="true">
                   <option value="">Todos</option>
-                <option value="Almoxarifado">Almoxarifado</option>
-                <option value="Laboratório">Laboratório</option>
+                <option value="Almoxarifado">Sala de limpeza</option>
                 <option value="Sala de Aula">Sala de Aula</option>
                 <option value="Biblioteca">Biblioteca</option>
                 <option value="Sala dos Professores">Sala dos Professores</option>
                 <option value="Diretoria">Diretoria</option>
-                <option value="Quadra">Quadra</option>
+                <option value="Quadra">Sala de material esportivo</option>
                 <option value="Cantina">Cantina</option>
-                <option value="Recepção">Recepção</option>
-                <option value="Banheiro">Banheiro</option>
-                <option value="Auditório">Pátio</option>
-                <option value="Laboratório de Informática">Laboratório de Informática</option>
                 <option value="Laboratório de Quimica">Laboratório de Quimica</option>
+                <option value="Laboratório de Informática">Laboratório de Informática</option>
                 <option value="Laboratório de Informática 2">Laboratório de Informática 2</option>
                 <option value="Laboratório de Informática 3">Laboratório de Informática 3</option>
               </select>
@@ -546,19 +659,15 @@ async function carregarGraficosMenu() {
         <div class="modal-body" style="max-height:300px;overflow-y:auto;">
           <ul class="list-group">
               <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('__TODOS__')"><strong>Todos</strong></li>
-              <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Almoxarifado')">Almoxarifado</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Laboratório')">Laboratório</li>
+              <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Almoxarifado')">Sala de limpeza</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Sala de Aula')">Sala de Aula</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Biblioteca')">Biblioteca</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Sala dos Professores')">Sala dos Professores</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Diretoria')">Diretoria</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Quadra')">Quadra</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Quadra')">Sala de material esportivo</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Cantina')">Cantina</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Recepção')">Recepção</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Banheiro')">Banheiro</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Auditório')">Auditório</li>
-            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Laboratório de Informática')">Laboratório de Informática</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Laboratório de Quimica')">Laboratório de Quimica</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Laboratório de Informática')">Laboratório de Informática</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Laboratório de Informática 2')">Laboratório de Informática 2</li>
             <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeParaFiltro('Laboratório de Informática 3')">Laboratório de Informática 3</li>
           </ul>

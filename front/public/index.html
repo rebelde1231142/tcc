@@ -200,21 +200,18 @@ function selecionarLocalidadeParaFiltro(local) {
                       </div>
                     <select class="form-select d-none" id="filtroLocalSelect" aria-hidden="true">
                 <option value="">Todos</option>
-                <option value="Almoxarifado">Almoxarifado</option>
-                <option value="Laboratório">Laboratório</option>
+                <option value="Almoxarifado">Sala de limpeza</option>
                 <option value="Sala de Aula">Sala de Aula</option>
                 <option value="Biblioteca">Biblioteca</option>
                 <option value="Sala dos Professores">Sala dos Professores</option>
                 <option value="Diretoria">Diretoria</option>
-                <option value="Quadra">Quadra</option>
+                <option value="Quadra">Sala de material esportivo</option>
                 <option value="Cantina">Cantina</option>
-                <option value="Recepção">Recepção</option>
-                <option value="Banheiro">Banheiro</option>
-                <option value="Auditório">Pátio</option>
-                <option value="Laboratório de Informática">Laboratório de Informática</option>
                 <option value="Laboratório de Quimica">Laboratório de Quimica</option>
+                <option value="Laboratório de Informática">Laboratório de Informática</option>
                 <option value="Laboratório de Informática 2">Laboratório de Informática 2</option>
                 <option value="Laboratório de Informática 3">Laboratório de Informática 3</option>
+                <option value="Sala de Armazenamento Técnico">Sala de Armazenamento Técnico</option>
               </select>
             </div>
             <button type="submit" class="btn btn-info">Aplicar Filtro</button>
@@ -254,9 +251,9 @@ function selecionarLocalidadeParaFiltro(local) {
                         <label for="categoriaItem" class="form-label">Categoria</label>
                         <select class="form-select" id="categoriaItem" required>
                           <option value="">Selecione a categoria</option>
-                          <option value="1">Ds</option>
-                          <option value="2">Administração</option>
-                          <option value="3">Qui</option>
+                          <option value="1">Desenvolvimento de Sistemas</option>
+                          <option value="2">Administração Escolar</option>
+                          <option value="3">Quimica</option>
                         </select>
                       </div>
                       <div class="mb-3">
@@ -279,8 +276,9 @@ async function carregarMiniGraficos() {
   try {
     const response = await fetch('http://localhost:3000/api/itens/categorias');
     const dados = await response.json();
-    const labels = ['Ds', 'Administração', 'Qui'];
-    const values = [dados.ds||0, dados.administracao||0, dados.qui||0];
+  // Nomes amigáveis das categorias
+  const labels = ['Desenvolvimento de Sistemas', 'Administração Escolar', 'Química'];
+  const values = [dados.ds||0, dados.administracao||0, dados.qui||0];
     const cores = ['#FF6384', '#36A2EB', '#FFCE56'];
     // Destroi gráficos antigos se existirem
     if (chartMini1) { chartMini1.destroy(); }
@@ -361,7 +359,7 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
 });
             document.getElementById('formAdicionarItem').addEventListener('submit', async function(e) {
               e.preventDefault();
-              const nome = document.getElementById('nomeItem').value.trim();
+              const nome = document.getElementById('nomeItem').value;
               const quantidade = document.getElementById('qtdItem').value.trim();
               const descricao = document.getElementById('descItem').value.trim();
               const fk_Categoria_id = document.getElementById('categoriaItem').value;
@@ -477,65 +475,119 @@ async function carregarGraficosPrincipais() {
   try {
     const response = await fetch('http://localhost:3000/api/itens');
     const itens = await response.json();
+
     // 1. Itens por Local
     const locais = {};
     itens.forEach(item => {
       locais[item.local] = (locais[item.local] || 0) + 1;
     });
-    const locaisLabels = Object.keys(locais);
+    const nomesLocais = {
+      'Almoxarifado': 'Sala de limpeza',
+      'Sala de Aula': 'Sala de Aula',
+      'Biblioteca': 'Biblioteca',
+      'Sala dos Professores': 'Sala dos Professores',
+      'Diretoria': 'Diretoria',
+      'Quadra': 'Sala de material esportivo',
+      'Cantina': 'Cantina',
+      'Laboratório de Quimica': 'Laboratório de Quimica',
+      'Laboratório de Informática': 'Laboratório de Informática',
+      'Laboratório de Informática 2': 'Laboratório de Informática 2',
+      'Laboratório de Informática 3': 'Laboratório de Informática 3'
+    };
+    const locaisLabels = Object.keys(locais).map(l => nomesLocais[l] || l);
     const locaisValues = Object.values(locais);
-    if (chartPorLocal) chartPorLocal.destroy();
-    chartPorLocal = new Chart(document.getElementById('graficoPorLocal').getContext('2d'), {
-      type: 'pie',
-      data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-      options: { plugins: { legend: { display: true } } }
-    });
+    try {
+      const elLocal = document.getElementById('graficoPorLocal');
+      if (elLocal) {
+        if (chartPorLocal) chartPorLocal.destroy();
+        chartPorLocal = new Chart(elLocal.getContext('2d'), {
+          type: 'pie',
+          data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
+          options: { plugins: { legend: { display: true } } }
+        });
+      } else console.warn('Canvas graficoPorLocal não encontrado');
+    } catch (err) { console.error('Erro ao criar graficoPorLocal', err); }
 
     // 2. Itens por Categoria
     const categorias = {};
     itens.forEach(item => {
       categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
     });
-    const catLabels = Object.keys(categorias);
+    const nomesCategorias = {
+      'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+      'Administração Escolar': 'Administração Escolar',
+      'Quimica': 'Química',
+      'Ds': 'Desenvolvimento de Sistemas',
+      'Administração': 'Administração Escolar',
+      'Qui': 'Química'
+    };
+    const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
     const catValues = Object.values(categorias);
-    if (chartPorCategoria) chartPorCategoria.destroy();
-    chartPorCategoria = new Chart(document.getElementById('graficoPorCategoria').getContext('2d'), {
-      type: 'pie',
-      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-      options: { plugins: { legend: { display: true } } }
-    });
+    const catColors = ['#1976d2','#43a047','#e53935'];
+    try {
+      const elCat = document.getElementById('graficoPorCategoria');
+      if (elCat) {
+        if (chartPorCategoria) chartPorCategoria.destroy();
+        chartPorCategoria = new Chart(elCat.getContext('2d'), {
+          type: 'pie',
+          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors }] },
+          options: { plugins: { legend: { display: true } } }
+        });
+      } else console.warn('Canvas graficoPorCategoria não encontrado');
+    } catch (err) { console.error('Erro ao criar graficoPorCategoria', err); }
 
     // 3. Quantidade total por Categoria
     const qtdPorCategoria = {};
     itens.forEach(item => {
-      qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
+      qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade || 0);
     });
-    const qtdCatLabels = Object.keys(qtdPorCategoria);
+    const qtdCatLabels = Object.keys(qtdPorCategoria).map(c => nomesCategorias[c] || c);
     const qtdCatValues = Object.values(qtdPorCategoria);
-    if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
-    chartQtdPorCategoria = new Chart(document.getElementById('graficoQtdPorCategoria').getContext('2d'), {
-      type: 'bar',
-      data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
-    });
+    try {
+      const elQtd = document.getElementById('graficoQtdPorCategoria');
+      if (elQtd) {
+        if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
+        chartQtdPorCategoria = new Chart(elQtd.getContext('2d'), {
+          type: 'bar',
+          data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: catColors }] },
+          options: {
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) { return `${context.label}: ${context.parsed.y}`; }
+                }
+              }
+            },
+            scales: { x: { display: true }, y: { display: true } }
+          }
+        });
+      } else console.warn('Canvas graficoQtdPorCategoria não encontrado');
+    } catch (err) { console.error('Erro ao criar graficoQtdPorCategoria', err); }
 
-    // 4. Itens adicionados por dia (usando campo real dataAdicionado)
+    // 4. Itens adicionados por dia
     const dias = {};
     itens.forEach(item => {
       if (item.dataAdicionado) {
         dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
       }
     });
-    // Ordena as datas
     const diasLabels = Object.keys(dias).sort();
     const diasValues = diasLabels.map(d => dias[d]);
-    if (chartItensPorDia) chartItensPorDia.destroy();
-    chartItensPorDia = new Chart(document.getElementById('graficoItensPorDia').getContext('2d'), {
-      type: 'line',
-      data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
-      options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
-    });
-  } catch (e) {}
+    try {
+      const elDia = document.getElementById('graficoItensPorDia');
+      if (elDia) {
+        if (chartItensPorDia) chartItensPorDia.destroy();
+        chartItensPorDia = new Chart(elDia.getContext('2d'), {
+          type: 'line',
+          data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
+          options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
+        });
+      } else console.warn('Canvas graficoItensPorDia não encontrado');
+    } catch (err) { console.error('Erro ao criar graficoItensPorDia', err); }
+  } catch (e) {
+    console.error('Erro ao carregar gráficos:', e);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
@@ -578,9 +630,18 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
                           </div>
                           <div class="col-md-2">
                             <select class="form-select" id="editLocal${item.id}">
-                              <option value="Almoxarifado" ${item.local=='Almoxarifado'?'selected':''}>Almoxarifado</option>
-                              <option value="Laboratório" ${item.local=='Laboratório'?'selected':''}>Laboratório</option>
+                              <option value="Almoxarifado" ${item.local=='Almoxarifado'?'selected':''}>Sala de limpeza</option>
                               <option value="Sala de Aula" ${item.local=='Sala de Aula'?'selected':''}>Sala de Aula</option>
+                              <option value="Biblioteca" ${item.local=='Biblioteca'?'selected':''}>Biblioteca</option>
+                              <option value="Sala dos Professores" ${item.local=='Sala dos Professores'?'selected':''}>Sala dos Professores</option>
+                              <option value="Diretoria" ${item.local=='Diretoria'?'selected':''}>Diretoria</option>
+                              <option value="Quadra" ${item.local=='Quadra'?'selected':''}>Sala de material esportivo</option>
+                              <option value="Cantina" ${item.local=='Cantina'?'selected':''}>Cantina</option>
+                              <option value="Laboratório de Quimica" ${item.local=='Laboratório de Quimica'?'selected':''}>Laboratório de Quimica</option>
+                              <option value="Laboratório de Informática" ${item.local=='Laboratório de Informática'?'selected':''}>Laboratório de Informática</option>
+                              <option value="Laboratório de Informática 2" ${item.local=='Laboratório de Informática 2'?'selected':''}>Laboratório de Informática 2</option>
+                              <option value="Laboratório de Informática 3" ${item.local=='Laboratório de Informática 3'?'selected':''}>Laboratório de Informática 3</option>
+                              <option value="Sala de Armazenamento Técnico" ${item.local=='Sala de Armazenamento Técnico'?'selected':''}>Sala de Armazenamento Técnico</option>
                             </select>
                           </div>
                         </div>
@@ -660,6 +721,10 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
           await carregarItens();
           await carregarGraficosPrincipais();
+            // Esconde o alerta após fechar o modal para não aparecer ao reabrir
+            setTimeout(() => {
+              alerta.classList.add('d-none');
+            }, 400);
         }, 800);
       })
       .catch(error => {
@@ -710,12 +775,38 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           return;
         }
         lista.innerHTML = '';
+        // Mapeamento dos nomes reais para nomes amigáveis
+        const nomesLocais = {
+          'Almoxarifado': 'Sala de limpeza',
+          'Sala de Aula': 'Sala de Aula',
+          'Biblioteca': 'Biblioteca',
+          'Sala dos Professores': 'Sala dos Professores',
+          'Diretoria': 'Diretoria',
+          'Quadra': 'Sala de material esportivo',
+          'Cantina': 'Cantina',
+          'Laboratório de Quimica': 'Laboratório de Quimica',
+          'Laboratório de Informática': 'Laboratório de Informática',
+          'Laboratório de Informática 2': 'Laboratório de Informática 2',
+          'Laboratório de Informática 3': 'Laboratório de Informática 3',
+          'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
+        };
+        // Mapeamento dos nomes reais para nomes amigáveis de categoria
+        const nomesCategorias = {
+          'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+          'Administração Escolar': 'Administração Escolar',
+          'Quimica': 'Química',
+          'Ds': 'Desenvolvimento de Sistemas',
+          'Administração': 'Administração Escolar',
+          'Qui': 'Química'
+        };
         itens.forEach(item => {
             const div = document.createElement('div');
             div.className = "card mb-2 shadow-sm";
+            const nomeLocal = nomesLocais[item.local] || item.local || '';
+            const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
             div.innerHTML = `
               <div class="card-body">
-                <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+                <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
                 <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
                 <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
               </div>
@@ -741,12 +832,35 @@ window.addEventListener('resize', () => {
             return;
           }
           div.innerHTML = '';
+          // Mapeamento dos nomes reais para nomes amigáveis
+          const nomesLocais = {
+            'Almoxarifado': 'Sala de limpeza',
+            'Sala de Aula': 'Sala de Aula',
+            'Biblioteca': 'Biblioteca',
+            'Sala dos Professores': 'Sala dos Professores',
+            'Diretoria': 'Diretoria',
+            'Quadra': 'Sala de material esportivo',
+            'Cantina': 'Cantina',
+            'Laboratório de Quimica': 'Laboratório de Quimica',
+            'Laboratório de Informática': 'Laboratório de Informática',
+            'Laboratório de Informática 2': 'Laboratório de Informática 2',
+            'Laboratório de Informática 3': 'Laboratório de Informática 3',
+            'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
+          };
+          // Mapeamento dos nomes reais para nomes amigáveis de categoria
+          const nomesCategorias = {
+            'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+            'Administração Escolar': 'Administração Escolar',
+            'Quimica': 'Química'
+          };
           itens.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card mb-2 shadow-sm';
+              const nomeLocal = nomesLocais[item.local] || item.local || '';
+              const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
               card.innerHTML = `
                 <div class="card-body">
-                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
+                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
                   <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
                   <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
                 </div>
@@ -874,13 +988,32 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
         itens.forEach(item => {
           categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
         });
-        const catLabels = Object.keys(categorias);
+        // Mapeamento dos nomes reais para nomes amigáveis de categoria
+        const nomesCategorias = {
+          'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+          'Administração Escolar': 'Administração Escolar',
+          'Quimica': 'Química'
+        };
+        const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
         const catValues = Object.values(categorias);
+        const catColors = ['#1976d2','#43a047','#e53935'];
         if (chartPorCategoriaMenu) chartPorCategoriaMenu.destroy();
         chartPorCategoriaMenu = new Chart(document.getElementById('graficoPorCategoriaMenu').getContext('2d'), {
           type: 'pie',
-          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-          options: { plugins: { legend: { display: true } }, responsive: true }
+          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors }] },
+          options: {
+            plugins: {
+              legend: { display: true },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.label}: ${context.parsed}`;
+                  }
+                }
+              }
+            },
+            responsive: true
+          }
         });
 
         // 3. Quantidade total por Categoria
@@ -888,13 +1021,27 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
         itens.forEach(item => {
           qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
         });
-        const qtdCatLabels = Object.keys(qtdPorCategoria);
+  // Removido: declaração duplicada
+        const qtdCatLabels = Object.keys(qtdPorCategoria).map(c => nomesCategorias[c] || c);
         const qtdCatValues = Object.values(qtdPorCategoria);
         if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();
         chartQtdPorCategoriaMenu = new Chart(document.getElementById('graficoQtdPorCategoriaMenu').getContext('2d'), {
           type: 'bar',
-          data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-          options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } }, responsive: true }
+          data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: catColors }] },
+          options: {
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.label}: ${context.parsed.y}`;
+                  }
+                }
+              }
+            },
+            scales: { x: { display: true }, y: { display: true } },
+            responsive: true
+          }
         });
 
         // 4. Itens adicionados por dia
@@ -958,21 +1105,18 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
         <div class="modal-body" style="max-height:300px;overflow-y:auto;">
           <ul class="list-group">
                   <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('__TODOS__')"><strong>Todos</strong></li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Almoxarifado')">Almoxarifado</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório')">Laboratório</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Sala de Aula')">Sala de Aula</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Biblioteca')">Biblioteca</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Sala dos Professores')">Sala dos Professores</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Diretoria')">Diretoria</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Quadra')">Quadra</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Cantina')">Cantina</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Recepção')">Recepção</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Banheiro')">Banheiro</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Auditório')">Pátio</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática')">Laboratório de Informática</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Quimica')">Laboratório de Quimica</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática 2')">Laboratório de Informática 2</li>
-                  <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática 3')">Laboratório de Informática 3</li>
+<li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Almoxarifado')">Sala de limpeza</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Sala de Aula')">Sala de Aula</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Biblioteca')">Biblioteca</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Sala dos Professores')">Sala dos Professores</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Diretoria')">Diretoria</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Quadra')">Sala de material esportivo</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Cantina')">Cantina</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Quimica')">Laboratório de Quimica</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática')">Laboratório de Informática</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática 2')">Laboratório de Informática 2</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Laboratório de Informática 3')">Laboratório de Informática 3</li>
+            <li class="list-group-item list-group-item-action" onclick="selecionarLocalidadeEscolhida('Sala de Armazenamento Técnico')">Sala de Armazenamento Técnico</li>
           </ul>
         </div>
       </div>
