@@ -4,26 +4,54 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { enviarEmail } = require('./emailService');
 const router = express.Router();
+// Troca de e-mail por confirmação (baseado na lógica de troca de senha)
+if (!global.tokensTrocaEmail) global.tokensTrocaEmail = {};
 
-// Alteração de e-mail do usuário
-router.post('/usuarios/alterar-email', async (req, res) => {
+// Solicita troca de e-mail (envia link para o novo e-mail)
+router.post('/usuarios/solicitar-troca-email', async (req, res) => {
   const { cpf, novoEmail } = req.body;
-  if (!cpf || !novoEmail) {
-    return res.status(400).json({ erro: 'CPF e novo email são obrigatórios.' });
-  }
+  if (!cpf || !novoEmail) return res.status(400).json({ erro: 'CPF e novo email são obrigatórios.' });
   try {
     // Verifica se o novo e-mail já está em uso
     const [existe] = await pool.query('SELECT 1 FROM Perfil WHERE Email = ?', [novoEmail]);
     if (existe.length > 0) {
       return res.status(400).json({ erro: 'Este e-mail já está em uso.' });
     }
-    // Atualiza o e-mail do usuário
-    await pool.query('UPDATE Perfil SET Email = ? WHERE CPF = ?', [novoEmail, cpf]);
-    res.json({ mensagem: 'E-mail alterado com sucesso!' });
+    // Gera token temporário (válido por 1h)
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 3600 * 1000;
+    global.tokensTrocaEmail[token] = { cpf, novoEmail, expires };
+    // Monta link
+  const link = `http://localhost:3000/page/usuario/confirmar-troca-email.html?token=${token}`;
+    // Envia email
+    await enviarEmail(novoEmail, 'Confirmação de troca de e-mail', `<p>Para confirmar a troca de e-mail, clique abaixo:</p><p><a href="${link}">Confirmar troca de e-mail</a></p><p>Se não foi você, ignore este email.</p>`);
+    res.status(200).json({ mensagem: 'Se o novo e-mail for válido, um link de confirmação foi enviado.' });
   } catch (error) {
-    res.status(500).json({ erro: 'Erro ao alterar e-mail', detalhes: error.message });
+    console.log(error);
+    res.status(500).json({ erro: 'Erro ao enviar email', detalhes: error.message });
   }
 });
+
+// Confirma a troca de e-mail
+router.post('/usuarios/confirmar-troca-email', async (req, res) => {
+  const { token } = req.body;
+  if (!token || !global.tokensTrocaEmail[token]) {
+    return res.status(400).json({ erro: 'Token inválido ou expirado.' });
+  }
+  const { cpf, novoEmail, expires } = global.tokensTrocaEmail[token];
+  if (Date.now() > expires) {
+    delete global.tokensTrocaEmail[token];
+    return res.status(400).json({ erro: 'Token expirado.' });
+  }
+  try {
+    await pool.query('UPDATE Perfil SET Email = ? WHERE CPF = ?', [novoEmail, cpf]);
+    delete global.tokensTrocaEmail[token];
+    res.json({ mensagem: 'E-mail alterado com sucesso!' });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao confirmar troca de e-mail', detalhes: error.message });
+  }
+});
+
 
 // Confirmação de troca de senha por email
 router.post('/usuarios/confirmar-troca', async (req, res) => {
@@ -82,7 +110,7 @@ router.post('/usuarios/recuperar-senha', async (req, res) => {
     if (!global.tokensRecuperacao) global.tokensRecuperacao = {};
     global.tokensRecuperacao[token] = { cpf: usuario.CPF, expires };
     // Monta link
-    const link = `http://localhost:3030/page/usuario/confirmar-troca.html?token=${token}`;
+  const link = `http://localhost:3000/page/usuario/confirmar-troca.html?token=${token}`;
     // Envia email
     await enviarEmail(email, 'Recuperação de senha', `<p>Para redefinir sua senha, confirme abaixo:</p><p><a href="${link}">Confirmar troca de senha</a></p><p>Se não foi você, ignore este email.</p>`);
     res.status(200).json({ mensagem: 'Se o email estiver cadastrado, um link foi enviado.' });

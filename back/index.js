@@ -6,13 +6,25 @@ const pool = require('./db');
 const { Parser } = require('json2csv');
 const PDFDocument = require('pdfkit');
 const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, TextRun, HeadingLevel, AlignmentType, BorderStyle } = require('docx');
+const path = require('path');
 const app = express(); // <-- ESTA LINHA TEM QUE VIR ANTES DAS ROTAS
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
+// Serve arquivos estáticos do front-end
+app.use(express.static(path.join(__dirname, '..', 'front', 'public')));
 app.use('/api', loginRouter);
 app.use('/api', usuarioRouter);
+
+// Rotas explícitas de fallback para páginas de confirmação (garante entrega do arquivo)
+app.get('/page/usuario/confirmar-troca-email.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'front', 'public', 'page', 'usuario', 'confirmar-troca-email.html'));
+});
+
+app.get('/page/usuario/confirmar-troca.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'front', 'public', 'page', 'usuario', 'confirmar-troca.html'));
+});
 
 // Rota para listar locais
 
@@ -212,12 +224,12 @@ app.put('/api/itens/:id', async (req, res) => {
 app.post('/api/itens', async (req, res) => {
   let { nome, quantidade, descricao, fk_Categoria_id, local } = req.body;
   const dataAdicionado = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-  // Normaliza o nome para evitar duplicidade
-  nome = nome.trim().toLowerCase();
+    // Apenas remove espaços extras, mas mantém maiúsculas/minúsculas
+    nome = nome.trim();
   console.log('Dados recebidos:', { nome, quantidade, descricao, fk_Categoria_id }); // Log dos dados recebidos
   try {
   // Verificar se o item já existe no banco de dados (normalizado)
-  const [itemExistente] = await pool.query('SELECT * FROM Itens WHERE LOWER(TRIM(nome)) = ?', [nome]);
+  const [itemExistente] = await pool.query('SELECT * FROM Itens WHERE TRIM(nome) = ?', [nome]);
     if (itemExistente.length > 0) {
       return res.status(400).json({ erro: `O item com o nome "${nome}" já existe no banco de dados.` });
     }
