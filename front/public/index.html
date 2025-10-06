@@ -165,6 +165,7 @@ function selecionarLocalidadeParaFiltro(local) {
               <button class="btn btn-danger px-4 py-2" id="btnDeletarMassa"><i class="fa fa-trash"></i> Deletar Itens</button>
               <button class="btn btn-success px-4 py-2" id="btnRelatorio"><i class="fa fa-download"></i> Baixar Relatório</button>
               <button class="btn btn-info px-4 py-2" id="btnFiltro"><i class="fa fa-filter"></i> Filtrar</button>
+              <div id="paginacaoItens" class="d-flex align-items-center ms-2"></div>
             </div>
           </div>
         </div>
@@ -263,6 +264,15 @@ function selecionarLocalidadeParaFiltro(local) {
                           <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalLocalidades" onclick="window._modalParentBeforeLocal='modalAdicionarItem'">Selecionar</button>
                         </div>
                         <!-- Modal de seleção de localidade (movido para o final do body) -->
+                      </div>
+                      <div class="mb-3">
+                        <label for="estadoItem" class="form-label">Estado do Item</label>
+                        <select class="form-select" id="estadoItem" required>
+                          <option value="">Selecione o estado</option>
+                          <option value="em uso">Em uso</option>
+                          <option value="quebrado">Quebrado</option>
+                          <option value="parado">Parado</option>
+                        </select>
                       </div>
                       <button type="submit" class="btn btn-primary">Salvar Item</button>
           </form>
@@ -364,13 +374,14 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
               const descricao = document.getElementById('descItem').value.trim();
               const fk_Categoria_id = document.getElementById('categoriaItem').value;
               const local = document.getElementById('localItem').value;
+              const estado = document.getElementById('estadoItem').value;
 
               const alerta = document.getElementById('alertaModal');
               alerta.classList.add('d-none');
               alerta.classList.remove('alert-success', 'alert-danger');
 
               // Validação extra
-              if (!nome || !quantidade || !descricao || !fk_Categoria_id || fk_Categoria_id === "") {
+              if (!nome || !quantidade || !descricao || !fk_Categoria_id || fk_Categoria_id === "" || !estado) {
                 alerta.classList.remove('d-none');
                 alerta.classList.add('alert-danger');
                 alerta.innerText = 'Preencha todos os campos corretamente.';
@@ -390,11 +401,11 @@ document.getElementById('barraPesquisa').addEventListener('input', function() {
               }
 
               try {
-                const response = await fetch('http://localhost:3000/api/itens', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id, local })
-                });
+        const response = await fetch('http://localhost:3000/api/itens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id, local, estado })
+        });
                 const data = await response.json();
                 if (!response.ok) {
                   alerta.classList.remove('d-none');
@@ -644,6 +655,13 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
                               <option value="Sala de Armazenamento Técnico" ${item.local=='Sala de Armazenamento Técnico'?'selected':''}>Sala de Armazenamento Técnico</option>
                             </select>
                           </div>
+                          <div class="col-md-2">
+                            <select class="form-select" id="editEstado${item.id}">
+                              <option value="em uso" ${item.estado=='em uso'?'selected':''}>Em uso</option>
+                              <option value="quebrado" ${item.estado=='quebrado'?'selected':''}>Quebrado</option>
+                              <option value="parado" ${item.estado=='parado'?'selected':''}>Parado</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
           `).join('');
@@ -681,7 +699,8 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           const quantidade = document.getElementById('editQtd'+id).value.trim();
           const descricao = document.getElementById('editDesc'+id).value.trim();
           const fk_Categoria_id = parseInt(document.getElementById('editCat'+id).value);
-          if (!nome || !quantidade || !descricao || !fk_Categoria_id || isNaN(quantidade) || Number(quantidade) <= 0) {
+          const estado = document.getElementById('editEstado'+id).value;
+          if (!nome || !quantidade || !descricao || !fk_Categoria_id || !estado || isNaN(quantidade) || Number(quantidade) <= 0) {
             alerta.classList.remove('d-none', 'alert-success');
             alerta.classList.add('alert-danger');
             alerta.textContent = 'Preencha todos os campos corretamente para cada item.';
@@ -693,7 +712,8 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
               quantidade,
               descricao,
               fk_Categoria_id,
-              local: document.getElementById('editLocal'+id).value
+              local: document.getElementById('editLocal'+id).value,
+              estado
           });
         }
       });
@@ -774,45 +794,84 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
           return;
         }
-        lista.innerHTML = '';
-        // Mapeamento dos nomes reais para nomes amigáveis
-        const nomesLocais = {
-          'Almoxarifado': 'Sala de limpeza',
-          'Sala de Aula': 'Sala de Aula',
-          'Biblioteca': 'Biblioteca',
-          'Sala dos Professores': 'Sala dos Professores',
-          'Diretoria': 'Diretoria',
-          'Quadra': 'Sala de material esportivo',
-          'Cantina': 'Cantina',
-          'Laboratório de Quimica': 'Laboratório de Quimica',
-          'Laboratório de Informática': 'Laboratório de Informática',
-          'Laboratório de Informática 2': 'Laboratório de Informática 2',
-          'Laboratório de Informática 3': 'Laboratório de Informática 3',
-          'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
-        };
-        // Mapeamento dos nomes reais para nomes amigáveis de categoria
-        const nomesCategorias = {
-          'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
-          'Administração Escolar': 'Administração Escolar',
-          'Quimica': 'Química',
-          'Ds': 'Desenvolvimento de Sistemas',
-          'Administração': 'Administração Escolar',
-          'Qui': 'Química'
-        };
-        itens.forEach(item => {
+        // Paginação
+        let paginaAtual = 1;
+        const itensPorPagina = 10;
+        const totalPaginas = Math.ceil(itens.length / itensPorPagina);
+        // Elemento de paginação
+  let paginacaoEl = document.getElementById('paginacaoItens');
+  paginacaoEl.style.display = 'flex';
+  paginacaoEl.style.gap = '4px';
+  paginacaoEl.style.marginTop = '0';
+  paginacaoEl.style.marginLeft = '8px';
+        function renderPagina(pagina) {
+          lista.innerHTML = '';
+          const nomesLocais = {
+            'Almoxarifado': 'Sala de limpeza',
+            'Sala de Aula': 'Sala de Aula',
+            'Biblioteca': 'Biblioteca',
+            'Sala dos Professores': 'Sala dos Professores',
+            'Diretoria': 'Diretoria',
+            'Quadra': 'Sala de material esportivo',
+            'Cantina': 'Cantina',
+            'Laboratório de Quimica': 'Laboratório de Quimica',
+            'Laboratório de Informática': 'Laboratório de Informática',
+            'Laboratório de Informática 2': 'Laboratório de Informática 2',
+            'Laboratório de Informática 3': 'Laboratório de Informática 3',
+            'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
+          };
+          const nomesCategorias = {
+            'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+            'Administração Escolar': 'Administração Escolar',
+            'Quimica': 'Química',
+            'Ds': 'Desenvolvimento de Sistemas',
+            'Administração': 'Administração Escolar',
+            'Qui': 'Química'
+          };
+          const inicio = (pagina - 1) * itensPorPagina;
+          const fim = inicio + itensPorPagina;
+          const itensPagina = itens.slice(inicio, fim);
+          itensPagina.forEach(item => {
             const div = document.createElement('div');
             div.className = "card mb-2 shadow-sm";
             const nomeLocal = nomesLocais[item.local] || item.local || '';
             const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
+            let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
+            if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
+            else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
             div.innerHTML = `
               <div class="card-body">
-                <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
+                <h6 class="card-title">
+                  ${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}
+                </h6>
                 <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
                 <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
               </div>
             `;
             lista.appendChild(div);
-        });
+          });
+          // Renderizar paginação
+          paginacaoEl.innerHTML = '';
+          paginacaoEl.style.display = 'flex';
+          paginacaoEl.style.gap = '4px';
+          paginacaoEl.style.marginTop = '16px';
+          for (let i = 1; i <= totalPaginas; i++) {
+              const btn = document.createElement('button');
+              btn.className = 'btn btn-dark mx-1';
+              btn.textContent = i;
+              if (i === pagina) btn.classList.add('active');
+              btn.onclick = () => {
+                paginaAtual = i;
+                renderPagina(paginaAtual);
+              };
+              paginacaoEl.appendChild(btn);
+          }
+          // Se só tem uma página, mostra o botão desabilitado
+          if (totalPaginas === 1) {
+            paginacaoEl.innerHTML = '<button class="btn btn-dark mx-1" disabled>1</button>';
+          }
+        }
+        renderPagina(paginaAtual);
       } catch (error) {
         lista.innerHTML = '<span class="text-danger">Erro ao carregar itens.</span>';
       }
@@ -856,15 +915,24 @@ window.addEventListener('resize', () => {
           itens.forEach(item => {
             const card = document.createElement('div');
             card.className = 'card mb-2 shadow-sm';
-              const nomeLocal = nomesLocais[item.local] || item.local || '';
-              const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
-              card.innerHTML = `
-                <div class="card-body">
-                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
-                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-                </div>
-              `;
+            const nomeLocal = nomesLocais[item.local] || item.local || '';
+            const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
+            let corEstado = '#28a745'; // verde
+            if (item.estado === 'quebrado') corEstado = '#dc3545'; // vermelho
+            else if (item.estado === 'parado') corEstado = '#ffc107'; // amarelo
+            // Badge de estado
+            let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
+            if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
+            else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
+            card.innerHTML = `
+              <div class="card-body">
+                <h6 class="card-title">
+                  ${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}
+                </h6>
+                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+              </div>
+            `;
             div.appendChild(card);
           });
         })

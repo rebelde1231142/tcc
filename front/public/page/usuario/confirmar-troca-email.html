@@ -139,9 +139,12 @@
           body: JSON.stringify({ token })
         });
         if (resp.ok) {
-          msg.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> E-mail alterado com sucesso! Redirecionando...</span>';
+          const data = await resp.json();
+          msg.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> E-mail alterado com sucesso! Redirecionando para login...</span>';
+          // Remove dados de sessão local para forçar novo login com o novo e-mail
+          localStorage.removeItem('usuarioLogado');
           setTimeout(() => {
-            window.location.href = '/page/configuracao.html';
+            window.location.href = '/page/usuario/login.html';
           }, 1200);
         } else {
           const data = await resp.json();

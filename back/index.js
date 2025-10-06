@@ -7,6 +7,7 @@ const { Parser } = require('json2csv');
 const PDFDocument = require('pdfkit');
 const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, TextRun, HeadingLevel, AlignmentType, BorderStyle } = require('docx');
 const path = require('path');
+const { enviarErro } = require('./utils/errorHandler');
 const app = express(); // <-- ESTA LINHA TEM QUE VIR ANTES DAS ROTAS
 
 // Middlewares
@@ -16,6 +17,14 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'front', 'public')));
 app.use('/api', loginRouter);
 app.use('/api', usuarioRouter);
+
+// Middleware global de tratamento de erros (captura exceções não tratadas nas rotas)
+app.use((err, req, res, next) => {
+  console.error('Erro não tratado:', err);
+  // Reutiliza o utilitário para enviar resposta consistente
+  const { enviarErro } = require('./utils/errorHandler');
+  return enviarErro(res, 500, 'Ocorreu um erro no servidor. Tente novamente mais tarde.', err);
+});
 
 // Rotas explícitas de fallback para páginas de confirmação (garante entrega do arquivo)
 app.get('/page/usuario/confirmar-troca-email.html', (req, res) => {
@@ -84,7 +93,7 @@ app.get('/api/relatorio-pdf', async (req, res) => {
     doc.end();
   } catch (error) {
     console.error('Erro ao gerar relatório PDF:', error);
-    res.status(500).json({ erro: 'Erro ao gerar relatório PDF.', detalhes: error.message });
+    return enviarErro(res, 500, 'Não foi possível gerar o relatório no momento.', error);
   }
 });
 
@@ -182,7 +191,7 @@ app.get('/api/relatorio-word', async (req, res) => {
     res.send(buffer);
   } catch (error) {
     console.error('Erro ao gerar relatório Word:', error);
-    res.status(500).json({ erro: 'Erro ao gerar relatório Word.', detalhes: error.message });
+    return enviarErro(res, 500, 'Não foi possível gerar o relatório no momento.', error);
   }
 });
 
@@ -216,7 +225,7 @@ app.put('/api/itens/:id', async (req, res) => {
     res.status(200).json({ mensagem: 'Item atualizado com sucesso.' });
   } catch (error) {
     console.error('Erro ao editar item:', error);
-    res.status(500).json({ erro: 'Erro ao editar item', detalhes: error.message });
+    return enviarErro(res, 500, 'Não foi possível editar o item no momento.', error);
   }
 });
 
@@ -260,7 +269,7 @@ app.post('/api/itens', async (req, res) => {
     res.status(201).json({ mensagem: 'Item cadastrado com sucesso!', item: item[0] }); // Retorna o item com a categoria e mensagem de sucesso
   } catch (error) {
     console.error('Erro ao cadastrar item:', error); // Log do erro completo
-    res.status(500).json({ erro: 'Erro ao cadastrar item', detalhes: error.message });
+    return enviarErro(res, 500, 'Não foi possível cadastrar o item no momento.', error);
   }
 });
 
@@ -274,7 +283,7 @@ app.get('/api/itens', async (req, res) => {
     `);
     res.json(rows);
   } catch (error) {
-    res.status(500).json({ erro: 'Erro ao buscar itens', detalhes: error.message });
+    return enviarErro(res, 500, 'Não foi possível buscar itens no momento.', error);
   }
 });
 
@@ -294,7 +303,7 @@ app.delete('/api/itens/:id', async (req, res) => {
     res.status(200).json({ mensagem: 'Item deletado com sucesso.' });
   } catch (error) {
     console.error('Erro ao deletar item:', error); // Log do erro completo
-    res.status(500).json({ erro: 'Erro ao deletar item', detalhes: error.message });
+    return enviarErro(res, 500, 'Não foi possível deletar o item no momento.', error);
   }
 });
 
@@ -311,7 +320,7 @@ app.get('/api/itens/categorias', async (req, res) => {
     res.json(result[0]);
   } catch (error) {
     console.error('Erro ao buscar dados para o gráfico:', error);
-    res.status(500).json({ erro: 'Erro ao buscar dados para o gráfico.' });
+    return enviarErro(res, 500, 'Não foi possível obter dados para os gráficos no momento.', error);
   }
 });
 
@@ -353,7 +362,7 @@ app.get('/api/relatorio', async (req, res) => {
     res.send(csv);
   } catch (error) {
     console.error('Erro ao gerar relatório:', error);
-    res.status(500).json({ erro: 'Erro ao gerar relatório.', detalhes: error.message });
+    return enviarErro(res, 500, 'Não foi possível gerar o relatório no momento.', error);
   }
 });
 

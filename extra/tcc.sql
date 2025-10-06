@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 01-Out-2025 às 15:15
+-- Tempo de geração: 06-Out-2025 às 17:41
 -- Versão do servidor: 8.0.30
 -- versão do PHP: 8.3.4
 
@@ -68,21 +68,26 @@ CREATE TABLE `itens` (
   `descricao` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `fk_Categoria_id` int DEFAULT NULL,
   `local` varchar(50) DEFAULT NULL,
-  `dataAdicionado` date DEFAULT NULL
+  `dataAdicionado` date DEFAULT NULL,
+  `estado` enum('em uso','quebrado','parado') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Extraindo dados da tabela `itens`
 --
 
-INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`) VALUES
-(4, 'Ssd', 20, 'Armazenamento veloz sendo utilizado no laboratorio de informatica 2', 1, 'Sala de Armazenamento Técnico', '2025-09-25'),
-(5, 'Béquer', 20, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-09-26'),
-(6, 'Mapa Mundi', 1, 'Mapa mundial utilizado nas aulas de geografia e historia.', 2, 'Sala de Aula', '2025-09-26'),
-(7, 'Panos', 50, 'Panos utilizados para realizar a limpeza da escola.', 2, 'Almoxarifado', '2025-09-26'),
-(8, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-09-30'),
-(9, 'ESP-32', 20, 'USado nas aulas de sistemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01'),
-(10, 'HaspBerry', 20, 'Usado nas aulas de sitemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01');
+INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`, `estado`) VALUES
+(4, 'Ssd', 20, 'Armazenamento veloz sendo utilizado no laboratorio de informatica 2', 1, 'Sala de Armazenamento Técnico', '2025-09-25', 'em uso'),
+(5, 'Béquer', 20, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-09-26', 'parado'),
+(6, 'Mapa Mundi', 1, 'Mapa mundial utilizado nas aulas de geografia e historia.', 2, 'Sala de Aula', '2025-09-26', 'em uso'),
+(7, 'Panos', 50, 'Panos utilizados para realizar a limpeza da escola.', 2, 'Almoxarifado', '2025-09-26', 'parado'),
+(8, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-09-30', 'parado'),
+(9, 'ESP-32', 20, 'USado nas aulas de sistemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'em uso'),
+(10, 'HaspBerry', 20, 'Usado nas aulas de sitemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'em uso'),
+(11, 'TV', 5, 'Quebraram ao cair', 2, 'Sala de Armazenamento Técnico', '2025-10-06', 'quebrado'),
+(12, 'cgdggfd', 33, 'fgdfgdfgf', 1, 'Diretoria', '2025-10-06', 'quebrado'),
+(13, 'dfhgfjhgfh', 3434, 'dsfdsfdv', 1, 'Sala dos Professores', '2025-10-06', 'parado'),
+(14, 'dsfgsdfdsfdsf', 444, 'fddsfsdf', 2, 'Diretoria', '2025-10-06', 'em uso');
 
 -- --------------------------------------------------------
 
@@ -176,7 +181,7 @@ ALTER TABLE `entrada`
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
