@@ -12,18 +12,19 @@
       });
     })();
   </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
     body {
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      background: #e0e0e0;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .confirm-card {
-      background: #fff;
+      background: #f7f7f7;
       border-radius: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.10);
       padding: 32px 0;
       width: 100vw;
       max-width: 100vw;
@@ -34,6 +35,9 @@
       align-items: stretch;
       justify-content: center;
     }
+    .btn-primary{background:#5a5a5a;border:none}
+    .btn-primary:hover{background:#444}
+    .btn-link{color:#5a5a5a;}
     .confirm-card h2 {
       font-size: 3.2rem;
       font-weight: 700;
@@ -115,53 +119,50 @@
       const params = new URLSearchParams(window.location.search);
       return params.get('token');
     }
-    const token = getTokenFromUrl();
-    const btnConfirmar = document.getElementById('btnConfirmar');
-    const btnText = document.getElementById('btnText');
-    const loading = document.getElementById('loading');
-    btnConfirmar.addEventListener('click', async function() {
-      const msg = document.getElementById('msg');
-      msg.innerHTML = '';
-      btnConfirmar.disabled = true;
-      btnText.style.display = 'none';
-      loading.style.display = 'inline-block';
-      if (!token) {
-        msg.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Token não encontrado.</span>';
+    document.addEventListener('DOMContentLoaded', function() {
+      const loading = document.getElementById('loading');
+      const btnConfirmar = document.getElementById('btnConfirmar');
+      const btnText = document.getElementById('btnText');
+      const token = getTokenFromUrl();
+      btnConfirmar.addEventListener('click', async function() {
+        const msg = document.getElementById('msg');
+        msg.innerHTML = '';
+        btnConfirmar.disabled = true;
+        btnText.style.display = 'none';
+        loading.style.display = 'inline-block';
+        if (!token) {
+          msg.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Token não encontrado.</span>';
+          btnConfirmar.disabled = false;
+          btnText.style.display = '';
+          loading.style.display = 'none';
+          return;
+        }
+        try {
+          const resp = await fetch('http://localhost:3000/api/usuarios/confirmar-troca-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            msg.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> E-mail alterado com sucesso! Redirecionando para login...</span>';
+            localStorage.removeItem('usuarioLogado');
+            setTimeout(() => {
+              window.location.href = '/page/usuario/login.html';
+            }, 1200);
+          } else {
+            const data = await resp.json();
+            msg.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle"></i> ${data.erro || 'Erro ao confirmar.'}</span>`;
+          }
+        } catch (err) {
+          msg.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Erro de conexão.</span>';
+        }
         btnConfirmar.disabled = false;
         btnText.style.display = '';
         loading.style.display = 'none';
-        return;
-      }
-      try {
-        const resp = await fetch('http://localhost:3000/api/usuarios/confirmar-troca-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token })
-        });
-        if (resp.ok) {
-          const data = await resp.json();
-          msg.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> E-mail alterado com sucesso! Redirecionando para login...</span>';
-          // Remove dados de sessão local para forçar novo login com o novo e-mail
-          localStorage.removeItem('usuarioLogado');
-          setTimeout(() => {
-            window.location.href = '/page/usuario/login.html';
-          }, 1200);
-        } else {
-          const data = await resp.json();
-          msg.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle"></i> ${data.erro || 'Erro ao confirmar.'}</span>`;
-        }
-      } catch (err) {
-        msg.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Erro de conexão.</span>';
-      }
-      btnConfirmar.disabled = false;
-      btnText.style.display = '';
-      loading.style.display = 'none';
+      });
     });
-    // Adiciona ícones do Bootstrap Icons
-    const linkIcons = document.createElement('link');
-    linkIcons.rel = 'stylesheet';
-    linkIcons.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css';
-    document.head.appendChild(linkIcons);
   </script>
 </body>
+</html>
 </html>

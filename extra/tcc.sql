@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 06-Out-2025 às 17:41
+-- Tempo de geração: 08/10/2025 às 15:15
 -- Versão do servidor: 8.0.30
--- versão do PHP: 8.3.4
+-- Versão do PHP: 8.3.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `categoria`
+-- Estrutura para tabela `categoria`
 --
 
 CREATE TABLE `categoria` (
@@ -34,7 +34,7 @@ CREATE TABLE `categoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `categoria`
+-- Despejando dados para a tabela `categoria`
 --
 
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
@@ -45,7 +45,7 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `entrada`
+-- Estrutura para tabela `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -58,7 +58,7 @@ CREATE TABLE `entrada` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `itens`
+-- Estrutura para tabela `itens`
 --
 
 CREATE TABLE `itens` (
@@ -73,7 +73,7 @@ CREATE TABLE `itens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `itens`
+-- Despejando dados para a tabela `itens`
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`, `estado`) VALUES
@@ -87,12 +87,14 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 (11, 'TV', 5, 'Quebraram ao cair', 2, 'Sala de Armazenamento Técnico', '2025-10-06', 'quebrado'),
 (12, 'cgdggfd', 33, 'fgdfgdfgf', 1, 'Diretoria', '2025-10-06', 'quebrado'),
 (13, 'dfhgfjhgfh', 3434, 'dsfdsfdv', 1, 'Sala dos Professores', '2025-10-06', 'parado'),
-(14, 'dsfgsdfdsfdsf', 444, 'fddsfsdf', 2, 'Diretoria', '2025-10-06', 'em uso');
+(14, 'dsfgsdfdsfdsf', 444, 'fddsfsdf', 2, 'Diretoria', '2025-10-06', 'em uso'),
+(15, 'PenDrive', 12, 'armazenamento util', 1, 'Sala de Armazenamento Técnico', '2025-10-08', NULL),
+(16, 'rtyrtyt', 55, 'gfhfghfg', 1, 'Sala dos Professores', '2025-10-08', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `perfil`
+-- Estrutura para tabela `perfil`
 --
 
 CREATE TABLE `perfil` (
@@ -102,18 +104,18 @@ CREATE TABLE `perfil` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `perfil`
+-- Despejando dados para a tabela `perfil`
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
 ('50316526336', 'fjberton@gmail.com', '$2b$10$DhKSmckghpCByA5qBr3QMu0KUbrgv9wwCvq3RKmgFI1k.kufw9piK'),
 ('52657628842', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$b.AWwoBhboOIVLakWLZvluIyzrO8j.YKlxqBUPBNXECRrW9H8J2Le'),
-('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$4Ai3qKiqcdnAzd.b7E.rW.vdW2dmj5scjjNmoTHMt2fEKN77CQhu6');
+('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$y9XjPD8SEMtzsWSEijq0Y.VVEBs6k/Z6uXmV.d3CIfFcA7I6IrOEC');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `saida`
+-- Estrutura para tabela `saida`
 --
 
 CREATE TABLE `saida` (
@@ -128,41 +130,41 @@ CREATE TABLE `saida` (
 --
 
 --
--- Índices para tabela `categoria`
+-- Índices de tabela `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Índices para tabela `entrada`
+-- Índices de tabela `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- Índices para tabela `itens`
+-- Índices de tabela `itens`
 --
 ALTER TABLE `itens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
 
 --
--- Índices para tabela `perfil`
+-- Índices de tabela `perfil`
 --
 ALTER TABLE `perfil`
   ADD PRIMARY KEY (`CPF`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- Índices para tabela `saida`
+-- Índices de tabela `saida`
 --
 ALTER TABLE `saida`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- AUTO_INCREMENT de tabelas despejadas
+-- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
@@ -181,7 +183,7 @@ ALTER TABLE `entrada`
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
@@ -190,11 +192,11 @@ ALTER TABLE `saida`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Restrições para despejos de tabelas
+-- Restrições para tabelas despejadas
 --
 
 --
--- Limitadores para a tabela `itens`
+-- Restrições para tabelas `itens`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);

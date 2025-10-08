@@ -113,7 +113,7 @@
   </div>
   <div class="d-flex">
     <!-- Copiado layout da dashboard principal, porém removidas ações de escrita (adicionar/editar/deletar) -->
-    <aside class="kiwi-sidebar bg-primary text-white d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;">
+  <aside class="kiwi-sidebar d-flex flex-column p-3" style="width:220px;min-height:100vh;position:fixed;top:0;left:0;z-index:100;background:#5a5a5a;color:#fff;">
       <h4 class="mb-4">
   <a id="btnConfig" title="Configurações" style="color:inherit;text-decoration:none; pointer-events: none;" class="disabled">
           <i class="fa fa-gear"></i> Meu Painel
@@ -127,38 +127,38 @@
   <a href="/page/usuario/registrar.html" class="btn btn-light w-100">Criar Conta</a>
       </div>
     </aside>
-    <main class="flex-grow-1 p-4" style="background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;margin-left:220px;">
+  <main class="flex-grow-1 p-4" style="background:#e0e0e0;min-height:100vh;margin-left:220px;">
       <div class="container-fluid">
         <div class="row mb-4">
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm">
+            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
               <div class="card-body p-2">
                 <canvas id="graficoPorLocal" width="80" height="80"></canvas>
-                <div class="small text-white mt-2"><span style="color:#000000;">Itens por Local</span></div>
+                <div class="small mt-2" style="color:#5a5a5a;">Itens por Local</div>
               </div>
             </div>
           </div>
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm">
+            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
               <div class="card-body p-2">
                 <canvas id="graficoPorCategoria" width="80" height="80"></canvas>
-                <div class="small text-white mt-2"><span style="color:#000000;">Itens por Categoria</span></div>
+                <div class="small mt-2" style="color:#5a5a5a;">Itens por Categoria</div>
               </div>
             </div>
           </div>
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm">
+            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
               <div class="card-body p-2">
                 <canvas id="graficoQtdPorCategoria" width="80" height="80"></canvas>
-                <div class="small text-white mt-2"><span style="color:#000000;">Quantidade por Categoria</span></div>
+                <div class="small mt-2" style="color:#5a5a5a;">Quantidade por Categoria</div>
               </div>
             </div>
           </div>
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm">
+            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
               <div class="card-body p-2">
                 <canvas id="graficoItensPorDia" width="80" height="80"></canvas>
-                <div class="small text-white mt-2"><span style="color:#000000;">Itens Adicionados por Dia</span></div>
+                <div class="small mt-2" style="color:#5a5a5a;">Itens Adicionados por Dia</div>
               </div>
             </div>
           </div>
@@ -181,8 +181,8 @@
         </div>
         <div class="row">
           <div class="col-12 mt-4 mt-md-0">
-            <div class="card shadow-sm">
-              <div class="card-header bg-primary text-white">
+            <div class="card shadow-sm" style="background:#f7f7f7;border-radius:16px;">
+              <div class="card-header" style="background:#5a5a5a;color:#fff;">
                 Itens Salvos
               </div>
               <div class="card-body" id="itensBanco">
