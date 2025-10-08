@@ -17,21 +17,44 @@
   </script>
   <style>
 /* Estilo moderno para botões de paginação */
+/* Paginação fixa na base, centralizada, botões quadrados e azul/cinza */
+#paginacaoItens {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 32px auto 0 auto;
+  max-width: 100vw;
+  width: fit-content;
+  left: 50%;
+  transform: translateX(-50%);
+  position: relative;
+  background: #f1f1f1;
+  padding: 12px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
 #paginacaoItens .btn {
-  border-radius: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  font-weight: 500;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  border-radius: 8px !important;
+  width: 44px;
+  height: 44px;
+  margin: 0 4px;
+  background: #1976d2;
+  color: #fff;
+  font-weight: 600;
   border: none;
-  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 #paginacaoItens .btn:hover, #paginacaoItens .btn:focus {
-  background: #343a40;
+  background: #1565c0;
   color: #fff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.18);
 }
 #paginacaoItens .btn.active {
-  background: #000;
+  background: #263238;
   color: #fff;
   box-shadow: 0 4px 16px rgba(0,0,0,0.22);
 }
@@ -304,17 +327,70 @@ async function carregarGraficosPrincipais() {
   } catch (e) {}
 }
 // Função para filtrar itens pela barra de pesquisa
+function renderizarPesquisa(termo) {
+  const lista = document.getElementById('itensBanco');
+  let paginacaoEl = document.getElementById('paginacaoItens');
+  if (paginacaoEl) paginacaoEl.innerHTML = '';
+  lista.innerHTML = '';
+  const nomesLocais = {
+    'Almoxarifado': 'Sala de limpeza',
+    'Sala de Aula': 'Sala de Aula',
+    'Biblioteca': 'Biblioteca',
+    'Sala dos Professores': 'Sala dos Professores',
+    'Diretoria': 'Diretoria',
+    'Quadra': 'Sala de material esportivo',
+    'Cantina': 'Cantina',
+    'Laboratório de Quimica': 'Laboratório de Quimica',
+    'Laboratório de Informática': 'Laboratório de Informática',
+    'Laboratório de Informática 2': 'Laboratório de Informática 2',
+    'Laboratório de Informática 3': 'Laboratório de Informática 3'
+  };
+  const resultados = itensCache.filter(item => {
+    const nomeLocal = nomesLocais[item.local] || item.local || '';
+    const nomeCategoria = item.categoriaNome || '';
+    return (
+      (item.nome && item.nome.toLowerCase().includes(termo)) ||
+      (nomeLocal && nomeLocal.toLowerCase().includes(termo)) ||
+      (nomeCategoria && nomeCategoria.toLowerCase().includes(termo)) ||
+      (item.descricao && item.descricao.toLowerCase().includes(termo))
+    );
+  });
+  if (resultados.length === 0) {
+    lista.innerHTML = '<span class="text-muted">Nenhum item encontrado.</span>';
+    return;
+  }
+  resultados.forEach(item => {
+    const div = document.createElement('div');
+    div.className = "card mb-2 shadow-sm";
+    const nomeLocal = nomesLocais[item.local] || item.local || '';
+    const nomeCategoria = item.categoriaNome || '';
+    let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
+    if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
+    else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
+    div.innerHTML = `
+      <div class="card-body">
+        <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}</h6>
+        <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+        <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+      </div>
+    `;
+    lista.appendChild(div);
+  });
+}
+
 document.getElementById('barraPesquisa').addEventListener('input', function() {
   const termo = this.value.toLowerCase();
-  const lista = document.getElementById('itensBanco');
-  Array.from(lista.children).forEach(item => {
-    if (item.textContent.toLowerCase().includes(termo)) {
-      item.style.display = '';
-    } else {
-      item.style.display = 'none';
-    }
-  });
+  if (termo.length === 0) {
+    paginaAtual = 1;
+    renderPagina(paginaAtual);
+  } else {
+    renderizarPesquisa(termo);
+  }
 });
+let paginaAtual = 1;
+let itensCache = [];
+const itensPorPagina = 10;
+
 async function carregarItens() {
   const lista = document.getElementById('itensBanco');
   lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
@@ -325,39 +401,76 @@ async function carregarItens() {
       lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
       return;
     }
-    lista.innerHTML = '';
-    // Mapeamento dos nomes reais para nomes amigáveis
-  const nomesLocais = {
-      'Almoxarifado': 'Sala de limpeza',
-      'Sala de Aula': 'Sala de Aula',
-      'Biblioteca': 'Biblioteca',
-      'Sala dos Professores': 'Sala dos Professores',
-      'Diretoria': 'Diretoria',
-      'Quadra': 'Sala de material esportivo',
-      'Cantina': 'Cantina',
-      'Laboratório de Quimica': 'Laboratório de Quimica',
-      'Laboratório de Informática': 'Laboratório de Informática',
-      'Laboratório de Informática 2': 'Laboratório de Informática 2',
-      'Laboratório de Informática 3': 'Laboratório de Informática 3'
-    };
-  // Usar apelidos retornados pelo backend (categoriaNome) como labels
-
-    itens.forEach(item => {
-      const div = document.createElement('div');
-      div.className = "card mb-2 shadow-sm";
-      const nomeLocal = nomesLocais[item.local] || item.local || '';
-  const nomeCategoria = item.categoriaNome || '';
-      div.innerHTML = `
-        <div class="card-body">
-          <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
-          <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-          <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-        </div>
-      `;
-      lista.appendChild(div);
-    });
+    itensCache = itens;
+    renderPagina(paginaAtual);
   } catch (error) {
     lista.innerHTML = '<span class="text-danger">Erro ao carregar itens.</span>';
+  }
+}
+
+function renderPagina(pagina) {
+  const lista = document.getElementById('itensBanco');
+  // Remove tudo, mas garante que a div de paginação exista
+  lista.innerHTML = '';
+  let paginacaoEl = document.getElementById('paginacaoItens');
+  if (!paginacaoEl) {
+    paginacaoEl = document.createElement('div');
+    paginacaoEl.id = 'paginacaoItens';
+    paginacaoEl.className = 'd-flex align-items-center ms-2';
+    lista.parentNode.appendChild(paginacaoEl);
+  }
+  const nomesLocais = {
+    'Almoxarifado': 'Sala de limpeza',
+    'Sala de Aula': 'Sala de Aula',
+    'Biblioteca': 'Biblioteca',
+    'Sala dos Professores': 'Sala dos Professores',
+    'Diretoria': 'Diretoria',
+    'Quadra': 'Sala de material esportivo',
+    'Cantina': 'Cantina',
+    'Laboratório de Quimica': 'Laboratório de Quimica',
+    'Laboratório de Informática': 'Laboratório de Informática',
+    'Laboratório de Informática 2': 'Laboratório de Informática 2',
+    'Laboratório de Informática 3': 'Laboratório de Informática 3'
+  };
+  const inicio = (pagina - 1) * itensPorPagina;
+  const fim = inicio + itensPorPagina;
+  const itensPagina = itensCache.slice(inicio, fim);
+  itensPagina.forEach(item => {
+    const div = document.createElement('div');
+    div.className = "card mb-2 shadow-sm";
+    const nomeLocal = nomesLocais[item.local] || item.local || '';
+    const nomeCategoria = item.categoriaNome || '';
+    let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
+    if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
+    else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
+    div.innerHTML = `
+      <div class="card-body">
+        <h6 class="card-title">${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}</h6>
+        <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+        <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+      </div>
+    `;
+    lista.appendChild(div);
+  });
+  // Renderizar paginação
+  const totalPaginas = Math.ceil(itensCache.length / itensPorPagina);
+  paginacaoEl.innerHTML = '';
+  paginacaoEl.style.display = 'flex';
+  paginacaoEl.style.gap = '4px';
+  paginacaoEl.style.marginTop = '16px';
+  for (let i = 1; i <= totalPaginas; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-dark mx-1';
+    btn.textContent = i;
+    if (i === pagina) btn.classList.add('active');
+    btn.onclick = () => {
+      paginaAtual = i;
+      renderPagina(paginaAtual);
+    };
+    paginacaoEl.appendChild(btn);
+  }
+  if (totalPaginas === 1) {
+    paginacaoEl.innerHTML = '<button class="btn btn-dark mx-1" disabled>1</button>';
   }
 }
 window.addEventListener('DOMContentLoaded', () => {
