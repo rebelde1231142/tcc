@@ -35,16 +35,16 @@ body[data-tema="padrao"] {
     font-weight: bold;
     margin-bottom: 20px;
     text-align: center;
-    color: #6a11cb;
+    color: #5a5a5a;
 }
 
 .btn-primary {
-    background: #6a11cb;
+    background: #5a5a5a;
     border: none;
 }
 
 .btn-primary:hover {
-    background: #2575fc;
+    background: #5a5a5a;
 }
 
 .alert {

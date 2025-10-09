@@ -1,0 +1,26 @@
+/* Estilos para a página de login */
+body {
+    background: #e0e0e0;
+}
+.login-container {
+    background: #f7f7f7;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.10);
+    padding: 32px;
+    max-width: 400px;
+    width: 100%;
+}
+.btn-primary {
+    background: #5a5a5a;
+    border: none;
+}
+.btn-primary:hover {
+    background: #444;
+}
+.btn-light {
+    background: #d3d3d3;
+    color: #333;
+}
+.btn-link {
+    color: #5a5a5a;
+}
