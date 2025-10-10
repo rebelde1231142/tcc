@@ -1,3 +1,26 @@
+    <script>
+      // Detecta Android e aplica classes vivas nos botões principais
+      document.addEventListener('DOMContentLoaded', function() {
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        if (isAndroid) {
+          const btns = [
+            { id: 'btnRelatorio', cls: 'btn-success' },
+            { id: 'btnFiltrar', cls: 'btn-info' }
+          ];
+          btns.forEach(({id, cls}) => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.className = 'btn px-4 py-2 ' + cls;
+              el.style.background = '';
+              el.style.color = '';
+              el.style.border = '';
+              el.style.boxShadow = '';
+              el.style.borderRadius = '';
+            }
+          });
+        }
+      });
+    </script>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -214,7 +237,10 @@ function renderizarGraficosPrincipais(itens, ids = {
   qtdPorCategoria: 'graficoQtdPorCategoria',
   itensPorDia: 'graficoItensPorDia'
 }) {
-  // Paleta minimalista igual à dashboard
+  // Paleta minimalista e paleta viva para Android
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const vividColors = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#ff9800'];
+  const vividColorsHover = ['#1565c0', '#388e3c', '#c62828', '#f9a825', '#6d1b7b', '#006064', '#3e2723', '#ef6c00'];
   const minimalColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#b8bac0', '#b5c2d1', '#e0cfc2', '#bfc4c9', '#dee2e6'];
   const minimalColorsHover = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#757575'];
 
@@ -230,11 +256,11 @@ function renderizarGraficosPrincipais(itens, ids = {
     const elLocal = document.getElementById(ids.porLocal);
     if (elLocal) {
       if (chartPorLocal) chartPorLocal.destroy();
-      chartPorLocal = new Chart(elLocal.getContext('2d'), {
-        type: 'pie',
-        data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: minimalColors, hoverBackgroundColor: minimalColorsHover }] },
-        options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } } }
-      });
+        chartPorLocal = new Chart(elLocal.getContext('2d'), {
+          type: 'pie',
+          data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: isAndroid ? vividColors : minimalColors, hoverBackgroundColor: isAndroid ? vividColorsHover : minimalColorsHover }] },
+          options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, interaction: { mode: 'nearest', intersect: true } }
+        });
     }
   } catch (err) { console.error('Erro ao criar ' + ids.porLocal, err); }
 
@@ -249,11 +275,11 @@ function renderizarGraficosPrincipais(itens, ids = {
     const elCat = document.getElementById(ids.porCategoria);
     if (elCat) {
       if (chartPorCategoria) chartPorCategoria.destroy();
-      chartPorCategoria = new Chart(elCat.getContext('2d'), {
-        type: 'pie',
-        data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors, hoverBackgroundColor: minimalColorsHover }] },
-        options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } } }
-      });
+        chartPorCategoria = new Chart(elCat.getContext('2d'), {
+          type: 'pie',
+          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: isAndroid ? vividColors : catColors, hoverBackgroundColor: isAndroid ? vividColorsHover : minimalColorsHover }] },
+          options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, interaction: { mode: 'nearest', intersect: true } }
+        });
     }
   } catch (err) { console.error('Erro ao criar ' + ids.porCategoria, err); }
 
@@ -269,17 +295,29 @@ function renderizarGraficosPrincipais(itens, ids = {
     const qtd = Number(item.quantidade) || 0;
     if (label && qtd > 0) { estados[label] += qtd; totalEstados += qtd; }
   });
-  const estadoLabels = Object.keys(estados);
+  const estadoLabels = ['Em uso', 'Quebrado', 'Parado'];
   const estadoValues = estadoLabels.map(e => totalEstados > 0 ? Math.round((estados[e] / totalEstados) * 100) : 0);
   const estadoColors = ['#6c757d', '#a3b1c6', '#e0cfc2'];
   try {
     const elQtd = document.getElementById(ids.qtdPorCategoria);
     if (elQtd) {
       if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
+      if (isAndroid && typeof console !== 'undefined') console.log('Estado valores (percent):', estadoValues);
+      const qtdOptionsDesktop = {
+        plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: function(context) { return context.label + ': ' + context.parsed.y + '%'; } } }, title: { display: false } },
+        interaction: { mode: 'nearest', intersect: true },
+        scales: { x: { display: true }, y: { display: true, beginAtZero: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } }
+      };
+      const qtdOptionsMobile = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: function(context) { return context.label + ': ' + context.parsed.y + '%'; } } }, title: { display: false } },
+        interaction: { mode: 'nearest', intersect: true },
+        scales: { x: { display: true }, y: { display: true, beginAtZero: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } }
+      };
       chartQtdPorCategoria = new Chart(elQtd.getContext('2d'), {
         type: 'bar',
-        data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: estadoColors, hoverBackgroundColor: minimalColorsHover }] },
-        options: { plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: function(context) { return context.label + ': ' + context.parsed.y + '%'; } } }, title: { display: false } }, scales: { x: { display: true }, y: { display: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } } }
+        data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: isAndroid ? vividColors.slice(0,3) : estadoColors, hoverBackgroundColor: isAndroid ? vividColorsHover.slice(0,3) : minimalColorsHover, maxBarThickness: 48 }] },
+        options: isAndroid ? qtdOptionsMobile : qtdOptionsDesktop
       });
     }
   } catch (err) { console.error('Erro ao criar ' + ids.qtdPorCategoria, err); }
@@ -293,10 +331,21 @@ function renderizarGraficosPrincipais(itens, ids = {
     const elDia = document.getElementById(ids.itensPorDia);
     if (elDia) {
       if (chartItensPorDia) chartItensPorDia.destroy();
+      const diaOptionsDesktop = {
+        plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { title: function(context) { const label = context[0].label; if (!label) return ''; const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/); if (match) { const [_, ano, mes, dia] = match; return `${dia}/${mes}/${ano}`; } return label; }, label: function(context) { return 'Quantidade: ' + context.parsed.y; } } }, title: { display: false } },
+        interaction: { mode: 'nearest', intersect: true },
+        scales: { x: { display: false }, y: { display: false } }
+      };
+      const diaOptionsMobile = {
+        plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { title: function(context) { const label = context[0].label; if (!label) return ''; const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/); if (match) { const [_, ano, mes, dia] = match; return `${dia}/${mes}/${ano}`; } return label; }, label: function(context) { return 'Quantidade: ' + context.parsed.y; } } }, title: { display: false } },
+        interaction: { mode: 'index', intersect: false },
+        scales: { x: { display: true, ticks: { font: { size: 13 }, color: '#333', maxRotation: 60, minRotation: 30 } }, y: { display: false } },
+        responsive: true, maintainAspectRatio: false
+      };
       chartItensPorDia = new Chart(elDia.getContext('2d'), {
         type: 'line',
         data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
-        options: { plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { title: function(context) { const label = context[0].label; if (!label) return ''; const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/); if (match) { const [_, ano, mes, dia] = match; return `${dia}/${mes}/${ano}`; } return label; }, label: function(context) { return 'Quantidade: ' + context.parsed.y; } } }, title: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+        options: isAndroid ? diaOptionsMobile : diaOptionsDesktop
       });
     }
   } catch (err) { console.error('Erro ao criar ' + ids.itensPorDia, err); }
@@ -696,42 +745,46 @@ async function carregarGraficosMenu() {
       options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, responsive: true }
     });
 
-    // 3. Quantidade total por Categoria
-    // Novo gráfico: Estado dos Itens (%)
-    const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
-    let totalEstados = 0;
-    itens.forEach(item => {
-      let estado = (item.estado || '').trim();
-      if (estado === 'Em uso' || estado === 'Quebrado' || estado === 'Parado') {
-        estados[estado] += 1;
-        totalEstados += 1;
-      }
-    });
-    const estadoLabels = Object.keys(estados);
-    const estadoValues = estadoLabels.map(e => totalEstados > 0 ? Math.round((estados[e] / totalEstados) * 100) : 0);
-    const estadoColors = ['#6c757d', '#a3b1c6', '#e0cfc2'];
-    if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();
-    chartQtdPorCategoriaMenu = new Chart(document.getElementById('graficoQtdPorCategoriaMenu').getContext('2d'), {
-      type: 'bar',
-      data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: estadoColors, hoverBackgroundColor: minimalColorsHover }] },
-      options: { plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: function(context) { return context.label + ': ' + context.parsed.y + '%'; } } }, title: { display: false } }, scales: { x: { display: true }, y: { display: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } }, responsive: true }
-    });
+    // 3. Estado dos Itens (%) - soma por `quantidade`, paleta viva em Android, sempre 3 barras
+    (function() {
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const vivid = ['#1976d2', '#e53935', '#43a047'];
+      const vividHover = ['#1565c0', '#c62828', '#388e3c'];
+      const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
+      let totalEstados = 0;
+      itens.forEach(item => {
+        const estadoRaw = (item.estado || '').toString().trim().toLowerCase();
+        const qtd = Number(item.quantidade) || 0;
+        if (!qtd) return;
+        if (estadoRaw === 'em uso') { estados['Em uso'] += qtd; totalEstados += qtd; }
+        else if (estadoRaw === 'quebrado') { estados['Quebrado'] += qtd; totalEstados += qtd; }
+        else if (estadoRaw === 'parado') { estados['Parado'] += qtd; totalEstados += qtd; }
+      });
+      const estadoLabels = ['Em uso','Quebrado','Parado'];
+      const estadoValues = estadoLabels.map(l => totalEstados > 0 ? Math.round((estados[l] / totalEstados) * 100) : 0);
+      const estadoColors = ['#6c757d', '#a3b1c6', '#e0cfc2'];
+      if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();
+      if (isAndroid && typeof console !== 'undefined') console.log('menu - estadoValues:', estadoValues);
+      chartQtdPorCategoriaMenu = new Chart(document.getElementById('graficoQtdPorCategoriaMenu').getContext('2d'), {
+        type: 'bar',
+        data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: isAndroid ? vivid : estadoColors, hoverBackgroundColor: isAndroid ? vividHover : minimalColorsHover, maxBarThickness: 40 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed.y + '%' } }, title: { display: false } }, interaction: { mode: 'nearest', intersect: true }, scales: { x: { display: true }, y: { display: true, beginAtZero: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } } }
+      });
+    })();
 
-    // 4. Itens adicionados por dia
-    const dias = {};
-    itens.forEach(item => {
-      if (item.dataAdicionado) {
-        dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
-      }
-    });
-    const diasLabels = Object.keys(dias).sort();
-    const diasValues = diasLabels.map(d => dias[d]);
-    if (chartItensPorDiaMenu) chartItensPorDiaMenu.destroy();
-    chartItensPorDiaMenu = new Chart(document.getElementById('graficoItensPorDiaMenu').getContext('2d'), {
-      type: 'line',
-      data: { labels: diasLabels.map(() => '') , datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
-      options: { plugins: { legend: { display: false }, tooltip: { enabled: false }, title: { display: false } }, scales: { x: { display: false }, y: { display: false } }, responsive: true }
-    });
+    // 4. Itens adicionados por dia - mostrar datas no eixo X e tooltip em DD/MM/YYYY, interação por toque
+    (function() {
+      const dias = {};
+      itens.forEach(item => { if (item.dataAdicionado) dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1; });
+      const diasLabels = Object.keys(dias).sort();
+      const diasValues = diasLabels.map(d => dias[d]);
+      if (chartItensPorDiaMenu) chartItensPorDiaMenu.destroy();
+      chartItensPorDiaMenu = new Chart(document.getElementById('graficoItensPorDiaMenu').getContext('2d'), {
+        type: 'line',
+        data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false, tension: 0.2 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true, callbacks: { title: function(ctx) { const lab = ctx[0] && ctx[0].label; if (!lab) return ''; const m = lab.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) { return `${m[3]}/${m[2]}/${m[1]}`; } return lab; }, label: function(ctx) { return 'Quantidade: ' + ctx.parsed.y; } } }, title: { display: false } }, interaction: { mode: 'index', intersect: false }, scales: { x: { display: false }, y: { display: false } } }
+      });
+    })();
   } catch (e) {}
 }
 </script>
