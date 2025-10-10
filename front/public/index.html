@@ -158,37 +158,45 @@ function selecionarLocalidadeParaFiltro(local) {
     </aside>
   <main class="flex-grow-1 p-4" style="background:#e0e0e0;min-height:100vh;margin-left:220px;">
       <div class="container-fluid">
-        <div class="row mb-4">
+        <div class="row mb-4 justify-content-center">
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
-              <div class="card-body p-2">
-                <canvas id="graficoPorLocal" width="80" height="80"></canvas>
-                <div class="small mt-2" style="color:#5a5a5a;">Itens por Local</div>
+            <div class="d-flex flex-column align-items-center" style="max-width:340px;margin:auto;">
+              <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:20px;width:100%;">
+                <div class="card-body p-4 d-flex justify-content-center align-items-center" style="min-height:240px;">
+                  <canvas id="graficoPorLocal" width="220" height="220" style="max-width:100%;max-height:300px;"></canvas>
+                </div>
               </div>
+              <div style="background:#444;color:#fff;border-radius:18px;padding:16px 0 10px 0;margin-top:14px;font-size:1.18em;width:100%;text-align:center;box-shadow:0 1px 8px #0001;letter-spacing:0.01em;">Itens por Local</div>
             </div>
           </div>
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
-              <div class="card-body p-2">
-                <canvas id="graficoPorCategoria" width="80" height="80"></canvas>
-                <div class="small mt-2" style="color:#5a5a5a;">Itens por Categoria</div>
+            <div class="d-flex flex-column align-items-center" style="max-width:340px;margin:auto;">
+              <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:20px;width:100%;">
+                <div class="card-body p-4 d-flex justify-content-center align-items-center" style="min-height:240px;">
+                  <canvas id="graficoPorCategoria" width="220" height="220" style="max-width:100%;max-height:300px;"></canvas>
+                </div>
               </div>
+              <div style="background:#444;color:#fff;border-radius:18px;padding:16px 0 10px 0;margin-top:14px;font-size:1.18em;width:100%;text-align:center;box-shadow:0 1px 8px #0001;letter-spacing:0.01em;">Itens por Categoria</div>
             </div>
           </div>
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
-              <div class="card-body p-2">
-                <canvas id="graficoQtdPorCategoria" width="80" height="80"></canvas>
-                <div class="small mt-2" style="color:#5a5a5a;">Quantidade por Categoria</div>
+            <div class="d-flex flex-column align-items-center" style="max-width:340px;margin:auto;">
+              <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:20px;width:100%;">
+                <div class="card-body p-4 d-flex justify-content-center align-items-center" style="min-height:240px;">
+                  <canvas id="graficoQtdPorCategoria" width="220" height="220" style="max-width:100%;max-height:300px;"></canvas>
+                </div>
               </div>
+              <div style="background:#444;color:#fff;border-radius:18px;padding:16px 0 10px 0;margin-top:14px;font-size:1.18em;width:100%;text-align:center;box-shadow:0 1px 8px #0001;letter-spacing:0.01em;">Estado dos Itens (%)</div>
             </div>
           </div>
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
-            <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:16px;">
-              <div class="card-body p-2">
-                <canvas id="graficoItensPorDia" width="80" height="80"></canvas>
-                <div class="small mt-2" style="color:#5a5a5a;">Itens Adicionados por Dia</div>
+            <div class="d-flex flex-column align-items-center" style="max-width:340px;margin:auto;">
+              <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:20px;width:100%;">
+                <div class="card-body p-4 d-flex justify-content-center align-items-center" style="min-height:240px;">
+                  <canvas id="graficoItensPorDia" width="220" height="220" style="max-width:100%;max-height:300px;"></canvas>
+                </div>
               </div>
+              <div style="background:#444;color:#fff;border-radius:18px;padding:16px 0 10px 0;margin-top:14px;font-size:1.18em;width:100%;text-align:center;box-shadow:0 1px 8px #0001;letter-spacing:0.01em;">Itens Adicionados por Dia</div>
             </div>
           </div>
         </div>
@@ -203,11 +211,11 @@ function selecionarLocalidadeParaFiltro(local) {
         <div class="row mb-4 justify-content-center">
           <div class="col-12">
             <div class="d-flex flex-wrap gap-2 justify-content-center py-2 rounded shadow-sm" style="background:#f7f7f7;">
-              <button class="btn btn-primary px-4 py-2" id="btnAdicionarItem"><i class="fa fa-plus"></i> Adicionar Item</button>
-              <button class="btn btn-warning px-4 py-2" id="btnEditarMassa"><i class="fa fa-edit"></i> Editar Itens</button>
-              <button class="btn btn-danger px-4 py-2" id="btnDeletarMassa"><i class="fa fa-trash"></i> Deletar Itens</button>
-              <button class="btn btn-success px-4 py-2" id="btnRelatorio"><i class="fa fa-download"></i> Baixar Relatório</button>
-              <button class="btn btn-info px-4 py-2" id="btnFiltro"><i class="fa fa-filter"></i> Filtrar</button>
+              <button class="btn px-4 py-2" id="btnAdicionarItem" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-plus"></i> Adicionar Item</button>
+              <button class="btn px-4 py-2" id="btnEditarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-edit"></i> Editar Itens</button>
+              <button class="btn px-4 py-2" id="btnDeletarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-trash"></i> Deletar Itens</button>
+              <button class="btn px-4 py-2" id="btnRelatorio" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-download"></i> Baixar Relatório</button>
+              <button class="btn px-4 py-2" id="btnFiltro" style="background:#6c757d;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-filter"></i> Filtrar</button>
             </div>
           </div>
         </div>
@@ -588,6 +596,9 @@ let chartQtdPorCategoria = null;
 let chartItensPorDia = null;
 
 async function carregarGraficosPrincipais() {
+  // Paleta minimalista igual visitante
+  const minimalColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#b8bac0', '#b5c2d1', '#e0cfc2', '#bfc4c9', '#dee2e6'];
+  const minimalColorsHover = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#757575'];
   try {
     const response = await fetch('http://localhost:3000/api/itens');
     const itens = await response.json();
@@ -618,8 +629,8 @@ async function carregarGraficosPrincipais() {
         if (chartPorLocal) chartPorLocal.destroy();
         chartPorLocal = new Chart(elLocal.getContext('2d'), {
           type: 'pie',
-          data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-          options: { plugins: { legend: { display: true } } }
+          data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: minimalColors, hoverBackgroundColor: minimalColorsHover }] },
+          options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, responsive: true }
         });
       } else console.warn('Canvas graficoPorLocal não encontrado');
     } catch (err) { console.error('Erro ao criar graficoPorLocal', err); }
@@ -639,43 +650,51 @@ async function carregarGraficosPrincipais() {
     };
     const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
     const catValues = Object.values(categorias);
-    const catColors = ['#1976d2','#43a047','#e53935'];
+    const catColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#e0cfc2'];
     try {
       const elCat = document.getElementById('graficoPorCategoria');
       if (elCat) {
         if (chartPorCategoria) chartPorCategoria.destroy();
         chartPorCategoria = new Chart(elCat.getContext('2d'), {
           type: 'pie',
-          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors }] },
-          options: { plugins: { legend: { display: true } } }
+          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors, hoverBackgroundColor: minimalColorsHover }] },
+          options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, responsive: true }
         });
       } else console.warn('Canvas graficoPorCategoria não encontrado');
     } catch (err) { console.error('Erro ao criar graficoPorCategoria', err); }
 
-    // 3. Quantidade total por Categoria
-    const qtdPorCategoria = {};
+    // 3. Estado dos Itens (%)
+    const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
+    let totalEstados = 0;
     itens.forEach(item => {
-      qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade || 0);
+      let estado = (item.estado || '').trim().toLowerCase();
+      let label = '';
+      if (estado === 'em uso') label = 'Em uso';
+      else if (estado === 'quebrado') label = 'Quebrado';
+      else if (estado === 'parado') label = 'Parado';
+      let qtd = Number(item.quantidade) || 0;
+      if (label && qtd > 0) {
+        estados[label] += qtd;
+        totalEstados += qtd;
+      }
     });
-    const qtdCatLabels = Object.keys(qtdPorCategoria).map(c => nomesCategorias[c] || c);
-    const qtdCatValues = Object.values(qtdPorCategoria);
+    const estadoLabels = Object.keys(estados);
+    const estadoValues = estadoLabels.map(e => totalEstados > 0 ? Math.round((estados[e] / totalEstados) * 100) : 0);
+    const estadoColors = ['#6c757d', '#a3b1c6', '#e0cfc2'];
     try {
       const elQtd = document.getElementById('graficoQtdPorCategoria');
       if (elQtd) {
         if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
         chartQtdPorCategoria = new Chart(elQtd.getContext('2d'), {
           type: 'bar',
-          data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: catColors }] },
+          data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: estadoColors, hoverBackgroundColor: minimalColorsHover }] },
           options: {
             plugins: {
               legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(context) { return `${context.label}: ${context.parsed.y}`; }
-                }
-              }
+              tooltip: { enabled: true, callbacks: { label: function(context) { return context.label + ': ' + context.parsed.y + '%'; } } },
+              title: { display: false }
             },
-            scales: { x: { display: true }, y: { display: true } }
+            scales: { x: { display: true }, y: { display: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } }
           }
         });
       } else console.warn('Canvas graficoQtdPorCategoria não encontrado');
@@ -697,7 +716,30 @@ async function carregarGraficosPrincipais() {
         chartItensPorDia = new Chart(elDia.getContext('2d'), {
           type: 'line',
           data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
-          options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } } }
+          options: {
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  title: function(context) {
+                    const label = context[0].label;
+                    if (!label) return '';
+                    const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                    if (match) {
+                      const [_, ano, mes, dia] = match;
+                      return `${dia}/${mes}/${ano}`;
+                    }
+                    return label;
+                  },
+                  label: function(context) { return 'Quantidade: ' + context.parsed.y; }
+                }
+              },
+              title: { display: false }
+            },
+            scales: { x: { display: false }, y: { display: false } },
+            responsive: true
+          }
         });
       } else console.warn('Canvas graficoItensPorDia não encontrado');
     } catch (err) { console.error('Erro ao criar graficoItensPorDia', err); }
@@ -1159,65 +1201,46 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
         });
 
         // 2. Itens por Categoria
-        const categorias = {};
+        // Novo gráfico: Estado dos Itens (%)
+        const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
+        let totalEstados = 0;
         itens.forEach(item => {
-          categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
-        });
-        // Mapeamento dos nomes reais para nomes amigáveis de categoria
-        const nomesCategorias = {
-          'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
-          'Administração Escolar': 'Administração Escolar',
-          'Quimica': 'Química'
-        };
-        const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
-        const catValues = Object.values(categorias);
-        const catColors = ['#1976d2','#43a047','#e53935'];
-        if (chartPorCategoriaMenu) chartPorCategoriaMenu.destroy();
-        chartPorCategoriaMenu = new Chart(document.getElementById('graficoPorCategoriaMenu').getContext('2d'), {
-          type: 'pie',
-          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors }] },
-          options: {
-            plugins: {
-              legend: { display: true },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return `${context.label}: ${context.parsed}`;
-                  }
-                }
-              }
-            },
-            responsive: true
+          let estado = (item.estado || '').trim().toLowerCase();
+          let label = '';
+          if (estado === 'em uso') label = 'Em uso';
+          else if (estado === 'quebrado') label = 'Quebrado';
+          else if (estado === 'parado') label = 'Parado';
+          let qtd = Number(item.quantidade) || 0;
+          if (label && qtd > 0) {
+            estados[label] += qtd;
+            totalEstados += qtd;
           }
         });
+        const estadoLabels = Object.keys(estados);
+        const estadoValues = estadoLabels.map(e => totalEstados > 0 ? Math.round((estados[e] / totalEstados) * 100) : 0);
+        const estadoColors = ['#6c757d', '#a3b1c6', '#e0cfc2'];
+        try {
+          const elQtd = document.getElementById('graficoQtdPorCategoria');
+          if (elQtd) {
+            if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
+            chartQtdPorCategoria = new Chart(elQtd.getContext('2d'), {
+              type: 'bar',
+              data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: estadoColors }] },
+              options: {
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) { return `${context.label}: ${context.parsed.y}%`; }
+                    }
+                  }
+                },
+                scales: { x: { display: true }, y: { display: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } }
+              }
+            });
+          } else console.warn('Canvas graficoQtdPorCategoria não encontrado');
+        } catch (err) { console.error('Erro ao criar graficoQtdPorCategoria', err); }
 
-        // 3. Quantidade total por Categoria
-        const qtdPorCategoria = {};
-        itens.forEach(item => {
-          qtdPorCategoria[item.categoriaNome] = (qtdPorCategoria[item.categoriaNome] || 0) + Number(item.quantidade);
-        });
-  // Removido: declaração duplicada
-        const qtdCatLabels = Object.keys(qtdPorCategoria).map(c => nomesCategorias[c] || c);
-        const qtdCatValues = Object.values(qtdPorCategoria);
-        if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();
-        chartQtdPorCategoriaMenu = new Chart(document.getElementById('graficoQtdPorCategoriaMenu').getContext('2d'), {
-          type: 'bar',
-          data: { labels: qtdCatLabels, datasets: [{ data: qtdCatValues, backgroundColor: catColors }] },
-          options: {
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return `${context.label}: ${context.parsed.y}`;
-                  }
-                }
-              }
-            },
-            scales: { x: { display: true }, y: { display: true } },
-            responsive: true
-          }
-        });
 
         // 4. Itens adicionados por dia
         const dias = {};
