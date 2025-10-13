@@ -671,16 +671,32 @@ document.addEventListener('click', function(e) {
 </script>
 <script>
 // Botão para abrir menu lateral de gráficos
-document.getElementById('btnMenuGraficos').addEventListener('click', function() {
-  const offcanvas = new bootstrap.Offcanvas(document.getElementById('menuGraficos'));
-  offcanvas.show();
-  document.getElementById('btnMenuGraficos').style.display = 'none';
-  carregarGraficosMenu();
-  // Quando fechar, mostrar o botão novamente
-  document.getElementById('menuGraficos').addEventListener('hidden.bs.offcanvas', function() {
-    document.getElementById('btnMenuGraficos').style.display = 'flex';
-  }, { once: true });
-});
+(() => {
+  const btn = document.getElementById('btnMenuGraficos');
+  const menu = document.getElementById('menuGraficos');
+  if (!btn || !menu) return;
+  const offcanvas = bootstrap.Offcanvas.getOrCreateInstance(menu);
+  let isOpen = false;
+  btn.addEventListener('click', () => {
+    if (isOpen) return;
+    offcanvas.show();
+  });
+  menu.addEventListener('shown.bs.offcanvas', () => {
+    isOpen = true;
+    try { btn.style.display = 'none'; } catch (e) {}
+    setTimeout(() => { if (typeof carregarGraficosMenu === 'function') carregarGraficosMenu(); }, 30);
+  });
+  menu.addEventListener('hidden.bs.offcanvas', () => {
+    isOpen = false;
+    try { btn.style.display = 'flex'; } catch (e) {}
+    try {
+      if (typeof chartPorLocalMenu !== 'undefined' && chartPorLocalMenu) { chartPorLocalMenu.destroy(); chartPorLocalMenu = null; }
+      if (typeof chartPorCategoriaMenu !== 'undefined' && chartPorCategoriaMenu) { chartPorCategoriaMenu.destroy(); chartPorCategoriaMenu = null; }
+      if (typeof chartQtdPorCategoriaMenu !== 'undefined' && chartQtdPorCategoriaMenu) { chartQtdPorCategoriaMenu.destroy(); chartQtdPorCategoriaMenu = null; }
+      if (typeof chartItensPorDiaMenu !== 'undefined' && chartItensPorDiaMenu) { chartItensPorDiaMenu.destroy(); chartItensPorDiaMenu = null; }
+    } catch (e) {}
+  });
+})();
 
 // Função para carregar gráficos no menu lateral
 let chartPorLocalMenu = null;

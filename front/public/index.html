@@ -1195,96 +1195,30 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Botão para abrir menu lateral de gráficos
-    document.getElementById('btnMenuGraficos').addEventListener('click', function() {
-      const offcanvas = new bootstrap.Offcanvas(document.getElementById('menuGraficos'));
-      offcanvas.show();
-      carregarGraficosMenu();
-    });
+  <script type="module">
+    import { carregarGraficosMenuVisitante, destruirGraficosMenuVisitante } from '/assets/js/graficos-visitante-menu.js';
 
-    // Função para carregar gráficos no menu lateral
-    let chartPorLocalMenu = null;
-    let chartPorCategoriaMenu = null;
-    let chartQtdPorCategoriaMenu = null;
-    let chartItensPorDiaMenu = null;
-    async function carregarGraficosMenu() {
-      try {
-        const response = await fetch('http://localhost:3000/api/itens');
-        const itens = await response.json();
-        // 1. Itens por Local
-        const locais = {};
-        itens.forEach(item => {
-          locais[item.local] = (locais[item.local] || 0) + 1;
-        });
-        const locaisLabels = Object.keys(locais);
-        const locaisValues = Object.values(locais);
-        if (chartPorLocalMenu) chartPorLocalMenu.destroy();
-        chartPorLocalMenu = new Chart(document.getElementById('graficoPorLocalMenu').getContext('2d'), {
-          type: 'pie',
-          data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0'] }] },
-          options: { plugins: { legend: { display: true } }, responsive: true }
-        });
+    // Ativa somente em telas mobile
+    const isMobile = () => window.matchMedia('(max-width: 767.98px)').matches;
 
-        // 2. Itens por Categoria
-        // Novo gráfico: Estado dos Itens (%)
-        const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
-        let totalEstados = 0;
-        itens.forEach(item => {
-          let estado = (item.estado || '').trim().toLowerCase();
-          let label = '';
-          if (estado === 'em uso') label = 'Em uso';
-          else if (estado === 'quebrado') label = 'Quebrado';
-          else if (estado === 'parado') label = 'Parado';
-          let qtd = Number(item.quantidade) || 0;
-          if (label && qtd > 0) {
-            estados[label] += qtd;
-            totalEstados += qtd;
-          }
-        });
-        const estadoLabels = Object.keys(estados);
-        const estadoValues = estadoLabels.map(e => totalEstados > 0 ? Math.round((estados[e] / totalEstados) * 100) : 0);
-        const estadoColors = ['#6c757d', '#a3b1c6', '#e0cfc2'];
-        try {
-          const elQtd = document.getElementById('graficoQtdPorCategoria');
-          if (elQtd) {
-            if (chartQtdPorCategoria) chartQtdPorCategoria.destroy();
-            chartQtdPorCategoria = new Chart(elQtd.getContext('2d'), {
-              type: 'bar',
-              data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: estadoColors }] },
-              options: {
-                plugins: {
-                  legend: { display: false },
-                  tooltip: {
-                    callbacks: {
-                      label: function(context) { return `${context.label}: ${context.parsed.y}%`; }
-                    }
-                  }
-                },
-                scales: { x: { display: true }, y: { display: true, min: 0, max: 100, ticks: { callback: v => v + '%' } } }
-              }
-            });
-          } else console.warn('Canvas graficoQtdPorCategoria não encontrado');
-        } catch (err) { console.error('Erro ao criar graficoQtdPorCategoria', err); }
-
-
-        // 4. Itens adicionados por dia
-        const dias = {};
-        itens.forEach(item => {
-          if (item.dataAdicionado) {
-            dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
-          }
-        });
-        const diasLabels = Object.keys(dias).sort();
-        const diasValues = diasLabels.map(d => dias[d]);
-        if (chartItensPorDiaMenu) chartItensPorDiaMenu.destroy();
-        chartItensPorDiaMenu = new Chart(document.getElementById('graficoItensPorDiaMenu').getContext('2d'), {
-          type: 'line',
-          data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: '#36A2EB', fill: false }] },
-          options: { plugins: { legend: { display: false } }, scales: { x: { display: true }, y: { display: true } }, responsive: true }
-        });
-      } catch (e) {}
-    }
+    (function() {
+      const btn = document.getElementById('btnMenuGraficos');
+      const menu = document.getElementById('menuGraficos');
+      if (!btn || !menu) return;
+      const offcanvas = new bootstrap.Offcanvas(menu);
+      btn.addEventListener('click', function() {
+        if (!isMobile()) return; // somente mobile
+        offcanvas.show();
+      });
+      menu.addEventListener('shown.bs.offcanvas', function() {
+        try { btn.style.display = 'none'; } catch (e) {}
+        setTimeout(() => { if (isMobile()) carregarGraficosMenuVisitante(); }, 30);
+      });
+      menu.addEventListener('hidden.bs.offcanvas', function() {
+        try { btn.style.display = 'flex'; } catch (e) {}
+        destruirGraficosMenuVisitante();
+      });
+    })();
   </script>
   <script>
     document.getElementById('btnFiltro').addEventListener('click', function() {
