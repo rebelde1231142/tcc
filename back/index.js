@@ -198,29 +198,38 @@ app.get('/api/relatorio-word', async (req, res) => {
 // Rota para editar um item pelo id
 app.put('/api/itens/:id', async (req, res) => {
   const { id } = req.params;
-  const { nome, quantidade, descricao, fk_Categoria_id, local } = req.body;
+  // Permitimos atualização parcial: qualquer subconjunto dos campos abaixo
+  const permitidos = ['nome', 'quantidade', 'descricao', 'fk_Categoria_id', 'local', 'estado'];
+  const dados = req.body || {};
   try {
-    console.log('PUT /api/itens/:id - Recebido:', { id, nome, quantidade, descricao, fk_Categoria_id });
+    console.log('PUT /api/itens/:id - Recebido:', { id, body: dados });
     // Verifica se o item existe
     const [itemExistente] = await pool.query('SELECT * FROM Itens WHERE id = ?', [id]);
-    console.log('Resultado SELECT:', itemExistente);
     if (itemExistente.length === 0) {
-      console.log('Item não encontrado para edição:', id);
       return res.status(404).json({ erro: 'Item não encontrado.' });
     }
-    // Verifica se a categoria existe
-    if (fk_Categoria_id) {
-      const [categoria] = await pool.query('SELECT * FROM Categoria WHERE Id = ?', [fk_Categoria_id]);
+    // Se vier categoria, valida
+    if (dados.fk_Categoria_id) {
+      const [categoria] = await pool.query('SELECT * FROM Categoria WHERE Id = ?', [dados.fk_Categoria_id]);
       if (categoria.length === 0) {
-        console.log('Categoria inválida:', fk_Categoria_id);
         return res.status(400).json({ erro: 'Categoria inválida.' });
       }
     }
-    // Atualiza o item
-      const [updateResult] = await pool.query(
-    'UPDATE Itens SET nome = ?, quantidade = ?, descricao = ?, fk_Categoria_id = ?, local = ? WHERE id = ?',
-    [nome, quantidade, descricao, fk_Categoria_id, local, id]
-      );
+    // Monta SQL dinâmico apenas com campos enviados
+    const campos = [];
+    const valores = [];
+    for (const key of permitidos) {
+      if (Object.prototype.hasOwnProperty.call(dados, key)) {
+        campos.push(`${key} = ?`);
+        valores.push(dados[key]);
+      }
+    }
+    if (campos.length === 0) {
+      return res.status(400).json({ erro: 'Nenhum campo válido para atualizar.' });
+    }
+    valores.push(id);
+    const sql = `UPDATE Itens SET ${campos.join(', ')} WHERE id = ?`;
+    const [updateResult] = await pool.query(sql, valores);
     console.log('Resultado UPDATE:', updateResult);
     res.status(200).json({ mensagem: 'Item atualizado com sucesso.' });
   } catch (error) {
@@ -231,44 +240,52 @@ app.put('/api/itens/:id', async (req, res) => {
 
 // Adicionando verificação de duplicidade antes de inserir o item
 app.post('/api/itens', async (req, res) => {
-  let { nome, quantidade, descricao, fk_Categoria_id, local } = req.body;
+  let { nome, quantidade, descricao, fk_Categoria_id, local, estado, unidades } = req.body;
   const dataAdicionado = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-    // Apenas remove espaços extras, mas mantém maiúsculas/minúsculas
-    nome = nome.trim();
-  console.log('Dados recebidos:', { nome, quantidade, descricao, fk_Categoria_id }); // Log dos dados recebidos
+  nome = (nome || '').trim();
+  quantidade = parseInt(quantidade, 10) || 1;
+  if (quantidade < 1) quantidade = 1;
   try {
-  // Verificar se o item já existe no banco de dados (normalizado)
-  const [itemExistente] = await pool.query('SELECT * FROM Itens WHERE TRIM(nome) = ?', [nome]);
-    if (itemExistente.length > 0) {
-      return res.status(400).json({ erro: `O item com o nome "${nome}" já existe no banco de dados.` });
-    }
-
     // Verificar se a categoria existe
     const [categoria] = await pool.query('SELECT * FROM Categoria WHERE Id = ?', [fk_Categoria_id]);
     if (categoria.length === 0) {
-      console.error('Categoria inválida:', fk_Categoria_id); // Log de categoria inválida
       return res.status(400).json({ erro: 'Categoria inválida.' });
     }
 
-    // Inserir o item no banco
-      const [result] = await pool.query(
-    'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id, local, dataAdicionado) VALUES (?, ?, ?, ?, ?, ?)',
-    [nome, quantidade, descricao, fk_Categoria_id, local, dataAdicionado]
-      );
+    // Se vier um array de unidades, insere linha por unidade com local/estado específicos
+    const insertValues = [];
+    const normalizaEstado = (e) => {
+      if (!e) return null;
+      const v = String(e).toLowerCase().trim();
+      return (v === 'em uso' || v === 'quebrado' || v === 'parado') ? v : null;
+    };
+    if (Array.isArray(unidades) && unidades.length > 0) {
+      unidades.forEach(u => {
+        insertValues.push([
+          nome,
+          1,
+          descricao,
+          fk_Categoria_id,
+          u && u.local ? u.local : null,
+          dataAdicionado,
+          normalizaEstado(u && u.estado)
+        ]);
+      });
+    } else {
+      for (let i = 0; i < quantidade; i++) {
+        insertValues.push([nome, 1, descricao, fk_Categoria_id, local || null, dataAdicionado, normalizaEstado(estado)]);
+      }
+    }
 
-    // Buscar o item recém-adicionado com a categoria
-      const [item] = await pool.query(
-    `SELECT Itens.id, Itens.nome, Itens.descricao, Itens.quantidade, Categoria.Nome AS categoriaNome, Itens.local AS local, Itens.dataAdicionado
-     FROM Itens
-     JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
-     WHERE Itens.id = ?`,
-    [result.insertId]
-      );
+    await pool.query(
+      'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id, local, dataAdicionado, estado) VALUES ?'
+      , [insertValues]
+    );
 
-    console.log('Item retornado:', item[0]); // Log do item retornado
-    res.status(201).json({ mensagem: 'Item cadastrado com sucesso!', item: item[0] }); // Retorna o item com a categoria e mensagem de sucesso
+    // Retorno simplificado; o front recarrega a lista após cadastrar
+    res.status(201).json({ mensagem: 'Itens cadastrados com sucesso!', totalInseridos: insertValues.length });
   } catch (error) {
-    console.error('Erro ao cadastrar item:', error); // Log do erro completo
+    console.error('Erro ao cadastrar item:', error);
     return enviarErro(res, 500, 'Não foi possível cadastrar o item no momento.', error);
   }
 });
@@ -284,6 +301,24 @@ app.get('/api/itens', async (req, res) => {
     res.json(rows);
   } catch (error) {
     return enviarErro(res, 500, 'Não foi possível buscar itens no momento.', error);
+  }
+});
+
+// Itens por grupo (nome)
+app.get('/api/itens/grupo/:nome', async (req, res) => {
+  const { nome } = req.params;
+  try {
+    const [rows] = await pool.query(
+      `SELECT Itens.*, Categoria.Nome AS categoriaNome
+       FROM Itens
+       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+       WHERE TRIM(Itens.nome) = TRIM(?)
+       ORDER BY Itens.id ASC`,
+      [nome]
+    );
+    res.json(rows);
+  } catch (error) {
+    return enviarErro(res, 500, 'Não foi possível buscar itens do grupo no momento.', error);
   }
 });
 

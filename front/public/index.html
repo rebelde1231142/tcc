@@ -166,6 +166,7 @@ function selecionarLocalidadeParaFiltro(local) {
         <div class="small text-dark mt-2">Itens Adicionados por Dia</div>
       </div>
     </div>
+  
   </div>
   <!-- Removido: redirecionamento automático para login. Agora, visitantes não autenticados não são redirecionados ao acessar o site. -->
   <div class="d-flex">
@@ -318,8 +319,8 @@ function selecionarLocalidadeParaFiltro(local) {
                         <input type="text" class="form-control" id="nomeItem" required>
                       </div>
                       <div class="mb-3">
-                        <label for="qtdItem" class="form-label">Quantidade</label>
-                        <input type="number" class="form-control" id="qtdItem" required placeholder="Quantidade">
+                        <label for="qtdItem" class="form-label">Quantidade (unidades)</label>
+                        <input type="number" class="form-control" id="qtdItem" required placeholder="Qtd de unidades" min="1" step="1">
                       </div>
                       <div class="mb-3">
                         <label for="descItem" class="form-label">Descrição</label>
@@ -334,22 +335,12 @@ function selecionarLocalidadeParaFiltro(local) {
                           <option value="3">Quimica</option>
                         </select>
                       </div>
-                      <div class="mb-3">
-                        <label for="localItem" class="form-label">Local de Armazenamento</label>
-                        <div class="input-group">
-                          <input type="text" class="form-control" id="localItem" name="localItem" required readonly placeholder="Selecione o local" data-bs-toggle="modal" data-bs-target="#modalLocalidades" onclick="window._modalParentBeforeLocal='modalAdicionarItem'">
-                          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalLocalidades" onclick="window._modalParentBeforeLocal='modalAdicionarItem'">Selecionar</button>
-                        </div>
-                        <!-- Modal de seleção de localidade (movido para o final do body) -->
-                      </div>
-                      <div class="mb-3">
-                        <label for="estadoItem" class="form-label">Estado do Item</label>
-                        <select class="form-select" id="estadoItem" required>
-                          <option value="">Selecione o estado</option>
-                          <option value="em uso">Em uso</option>
-                          <option value="quebrado">Quebrado</option>
-                          <option value="parado">Parado</option>
-                        </select>
+                      
+                      <!-- Detalhar por unidade (aparece quando quantidade > 1) -->
+                      <div class="mb-3 d-none" id="unidadesContainer">
+                        <label class="form-label">Detalhar Local e Estado por Unidade</label>
+                        <div id="listaUnidades"></div>
+                        <div class="form-text">Defina o local e o estado para cada unidade criada.</div>
                       </div>
                       <button type="submit" class="btn btn-primary">Salvar Item</button>
           </form>
@@ -506,30 +497,76 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
     lista.innerHTML = '<span class="text-danger">Erro ao buscar itens.</span>';
   }
 });
+// Geração dinâmica de unidades detalhadas
+const qtdInput = document.getElementById('qtdItem');
+const unidadesContainer = document.getElementById('unidadesContainer');
+const listaUnidadesEl = document.getElementById('listaUnidades');
+function renderUnidadesDetalhadas(qtd, localDefault, estadoDefault) {
+  if (!Number.isInteger(qtd) || qtd < 1) {
+    unidadesContainer.classList.add('d-none');
+    listaUnidadesEl.innerHTML = '';
+    return;
+  }
+  unidadesContainer.classList.remove('d-none');
+  const nomesLocais = [
+    'Almoxarifado','Sala de Aula','Biblioteca','Sala dos Professores','Diretoria','Quadra','Cantina','Laboratório de Quimica','Laboratório de Informática','Laboratório de Informática 2','Laboratório de Informática 3','Sala de Armazenamento Técnico'
+  ];
+  let html = '';
+  for (let i = 0; i < qtd; i++) {
+    html += `
+      <div class="row g-2 align-items-end mb-2">
+        <div class="col-7">
+          <label class="form-label">Local (unidade ${i+1})</label>
+          <select class="form-select" id="unLocal${i}">
+            <option value="">Selecionar...</option>
+            ${nomesLocais.map(l=>`<option value="${l}" ${localDefault===l?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="col-5">
+          <label class="form-label">Estado</label>
+          <select class="form-select" id="unEstado${i}">
+            <option value="">Selecionar...</option>
+            <option value="em uso" ${estadoDefault==='em uso'?'selected':''}>Em uso</option>
+            <option value="parado" ${estadoDefault==='parado'?'selected':''}>Parado</option>
+            <option value="quebrado" ${estadoDefault==='quebrado'?'selected':''}>Quebrado</option>
+          </select>
+        </div>
+      </div>`;
+  }
+  listaUnidadesEl.innerHTML = html;
+}
+qtdInput.addEventListener('input', () => {
+  const q = parseInt(qtdInput.value.trim(), 10);
+  const localDefault = '';
+  const estadoDefault = '';
+  renderUnidadesDetalhadas(q, localDefault, estadoDefault);
+});
+// Campos padrão removidos; detalhamento é feito apenas por unidade quando qtd >= 2
             document.getElementById('formAdicionarItem').addEventListener('submit', async function(e) {
               e.preventDefault();
               const nome = document.getElementById('nomeItem').value;
-              const quantidade = document.getElementById('qtdItem').value.trim();
+              const quantidadeStr = document.getElementById('qtdItem').value.trim();
+              const quantidade = parseInt(quantidadeStr, 10);
               const descricao = document.getElementById('descItem').value.trim();
               const fk_Categoria_id = document.getElementById('categoriaItem').value;
-              const local = document.getElementById('localItem').value;
-              const estado = document.getElementById('estadoItem').value;
+              const local = '';
+              const estado = '';
 
               const alerta = document.getElementById('alertaModal');
               alerta.classList.add('d-none');
               alerta.classList.remove('alert-success', 'alert-danger');
 
               // Validação extra
-              if (!nome || !quantidade || !descricao || !fk_Categoria_id || fk_Categoria_id === "" || !estado) {
+              if (!nome || !quantidade || !descricao || !fk_Categoria_id || fk_Categoria_id === "") {
                 alerta.classList.remove('d-none');
                 alerta.classList.add('alert-danger');
                 alerta.innerText = 'Preencha todos os campos corretamente.';
                 return;
               }
-              if (isNaN(quantidade) || Number(quantidade) <= 0) {
+              if (!Number.isInteger(quantidade) || quantidade < 1) {
                 alerta.classList.remove('d-none');
                 alerta.classList.add('alert-danger');
-                alerta.innerText = 'Quantidade deve ser um número maior que zero.';
+                alerta.innerText = 'Quantidade deve ser um inteiro maior ou igual a 1.';
                 return;
               }
               if (!["1","2","3"].includes(fk_Categoria_id)) {
@@ -543,7 +580,20 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
         const response = await fetch('http://localhost:3000/api/itens', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id, local, estado })
+          body: JSON.stringify((() => {
+            const q = quantidade;
+            // Se houver detalhamento (container visível e há selects), envia unidades
+            if (!unidadesContainer.classList.contains('d-none')) {
+              const unidades = [];
+              for (let i = 0; i < q; i++) {
+                const l = document.getElementById(`unLocal${i}`)?.value || '';
+                const e = document.getElementById(`unEstado${i}`)?.value || '';
+                unidades.push({ local: l || local, estado: e || estado });
+              }
+              return { nome, quantidade: q, descricao, fk_Categoria_id, unidades };
+            }
+            return { nome, quantidade: q, descricao, fk_Categoria_id, local, estado };
+          })())
         });
                 const data = await response.json();
                 if (!response.ok) {
@@ -552,16 +602,16 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
                   alerta.innerText = data.erro || 'Erro ao cadastrar item.';
                   return;
                 }
-                // Após cadastro, atualiza itens e gráficos sem recarregar a página
+                // Após cadastro: recarrega lista/gráficos e fecha o modal
                 await carregarItens();
                 await carregarGraficosPrincipais();
-                alerta.classList.remove('d-none');
-                alerta.classList.add('alert-success');
-                alerta.innerText = 'Item cadastrado com sucesso!';
+                try {
+                  const modalEl = document.getElementById('modalAdicionarItem');
+                  const inst = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                  inst.hide();
+                } catch (e) {}
                 e.target.reset();
-                setTimeout(() => {
-                  alerta.classList.add('d-none');
-                }, 2000);
+                // Feedback opcional pode ser adicionado aqui (toast/alert)
               } catch (error) {
                 alerta.classList.remove('d-none');
                 alerta.classList.add('alert-danger');
@@ -970,12 +1020,31 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           if (paginacaoEl) paginacaoEl.innerHTML = '';
           return;
         }
-        // Paginação do zero
-        let paginaAtual = 1;
-        const itensPorPagina = 10;
-        const totalPaginas = Math.ceil(itens.length / itensPorPagina);
+        // Agrupa por nome (grupo)
+        const gruposMap = new Map();
+        itens.forEach(item => {
+          const key = (item.nome || '').trim();
+          if (!gruposMap.has(key)) gruposMap.set(key, []);
+          gruposMap.get(key).push(item);
+        });
+        const grupos = Array.from(gruposMap.entries()).sort((a,b)=> a[0].localeCompare(b[0]));
 
-        function renderPagina(pagina) {
+        // Paginação por grupos
+        let paginaAtual = 1;
+        const gruposPorPagina = 8;
+        const totalPaginas = Math.ceil(grupos.length / gruposPorPagina);
+
+        function resumoEstados(items) {
+          const cont = { 'em uso': 0, 'quebrado': 0, 'parado': 0, 'indefinido': 0 };
+          items.forEach(i => {
+            const e = (i.estado || '').toLowerCase();
+            if (e === 'em uso' || e === 'quebrado' || e === 'parado') cont[e]++;
+            else cont.indefinido++;
+          });
+          return cont;
+        }
+
+  function renderPagina(pagina) {
           lista.innerHTML = '';
           const nomesLocais = {
             'Almoxarifado': 'Sala de limpeza',
@@ -999,28 +1068,70 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
             'Administração': 'Administração Escolar',
             'Qui': 'Química'
           };
-          const inicio = (pagina - 1) * itensPorPagina;
-          const fim = inicio + itensPorPagina;
-          const itensPagina = itens.slice(inicio, fim);
-          itensPagina.forEach(item => {
+          const inicio = (pagina - 1) * gruposPorPagina;
+          const fim = inicio + gruposPorPagina;
+          const gruposPagina = grupos.slice(inicio, fim);
+
+          if (grupos.length === 0 || gruposPagina.length === 0) {
+            // Fallback: render per item (layout antigo)
+            const itensPorPagina = 10;
+            const iInicio = (pagina - 1) * itensPorPagina;
+            const iFim = iInicio + itensPorPagina;
+            const itensPagina = itens.slice(iInicio, iFim);
+            itensPagina.forEach(item => {
+              const div = document.createElement('div');
+              div.className = 'card mb-2 shadow-sm';
+              const nomeLocal = nomesLocais[item.local] || item.local || '';
+              const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
+              let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
+              if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
+              else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
+              div.innerHTML = `
+                <div class="card-body">
+                  <h6 class="card-title">
+                    ${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}
+                  </h6>
+                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+                </div>
+              `;
+              lista.appendChild(div);
+            });
+          } else {
+          gruposPagina.forEach(([nomeGrupo, items]) => {
+            const primeiro = items[0] || {};
+            const nomeCategoria = nomesCategorias[primeiro.categoriaNome] || primeiro.categoriaNome || '';
+            const total = items.length;
+            const estados = resumoEstados(items);
             const div = document.createElement('div');
-            div.className = "card mb-2 shadow-sm";
-            const nomeLocal = nomesLocais[item.local] || item.local || '';
-            const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
-            let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
-            if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
-            else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
+            div.className = 'card mb-2 shadow-sm';
             div.innerHTML = `
               <div class="card-body">
-                <h6 class="card-title">
-                  ${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}
-                </h6>
-                <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="card-title mb-0">${nomeGrupo} <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
+                  <span class="badge bg-dark">${total} un.</span>
+                </div>
+                <div class="mt-2 small">
+                  <span class="badge" style="background:#28a745;">Em uso: ${estados['em uso']}</span>
+                  <span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado: ${estados['parado']}</span>
+                  <span class="badge ms-1" style="background:#dc3545;">Quebrado: ${estados['quebrado']}</span>
+                  ${estados['indefinido'] ? `<span class="badge ms-1 bg-secondary">Indef.: ${estados['indefinido']}</span>` : ''}
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                  <button class="btn btn-info btn-sm" data-btn-grupo="${encodeURIComponent(nomeGrupo)}">Gerenciar itens</button>
+                </div>
               </div>
             `;
             lista.appendChild(div);
           });
+          // Bind botões Gerenciar
+          lista.querySelectorAll('[data-btn-grupo]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const nomeGrupo = decodeURIComponent(btn.getAttribute('data-btn-grupo'));
+              abrirModalGrupo(nomeGrupo);
+            });
+          });
+          }
           // Paginação centralizada, apenas botões numerados
           if (paginacaoEl) {
             paginacaoEl.innerHTML = '';
@@ -1193,6 +1304,123 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
       carregarItens();
       if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais();
     });
+
+    // --- Modal de Grupo: abrir, renderizar e salvar ---
+    async function abrirModalGrupo(nomeGrupo) {
+      const modalEl = document.getElementById('modalGrupoItens');
+      const label = document.getElementById('modalGrupoItensLabel');
+      const lista = document.getElementById('listaItensGrupo');
+      const alerta = document.getElementById('alertaGrupo');
+      if (!modalEl || !label || !lista || !alerta) {
+        console.error('Modal de grupo não encontrado no DOM.');
+        return;
+      }
+      alerta.classList.add('d-none');
+      label.textContent = `Itens do grupo: ${nomeGrupo}`;
+      lista.innerHTML = '<div class="text-muted">Carregando itens...</div>';
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+
+      try {
+        const resp = await fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`);
+        if (!resp.ok) throw new Error('Falha ao buscar itens do grupo.');
+        const itens = await resp.json();
+        if (!Array.isArray(itens) || itens.length === 0) {
+          lista.innerHTML = '<div class="text-muted">Nenhum item no grupo.</div>';
+          return;
+        }
+        const nomesLocais = {
+          'Almoxarifado': 'Sala de limpeza',
+          'Sala de Aula': 'Sala de Aula',
+          'Biblioteca': 'Biblioteca',
+          'Sala dos Professores': 'Sala dos Professores',
+          'Diretoria': 'Diretoria',
+          'Quadra': 'Sala de material esportivo',
+          'Cantina': 'Cantina',
+          'Laboratório de Quimica': 'Laboratório de Quimica',
+          'Laboratório de Informática': 'Laboratório de Informática',
+          'Laboratório de Informática 2': 'Laboratório de Informática 2',
+          'Laboratório de Informática 3': 'Laboratório de Informática 3',
+          'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
+        };
+        lista.innerHTML = itens.map(item => `
+          <div class="border rounded p-2 mb-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <span class="badge bg-secondary">ID #${item.id}</span>
+              <span class="badge bg-info">${nomesLocais[item.local] || item.local || ''}</span>
+              <span class="badge ${item.estado==='quebrado'?'bg-danger':item.estado==='parado'?'bg-warning text-dark':'bg-success'}">${item.estado || '—'}</span>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Local</label>
+                <select class="form-select" id="editLocalGrupo${item.id}">
+                  <option value="">Selecionar...</option>
+                  ${Object.keys(nomesLocais).map(k=>`<option value="${k}" ${item.local===k?'selected':''}>${nomesLocais[k]}</option>`).join('')}
+                </select>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="editEstadoGrupo${item.id}">
+                  <option value="">Selecionar...</option>
+                  <option value="em uso" ${item.estado==='em uso'?'selected':''}>Em uso</option>
+                  <option value="parado" ${item.estado==='parado'?'selected':''}>Parado</option>
+                  <option value="quebrado" ${item.estado==='quebrado'?'selected':''}>Quebrado</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        const btnSalvar = document.getElementById('btnSalvarGrupo');
+        if (!btnSalvar) return;
+        btnSalvar.onclick = async () => {
+          alerta.classList.add('d-none');
+          try {
+            const updates = itens.map(item => {
+              const novoLocal = document.getElementById(`editLocalGrupo${item.id}`).value;
+              const novoEstado = document.getElementById(`editEstadoGrupo${item.id}`).value;
+              const body = {};
+              if (novoLocal && novoLocal !== item.local) body.local = novoLocal;
+              if (novoEstado && novoEstado !== item.estado) body.estado = novoEstado;
+              return { id: item.id, body };
+            }).filter(u => Object.keys(u.body).length > 0);
+
+            if (updates.length === 0) {
+              alerta.classList.remove('d-none', 'alert-success');
+              alerta.classList.add('alert-warning');
+              alerta.textContent = 'Nenhuma alteração para salvar.';
+              return;
+            }
+            await Promise.all(updates.map(async u => {
+              const resp = await fetch(`http://localhost:3000/api/itens/${u.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(u.body)
+              });
+              if (!resp.ok) {
+                const j = await resp.json().catch(()=>({erro:'Erro desconhecido'}));
+                throw new Error(j.erro || 'Falha ao salvar um item.');
+              }
+            }));
+            alerta.classList.remove('d-none', 'alert-danger');
+            alerta.classList.add('alert-success');
+            alerta.textContent = 'Alterações salvas!';
+            setTimeout(async () => {
+              bootstrap.Modal.getInstance(modalEl).hide();
+              await carregarItens();
+              await carregarGraficosPrincipais();
+            }, 600);
+          } catch (e) {
+            alerta.classList.remove('d-none', 'alert-success');
+            alerta.classList.add('alert-danger');
+            alerta.textContent = e.message || 'Erro ao salvar alterações.';
+          }
+        };
+      } catch (e) {
+        lista.innerHTML = '<div class="text-danger">Erro ao carregar itens do grupo.</div>';
+        console.error(e);
+      }
+    }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
@@ -1253,6 +1481,25 @@ document.getElementById('formDeletarMassa').addEventListener('submit', function(
     });
   </script>
   <!-- Modal de seleção de localidade (colocado no final do body para evitar problemas de stacking context) -->
+  <!-- Modal Gerenciar Itens do Grupo (colocado no final do body) -->
+  <div class="modal fade" id="modalGrupoItens" tabindex="-1" aria-labelledby="modalGrupoItensLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalGrupoItensLabel">Itens do grupo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="alertaGrupo" class="alert d-none" role="alert"></div>
+          <div id="listaItensGrupo"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnSalvarGrupo" class="btn btn-primary">Salvar alterações</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <div class="modal fade" id="modalLocalidades" tabindex="-1" aria-labelledby="modalLocalidadesLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
