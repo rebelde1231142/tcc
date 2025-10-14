@@ -67,7 +67,7 @@ function selecionarLocalidadeParaFiltro(local) {
   }, { once: true });
 }
     if (!localStorage.getItem('usuarioLogado')) {
-      window.location.href = '/index-visitante.html';
+      window.location.href = '/page/usuario/login.html';
     }
   </script>
 <!DOCTYPE html>
@@ -920,25 +920,27 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
       const lista = document.getElementById('listaItensEditar');
       const caixas = lista.querySelectorAll('[id^="itemEditBox"]');
       const edits = [];
+      let invalido = false;
+      const btnSalvar = this;
+      btnSalvar.disabled = true;
       caixas.forEach(box => {
         const id = box.id.replace('itemEditBox','');
         const campos = document.getElementById('camposEdicao'+id);
         if (!campos.classList.contains('d-none')) {
           const nome = document.getElementById('editNome'+id).value.trim();
-          const quantidade = document.getElementById('editQtd'+id).value.trim();
+          const quantidadeStr = document.getElementById('editQtd'+id).value.trim();
           const descricao = document.getElementById('editDesc'+id).value.trim();
           const fk_Categoria_id = parseInt(document.getElementById('editCat'+id).value);
           const estado = document.getElementById('editEstado'+id).value;
-          if (!nome || !quantidade || !descricao || !fk_Categoria_id || !estado || isNaN(quantidade) || Number(quantidade) <= 0) {
-            alerta.classList.remove('d-none');
-            alerta.classList.add('alert-danger');
-            alerta.textContent = 'Preencha todos os campos corretamente para cada item.';
-            return;
+          const quantidade = Number(quantidadeStr);
+          if (!nome || !quantidade || !descricao || !fk_Categoria_id || !estado || Number.isNaN(quantidade) || quantidade <= 0) {
+            invalido = true;
+            return; // pula este item
           }
           edits.push({
               id,
               nome,
-              quantidade,
+              quantidade: quantidade,
               descricao,
               fk_Categoria_id,
               local: document.getElementById('editLocal'+id).value,
@@ -946,10 +948,18 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           });
         }
       });
+      if (invalido) {
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-danger');
+        alerta.textContent = 'Preencha todos os campos corretamente para cada item.';
+        btnSalvar.disabled = false;
+        return;
+      }
       if (edits.length === 0) {
         alerta.classList.remove('d-none', 'alert-success');
         alerta.classList.add('alert-danger');
         alerta.textContent = 'Selecione pelo menos um item para editar (clique no +).';
+        btnSalvar.disabled = false;
         return;
       }
       Promise.all(edits.map(async edit => {
@@ -967,14 +977,24 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
         alerta.classList.add('alert-success');
         alerta.textContent = 'Itens editados com sucesso!';
         setTimeout(async () => {
-          bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
+          const modalEl = document.getElementById('modalEditarItem');
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          modal.hide();
           await carregarItens();
-          await carregarGraficosPrincipais();
+          try { await carregarGraficosPrincipais(); } catch (_) {}
+          // limpeza defensiva de backdrop
+          try {
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+          } catch (_) {}
             // Esconde o alerta após fechar o modal para não aparecer ao reabrir
             setTimeout(() => {
               alerta.classList.add('d-none');
             }, 400);
-        }, 800);
+          btnSalvar.disabled = false;
+        }, 400);
       })
       .catch(error => {
         alerta.classList.remove('d-none', 'alert-success');
@@ -982,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
         alerta.textContent = error.message || 'Erro ao editar item.';
         alerta.classList.add('alert-danger');
         alerta.textContent = error.message || 'Erro ao editar itens.';
+        btnSalvar.disabled = false;
       });
     });
     document.getElementById('btnAdicionarItem').addEventListener('click', function() {
@@ -1254,7 +1275,7 @@ window.addEventListener('resize', () => {
 
     document.getElementById('btnSair').addEventListener('click', function() {
       localStorage.removeItem('usuarioLogado');
-      window.location.href = '/index-visitante.html';
+  window.location.href = '/page/usuario/login.html';
     });
 
     document.getElementById('btnDeletarMassa').addEventListener('click', function() {
@@ -1308,10 +1329,19 @@ if (formDeletarMassa) {
       alerta.classList.add('alert-success');
       alerta.textContent = 'Grupos deletados com sucesso!';
       setTimeout(async () => {
-        bootstrap.Modal.getInstance(document.getElementById('modalDeletarMassa')).hide();
+        const modalEl = document.getElementById('modalDeletarMassa');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.hide();
         await carregarItens();
-        await carregarGraficosPrincipais?.();
-      }, 800);
+        try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (_) {}
+        // Fallback: se o backdrop ficar preso (tela escura), remove manualmente
+        try {
+          document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('padding-right');
+        } catch (_) {}
+      }, 400);
     })
     .catch(error => {
       alerta.classList.remove('d-none', 'alert-success');
@@ -1413,10 +1443,18 @@ if (btnDelSel) {
       alerta.classList.add('alert-success');
       alerta.textContent = 'Itens deletados.';
       setTimeout(async () => {
-        bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
+        const modalEl = document.getElementById('modalEditarItem');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.hide();
         await carregarItens();
-        await carregarGraficosPrincipais?.();
-      }, 600);
+        try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (_) {}
+        try {
+          document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('padding-right');
+        } catch (_) {}
+      }, 400);
     } catch (e) {
       alerta.classList.remove('d-none', 'alert-success');
       alerta.classList.add('alert-danger');
@@ -1427,18 +1465,28 @@ if (btnDelSel) {
 
 // Função para abrir o modal de gerenciamento de itens do grupo
 function abrirModalGrupo(nomeGrupo) {
-  const modal = new bootstrap.Modal(document.getElementById('modalGrupoItens'));
+  const modalEl = document.getElementById('modalGrupoItens');
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  try { modalEl.dataset.nomeGrupo = nomeGrupo; } catch (_) {}
   const lista = document.getElementById('listaItensGrupo');
   const alerta = document.getElementById('alertaGrupo');
   alerta.classList.add('d-none');
   lista.innerHTML = '<span class="text-muted">Carregando itens do grupo...</span>';
   fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`)
     .then(response => response.json())
-    .then(itens => {
+    .then(async itens => {
       if (!itens || itens.length === 0) {
-        lista.innerHTML = '<span class="text-muted">Nenhum item neste grupo.</span>';
+        // Grupo vazio: mantém modal aberto, exibe mensagem e permite adicionar um novo item ao grupo
+        lista.innerHTML = '<div class="text-center text-muted">Nenhum item neste grupo.</div>';
+        try { await carregarItens(); } catch (e) { console.warn('Falha ao recarregar itens após esvaziar grupo:', e); }
+        try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (e) { console.warn('Falha ao recarregar gráficos:', e); }
         return;
       }
+      // Guardar metadados do grupo no modal para operações rápidas (ex.: adicionar)
+      try {
+        modalEl.dataset.categoriaId = itens[0]?.fk_Categoria_id ? String(itens[0].fk_Categoria_id) : '';
+        modalEl.dataset.descricaoGrupo = itens[0]?.descricao ? String(itens[0].descricao) : '';
+      } catch (_) {}
       const descricaoGrupo = itens[0]?.descricao || '';
       let html = '';
       if (descricaoGrupo) {
@@ -1494,7 +1542,6 @@ function abrirModalGrupo(nomeGrupo) {
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button class="btn btn-success btn-sm" onclick="salvarEdicaoUnidadeGrupo(${item.id}, '${nomeGrupo}')">Salvar</button>
               <button class="btn btn-secondary btn-sm" onclick="cancelarEdicaoUnidadeGrupo(${item.id})">Cancelar</button>
             </div>
           </div>
@@ -1514,26 +1561,130 @@ window.editarUnidadeGrupo = function(id, local, estado) {
   document.getElementById('editGrupoLocal'+id).value = local;
   document.getElementById('editGrupoEstado'+id).value = estado;
 };
+
+// Botão "Salvar alterações" do modal de grupo: salva todas as edições visíveis de uma vez
+function handleSalvarGrupoClickFactory(btnSalvarGrupo) {
+  return async function() {
+    const btn = this;
+    const alerta = document.getElementById('alertaGrupo');
+    const modalEl = document.getElementById('modalGrupoItens');
+    const nomeGrupo = (modalEl && modalEl.dataset && modalEl.dataset.nomeGrupo) ? modalEl.dataset.nomeGrupo : '';
+    alerta.classList.add('d-none');
+    btn.disabled = true;
+    try {
+      const editsEls = Array.from(document.querySelectorAll('[id^="editGrupoCampos"]')).filter(el => !el.classList.contains('d-none'));
+      if (editsEls.length === 0) {
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-warning');
+        alerta.textContent = 'Nenhuma alteração para salvar.';
+        btn.disabled = false;
+        return;
+      }
+      const payloads = editsEls.map(el => {
+        const id = el.id.replace('editGrupoCampos','');
+        const local = document.getElementById(`editGrupoLocal${id}`)?.value || '';
+        const estado = document.getElementById(`editGrupoEstado${id}`)?.value || '';
+        return { id, local, estado };
+      });
+      // Validação simples
+      if (payloads.some(p => !p.id || !p.local || !p.estado)) {
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-danger');
+        alerta.textContent = 'Preencha local e estado para as unidades em edição.';
+        btn.disabled = false;
+        return;
+      }
+      const responses = await Promise.all(payloads.map(p => fetch(`http://localhost:3000/api/itens/${p.id}` , {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ local: p.local, estado: p.estado })
+      })));
+      if (responses.some(r => !r.ok)) {
+        const texts = await Promise.all(responses.map(r => r.text().catch(() => '')));
+        throw new Error('Falha ao salvar uma ou mais unidades. ' + texts.join(' '));
+      }
+      // Sucesso: fecha modal e atualiza listas/gráficos
+      try {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.hide();
+      } catch (_) {}
+      try { await carregarItens(); } catch (_) {}
+      try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (_) {}
+      try {
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+      } catch (_) {}
+    } catch (e) {
+      alerta.classList.remove('d-none');
+      alerta.classList.add('alert-danger');
+      alerta.textContent = e.message || 'Erro ao salvar alterações.';
+    } finally {
+      btn.disabled = false;
+    }
+  };
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnSalvarGrupo = document.getElementById('btnSalvarGrupo');
+  if (btnSalvarGrupo && !btnSalvarGrupo.dataset.bound) {
+    btnSalvarGrupo.addEventListener('click', handleSalvarGrupoClickFactory(btnSalvarGrupo));
+    btnSalvarGrupo.dataset.bound = '1';
+  }
+  const btnAddGrupo = document.getElementById('btnAdicionarItemGrupo');
+  if (btnAddGrupo && !btnAddGrupo.dataset.bound) {
+    btnAddGrupo.addEventListener('click', () => {
+      const modalGrupo = document.getElementById('modalGrupoItens');
+      const nomeGrupo = (modalGrupo && modalGrupo.dataset && modalGrupo.dataset.nomeGrupo) ? modalGrupo.dataset.nomeGrupo : '';
+      const categoriaId = (modalGrupo && modalGrupo.dataset && modalGrupo.dataset.categoriaId) ? parseInt(modalGrupo.dataset.categoriaId, 10) : NaN;
+      const descGrupo = (modalGrupo && modalGrupo.dataset && modalGrupo.dataset.descricaoGrupo) ? modalGrupo.dataset.descricaoGrupo : '';
+      if (!nomeGrupo) {
+        alert('Nome do grupo não identificado. Abra novamente o modal do grupo.');
+        return;
+      }
+      const qtdStr = prompt(`Quantas unidades de "${nomeGrupo}" deseja adicionar?`, '1');
+      if (qtdStr === null) return;
+      const quantidade = parseInt(qtdStr, 10);
+      if (!Number.isInteger(quantidade) || quantidade < 1) {
+        alert('Quantidade inválida. Informe um número inteiro >= 1.');
+        return;
+      }
+      // Monta payload mínimo: usa nome do grupo, categoria do grupo (se conhecida), e descrição herdada
+      const payload = {
+        nome: nomeGrupo,
+        quantidade,
+        descricao: descGrupo || `Unidades adicionadas ao grupo ${nomeGrupo}`,
+        fk_Categoria_id: Number.isInteger(categoriaId) ? categoriaId : 1 // fallback para 1 (DS) se não identificado
+      };
+      fetch('http://localhost:3000/api/itens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(async res => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.erro || 'Erro ao adicionar itens ao grupo.');
+          // Atualiza UI: recarregar modal do grupo, lista geral e gráficos
+          try { abrirModalGrupo(nomeGrupo); } catch (_) {}
+          try { await carregarItens(); } catch (_) {}
+          try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (_) {}
+        })
+        .catch(err => alert(err.message || 'Erro ao adicionar itens.'));
+      try {
+        // Pré-preenche o nome no modal de adicionar item, se existir o campo
+        const nomeInput = document.getElementById('nomeItem');
+        if (nomeInput && nomeGrupo) nomeInput.value = nomeGrupo;
+      } catch (_) {}
+      // Não abriremos o modal de adicionar genérico; o fluxo acima cria direto as unidades solicitadas
+    });
+    btnAddGrupo.dataset.bound = '1';
+  }
+});
 window.cancelarEdicaoUnidadeGrupo = function(id) {
   document.getElementById('editGrupoCampos'+id).classList.add('d-none');
 };
-window.salvarEdicaoUnidadeGrupo = function(id, nomeGrupo) {
-  const local = document.getElementById(`editGrupoLocal${id}`).value;
-  const estado = document.getElementById(`editGrupoEstado${id}`).value;
-  fetch(`http://localhost:3000/api/itens/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ local, estado })
-  })
-    .then(res => {
-      if (!res.ok) throw new Error('Erro ao salvar');
-      // Recarregar a lista do grupo após salvar
-      abrirModalGrupo(nomeGrupo);
-    })
-    .catch(() => {
-      alert('Erro ao salvar alterações.');
-    });
-};
+// Removido: salvamento individual por unidade; usar o botão "Salvar alterações" do modal para salvar em lote
 window.excluirUnidadeGrupo = function(id, nomeGrupo) {
   if (!confirm('Tem certeza que deseja excluir esta unidade?')) return;
   const alerta = document.getElementById('alertaGrupo');
@@ -1542,7 +1693,11 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
     .then(resp => resp.json())
     .then(data => {
       if (data.erro) throw new Error(data.erro);
+      // Recarrega o modal do grupo
       abrirModalGrupo(nomeGrupo);
+      // Em paralelo, atualiza listagem principal/gráficos para refletir remoção
+      try { carregarItens(); } catch (e) {}
+      try { if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais(); } catch (e) {}
     })
     .catch(e => {
       alerta.classList.remove('d-none');
@@ -1624,7 +1779,8 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
           <div id="alertaGrupo" class="alert d-none" role="alert"></div>
           <div id="listaItensGrupo"></div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer d-flex justify-content-between">
+          <button id="btnAdicionarItemGrupo" class="btn btn-success"><i class="fa fa-plus"></i> Adicionar Item</button>
           <button id="btnSalvarGrupo" class="btn btn-primary">Salvar alterações</button>
         </div>
       </div>

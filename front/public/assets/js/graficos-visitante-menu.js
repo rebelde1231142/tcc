@@ -127,3 +127,9 @@ export function destruirGraficosMenuVisitante() {
     if (chartItensPorDiaMenu) { chartItensPorDiaMenu.destroy(); chartItensPorDiaMenu = null; }
   } catch (e) {}
 }
+
+// Expor para o escopo global (necessário porque o index.html chama via window.* ao abrir o offcanvas no mobile)
+try {
+  window.carregarGraficosMenuVisitante = carregarGraficosMenuVisitante;
+  window.destruirGraficosMenuVisitante = destruirGraficosMenuVisitante;
+} catch (_) {}
