@@ -322,6 +322,24 @@ app.get('/api/itens/grupo/:nome', async (req, res) => {
   }
 });
 
+// Deletar todos os itens de um grupo (por nome)
+app.delete('/api/itens/grupo/:nome', async (req, res) => {
+  const { nome } = req.params;
+  try {
+    const [result] = await pool.query(
+      'DELETE FROM Itens WHERE TRIM(nome) = TRIM(?)',
+      [nome]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ erro: 'Nenhum item encontrado para este grupo.' });
+    }
+    return res.status(200).json({ mensagem: 'Grupo deletado com sucesso.', afetados: result.affectedRows });
+  } catch (error) {
+    console.error('Erro ao deletar grupo:', error);
+    return enviarErro(res, 500, 'Não foi possível deletar o grupo no momento.', error);
+  }
+});
+
 // Certifique-se de que a rota DELETE está definida corretamente
 app.delete('/api/itens/:id', async (req, res) => {
   const { id } = req.params;

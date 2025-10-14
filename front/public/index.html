@@ -1,4 +1,4 @@
-    <script>
+<script>
       // Detecta Android e aplica classes vivas nos botões principais
       document.addEventListener('DOMContentLoaded', function() {
         const isAndroid = /Android/i.test(navigator.userAgent);
@@ -629,17 +629,17 @@ qtdInput.addEventListener('input', () => {
     <div class="modal-dialog">
       <div class="modal-content text-dark">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalDeletarMassaLabel">Deletar Itens</h5>
+          <h5 class="modal-title" id="modalDeletarMassaLabel">Deletar por Grupo</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
           <form id="formDeletarMassa">
             <div class="mb-3">
-              <label class="form-label">Selecione os itens para deletar:</label>
+              <label class="form-label">Selecione os grupos para deletar por completo:</label>
               <div id="listaItensDeletar" style="max-height:300px;overflow-y:auto;"></div>
             </div>
             <div id="alertaDeletarMassa" class="alert d-none" role="alert"></div>
-            <button type="submit" class="btn btn-danger w-100">Deletar Selecionados</button>
+            <button type="submit" class="btn btn-danger w-100">Deletar Grupos Selecionados</button>
           </form>
         </div>
       </div>
@@ -657,7 +657,10 @@ qtdInput.addEventListener('input', () => {
         <div class="modal-body">
           <div id="alertaEditarModal" class="alert d-none" role="alert"></div>
           <div id="listaItensEditar" style="max-height:400px;overflow-y:auto;"></div>
-          <button id="btnSalvarEdicoes" class="btn btn-warning w-100 mt-3">Salvar Alterações</button>
+          <div class="d-flex gap-2 mt-3">
+            <button id="btnSalvarEdicoes" class="btn btn-warning flex-fill">Salvar Alterações</button>
+            <button id="btnDeletarSelecionadosEdicao" class="btn btn-danger flex-fill" type="button">Deletar selecionados</button>
+          </div>
         </div>
       </div>
     </div>
@@ -842,7 +845,10 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           lista.innerHTML = itens.map(item => `
                       <div class="border rounded p-2 mb-2" id="itemEditBox${item.id}">
                         <div class="d-flex align-items-center justify-content-between">
-                          <span><b>${item.nome}</b> (${item.quantidade}) - ${item.descricao} <span class="badge bg-info">${item.local}</span></span>
+                          <div class="d-flex align-items-center gap-2">
+                            <input type="checkbox" class="form-check-input" id="chkEdit${item.id}" value="${item.id}">
+                            <span><b>${item.nome}</b> (${item.quantidade}) - ${item.descricao} <span class="badge bg-info">${item.local||''}</span></span>
+                          </div>
                           <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-expand-edicao" data-id="${item.id}">+</button>
                         </div>
                         <div class="row g-2 mt-2 d-none campos-edicao" id="camposEdicao${item.id}">
@@ -924,7 +930,7 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           const fk_Categoria_id = parseInt(document.getElementById('editCat'+id).value);
           const estado = document.getElementById('editEstado'+id).value;
           if (!nome || !quantidade || !descricao || !fk_Categoria_id || !estado || isNaN(quantidade) || Number(quantidade) <= 0) {
-            alerta.classList.remove('d-none', 'alert-success');
+            alerta.classList.remove('d-none');
             alerta.classList.add('alert-danger');
             alerta.textContent = 'Preencha todos os campos corretamente para cada item.';
             return;
@@ -1164,6 +1170,11 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
         if (paginacaoEl) paginacaoEl.innerHTML = '';
       }
     }
+    // Gatilho de carregamento inicial da lista e dos gráficos
+    document.addEventListener('DOMContentLoaded', function() {
+      try { carregarItens(); } catch (e) { console.error('Erro carregarItens inicial:', e); }
+      try { if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais(); } catch (e) { console.error('Erro carregarGraficosPrincipais inicial:', e); }
+    });
 window.addEventListener('resize', () => {
 });
 
@@ -1247,7 +1258,7 @@ window.addEventListener('resize', () => {
     });
 
     document.getElementById('btnDeletarMassa').addEventListener('click', function() {
-  // Carrega os itens no modal
+  // Carrega os grupos (nomes únicos) no modal
   fetch('http://localhost:3000/api/itens')
     .then(response => response.json())
     .then(itens => {
@@ -1256,11 +1267,12 @@ window.addEventListener('resize', () => {
         lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
         return;
       }
-      lista.innerHTML = itens.map(item => `
+      const grupos = Array.from(new Set(itens.map(i => i.nome))).sort((a,b)=>a.localeCompare(b));
+      lista.innerHTML = grupos.map((g, idx) => `
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="${item.id}" id="itemDel${item.id}">
-          <label class="form-check-label" for="itemDel${item.id}">
-            ${item.nome} (${item.quantidade}) - ${item.descricao}
+          <input class="form-check-input" type="checkbox" value="${g}" id="grupoDel${idx}">
+          <label class="form-check-label" for="grupoDel${idx}">
+            ${g}
           </label>
         </div>
       `).join('');
@@ -1269,184 +1281,303 @@ window.addEventListener('resize', () => {
     });
 });
 
-document.getElementById('formDeletarMassa').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const alerta = document.getElementById('alertaDeletarMassa');
-  alerta.classList.add('d-none');
-  const selecionados = Array.from(document.querySelectorAll('#listaItensDeletar input:checked')).map(cb => cb.value);
-  if (selecionados.length === 0) {
-    alerta.classList.remove('d-none', 'alert-success');
-    alerta.classList.add('alert-danger');
-    alerta.textContent = 'Selecione pelo menos um item.';
-    return;
-  }
-  Promise.all(selecionados.map(id =>
-    fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
-  ))
-  .then(responses => {
-    if (responses.some(r => !r.ok)) throw new Error('Erro ao deletar um ou mais itens.');
-    alerta.classList.remove('d-none', 'alert-danger');
-    alerta.classList.add('alert-success');
-    alerta.textContent = 'Itens deletados com sucesso!';
-    setTimeout(() => {
-      bootstrap.Modal.getInstance(document.getElementById('modalDeletarMassa')).hide();
-      location.reload();
-    }, 800);
-  })
-  .catch(error => {
-    alerta.classList.remove('d-none', 'alert-success');
-    alerta.classList.add('alert-danger');
-    alerta.textContent = error.message || 'Erro ao deletar itens.';
-  });
-});
-
-    window.addEventListener('DOMContentLoaded', () => {
-      carregarItens();
-      if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais();
-    });
-
-    // --- Modal de Grupo: abrir, renderizar e salvar ---
-    async function abrirModalGrupo(nomeGrupo) {
-      const modalEl = document.getElementById('modalGrupoItens');
-      const label = document.getElementById('modalGrupoItensLabel');
-      const lista = document.getElementById('listaItensGrupo');
-      const alerta = document.getElementById('alertaGrupo');
-      if (!modalEl || !label || !lista || !alerta) {
-        console.error('Modal de grupo não encontrado no DOM.');
-        return;
+// Submissão: deletar grupos selecionados
+const formDeletarMassa = document.getElementById('formDeletarMassa');
+if (formDeletarMassa) {
+  formDeletarMassa.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const alerta = document.getElementById('alertaDeletarMassa');
+    alerta.classList.add('d-none');
+    const selecionados = Array.from(document.querySelectorAll('#listaItensDeletar input:checked')).map(cb => cb.value);
+    if (selecionados.length === 0) {
+      alerta.classList.remove('d-none', 'alert-success');
+      alerta.classList.add('alert-danger');
+      alerta.textContent = 'Selecione pelo menos um grupo.';
+      return;
+    }
+    Promise.all(selecionados.map(nomeGrupo =>
+      fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`, { method: 'DELETE' })
+    ))
+    .then(async responses => {
+      const ok = responses.every(r => r.ok);
+      if (!ok) {
+        const texts = await Promise.all(responses.map(r=>r.text().catch(()=>'')));
+        throw new Error('Erro ao deletar um ou mais grupos. '+texts.join(' '));
       }
-      alerta.classList.add('d-none');
-      label.textContent = `Itens do grupo: ${nomeGrupo}`;
-      lista.innerHTML = '<div class="text-muted">Carregando itens...</div>';
-      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-      modal.show();
+      alerta.classList.remove('d-none', 'alert-danger');
+      alerta.classList.add('alert-success');
+      alerta.textContent = 'Grupos deletados com sucesso!';
+      setTimeout(async () => {
+        bootstrap.Modal.getInstance(document.getElementById('modalDeletarMassa')).hide();
+        await carregarItens();
+        await carregarGraficosPrincipais?.();
+      }, 800);
+    })
+    .catch(error => {
+      alerta.classList.remove('d-none', 'alert-success');
+      alerta.classList.add('alert-danger');
+      alerta.textContent = error.message || 'Erro ao deletar grupos.';
+    });
+  });
+}
 
-      try {
-        const resp = await fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`);
-        if (!resp.ok) throw new Error('Falha ao buscar itens do grupo.');
-        const itens = await resp.json();
-        if (!Array.isArray(itens) || itens.length === 0) {
-          lista.innerHTML = '<div class="text-muted">Nenhum item no grupo.</div>';
+// Ao abrir editar, incluir checkbox por item
+const btnEditarMassaEl = document.getElementById('btnEditarMassa');
+if (btnEditarMassaEl) {
+  btnEditarMassaEl.addEventListener('click', function() {
+    fetch('http://localhost:3000/api/itens')
+      .then(response => response.json())
+      .then(itens => {
+        const lista = document.getElementById('listaItensEditar');
+        if (!itens || itens.length === 0) {
+          lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
           return;
         }
-        const nomesLocais = {
-          'Almoxarifado': 'Sala de limpeza',
-          'Sala de Aula': 'Sala de Aula',
-          'Biblioteca': 'Biblioteca',
-          'Sala dos Professores': 'Sala dos Professores',
-          'Diretoria': 'Diretoria',
-          'Quadra': 'Sala de material esportivo',
-          'Cantina': 'Cantina',
-          'Laboratório de Quimica': 'Laboratório de Quimica',
-          'Laboratório de Informática': 'Laboratório de Informática',
-          'Laboratório de Informática 2': 'Laboratório de Informática 2',
-          'Laboratório de Informática 3': 'Laboratório de Informática 3',
-          'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
-        };
         lista.innerHTML = itens.map(item => `
-          <div class="border rounded p-2 mb-2">
-            <div class="d-flex flex-wrap align-items-center gap-2">
-              <span class="badge bg-secondary">ID #${item.id}</span>
-              <span class="badge bg-info">${nomesLocais[item.local] || item.local || ''}</span>
-              <span class="badge ${item.estado==='quebrado'?'bg-danger':item.estado==='parado'?'bg-warning text-dark':'bg-success'}">${item.estado || '—'}</span>
+          <div class="border rounded p-2 mb-2" id="itemEditBox${item.id}">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <input type="checkbox" class="form-check-input" id="chkEdit${item.id}" value="${item.id}">
+                <span><b>${item.nome}</b> (${item.quantidade}) - ${item.descricao} <span class="badge bg-info">${item.local||''}</span></span>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-expand-edicao" data-id="${item.id}">+</button>
             </div>
-            <div class="row g-2 mt-2">
-              <div class="col-12 col-md-6">
-                <label class="form-label">Local</label>
-                <select class="form-select" id="editLocalGrupo${item.id}">
-                  <option value="">Selecionar...</option>
-                  ${Object.keys(nomesLocais).map(k=>`<option value="${k}" ${item.local===k?'selected':''}>${nomesLocais[k]}</option>`).join('')}
+            <div class="row g-2 mt-2 d-none campos-edicao" id="camposEdicao${item.id}">
+              <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Nome" value="${item.nome}" id="editNome${item.id}">
+              </div>
+              <div class="col-md-2">
+                <input type="number" class="form-control" placeholder="Qtd" value="${item.quantidade}" id="editQtd${item.id}">
+              </div>
+              <div class="col-md-3">
+                <input type="text" class="form-control" placeholder="Descrição" value="${item.descricao}" id="editDesc${item.id}">
+              </div>
+              <div class="col-md-2">
+                <select class="form-select" id="editCat${item.id}">
+                  <option value="1" ${item.fk_Categoria_id==1?'selected':''}>Ds</option>
+                  <option value="2" ${item.fk_Categoria_id==2?'selected':''}>Administração</option>
+                  <option value="3" ${item.fk_Categoria_id==3?'selected':''}>Qui</option>
                 </select>
               </div>
-              <div class="col-12 col-md-6">
-                <label class="form-label">Estado</label>
-                <select class="form-select" id="editEstadoGrupo${item.id}">
-                  <option value="">Selecionar...</option>
-                  <option value="em uso" ${item.estado==='em uso'?'selected':''}>Em uso</option>
-                  <option value="parado" ${item.estado==='parado'?'selected':''}>Parado</option>
-                  <option value="quebrado" ${item.estado==='quebrado'?'selected':''}>Quebrado</option>
+              <div class="col-md-2">
+                <select class="form-select" id="editLocal${item.id}">
+                  <option value="Almoxarifado" ${item.local=='Almoxarifado'?'selected':''}>Sala de limpeza</option>
+                  <option value="Sala de Aula" ${item.local=='Sala de Aula'?'selected':''}>Sala de Aula</option>
+                  <option value="Biblioteca" ${item.local=='Biblioteca'?'selected':''}>Biblioteca</option>
+                  <option value="Sala dos Professores" ${item.local=='Sala dos Professores'?'selected':''}>Sala dos Professores</option>
+                  <option value="Diretoria" ${item.local=='Diretoria'?'selected':''}>Diretoria</option>
+                  <option value="Quadra" ${item.local=='Quadra'?'selected':''}>Sala de material esportivo</option>
+                  <option value="Cantina" ${item.local=='Cantina'?'selected':''}>Cantina</option>
+                  <option value="Laboratório de Quimica" ${item.local=='Laboratório de Quimica'?'selected':''}>Laboratório de Quimica</option>
+                  <option value="Laboratório de Informática" ${item.local=='Laboratório de Informática'?'selected':''}>Laboratório de Informática</option>
+                  <option value="Laboratório de Informática 2" ${item.local=='Laboratório de Informática 2'?'selected':''}>Laboratório de Informática 2</option>
+                  <option value="Laboratório de Informática 3" ${item.local=='Laboratório de Informática 3'?'selected':''}>Laboratório de Informática 3</option>
+                  <option value="Sala de Armazenamento Técnico" ${item.local=='Sala de Armazenamento Técnico'?'selected':''}>Sala de Armazenamento Técnico</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <select class="form-select" id="editEstado${item.id}">
+                  <option value="em uso" ${item.estado=='em uso'?'selected':''}>Em uso</option>
+                  <option value="quebrado" ${item.estado=='quebrado'?'selected':''}>Quebrado</option>
+                  <option value="parado" ${item.estado=='parado'?'selected':''}>Parado</option>
                 </select>
               </div>
             </div>
           </div>
         `).join('');
+        const modal = new bootstrap.Modal(document.getElementById('modalEditarItem'));
+        modal.show();
+      });
+  });
+}
 
-        const btnSalvar = document.getElementById('btnSalvarGrupo');
-        if (!btnSalvar) return;
-        btnSalvar.onclick = async () => {
-          alerta.classList.add('d-none');
-          try {
-            const updates = itens.map(item => {
-              const novoLocal = document.getElementById(`editLocalGrupo${item.id}`).value;
-              const novoEstado = document.getElementById(`editEstadoGrupo${item.id}`).value;
-              const body = {};
-              if (novoLocal && novoLocal !== item.local) body.local = novoLocal;
-              if (novoEstado && novoEstado !== item.estado) body.estado = novoEstado;
-              return { id: item.id, body };
-            }).filter(u => Object.keys(u.body).length > 0);
-
-            if (updates.length === 0) {
-              alerta.classList.remove('d-none', 'alert-success');
-              alerta.classList.add('alert-warning');
-              alerta.textContent = 'Nenhuma alteração para salvar.';
-              return;
-            }
-            await Promise.all(updates.map(async u => {
-              const resp = await fetch(`http://localhost:3000/api/itens/${u.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(u.body)
-              });
-              if (!resp.ok) {
-                const j = await resp.json().catch(()=>({erro:'Erro desconhecido'}));
-                throw new Error(j.erro || 'Falha ao salvar um item.');
-              }
-            }));
-            alerta.classList.remove('d-none', 'alert-danger');
-            alerta.classList.add('alert-success');
-            alerta.textContent = 'Alterações salvas!';
-            setTimeout(async () => {
-              bootstrap.Modal.getInstance(modalEl).hide();
-              await carregarItens();
-              await carregarGraficosPrincipais();
-            }, 600);
-          } catch (e) {
-            alerta.classList.remove('d-none', 'alert-success');
-            alerta.classList.add('alert-danger');
-            alerta.textContent = e.message || 'Erro ao salvar alterações.';
-          }
-        };
-      } catch (e) {
-        lista.innerHTML = '<div class="text-danger">Erro ao carregar itens do grupo.</div>';
-        console.error(e);
-      }
+// Botão deletar selecionados dentro do modal de edição
+const btnDelSel = document.getElementById('btnDeletarSelecionadosEdicao');
+if (btnDelSel) {
+  btnDelSel.addEventListener('click', async function() {
+    const lista = document.getElementById('listaItensEditar');
+    if (!lista) return;
+    const selecionados = Array.from(lista.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+    const alerta = document.getElementById('alertaEditarModal');
+    alerta.classList.add('d-none');
+    if (selecionados.length === 0) {
+      alerta.classList.remove('d-none', 'alert-success');
+      alerta.classList.add('alert-warning');
+      alerta.textContent = 'Selecione ao menos um item para deletar.';
+      return;
     }
+    try {
+      const responses = await Promise.all(selecionados.map(id => fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })));
+      if (responses.some(r => !r.ok)) throw new Error('Falha ao deletar um ou mais itens.');
+      alerta.classList.remove('d-none', 'alert-danger');
+      alerta.classList.add('alert-success');
+      alerta.textContent = 'Itens deletados.';
+      setTimeout(async () => {
+        bootstrap.Modal.getInstance(document.getElementById('modalEditarItem')).hide();
+        await carregarItens();
+        await carregarGraficosPrincipais?.();
+      }, 600);
+    } catch (e) {
+      alerta.classList.remove('d-none', 'alert-success');
+      alerta.classList.add('alert-danger');
+      alerta.textContent = e.message || 'Erro ao deletar itens selecionados.';
+    }
+  });
+}
+
+// Função para abrir o modal de gerenciamento de itens do grupo
+function abrirModalGrupo(nomeGrupo) {
+  const modal = new bootstrap.Modal(document.getElementById('modalGrupoItens'));
+  const lista = document.getElementById('listaItensGrupo');
+  const alerta = document.getElementById('alertaGrupo');
+  alerta.classList.add('d-none');
+  lista.innerHTML = '<span class="text-muted">Carregando itens do grupo...</span>';
+  fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`)
+    .then(response => response.json())
+    .then(itens => {
+      if (!itens || itens.length === 0) {
+        lista.innerHTML = '<span class="text-muted">Nenhum item neste grupo.</span>';
+        return;
+      }
+      const descricaoGrupo = itens[0]?.descricao || '';
+      let html = '';
+      if (descricaoGrupo) {
+        html += `<div class='mb-2'><strong>Descrição do grupo:</strong> <span>${descricaoGrupo}</span></div>`;
+      }
+      html += `<div class='d-none d-md-block mb-2' style='font-size:0.95em;color:#888;'>
+        <div class='d-flex justify-content-between align-items-center' style='min-width:520px;'>
+          <div style='min-width:220px;max-width:260px;'>Nome / Localidade</div>
+          <div style='min-width:110px;text-align:right;'>Estado</div>
+        </div>
+      </div>`;
+      html += itens.map(item => `
+        <div class="border rounded p-2 mb-2" id="grupoItem${item.id}">
+          <div class="mb-1 d-flex justify-content-between align-items-center" style="min-width:420px;">
+            <div style="font-weight:600;">${item.nome || ''} <span class="text-secondary" style="font-size:0.9em;">#${item.id}</span></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center" style="min-width:420px;">
+            <div style="min-width:220px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <span class="badge bg-info" style="font-size:1em;width:100%;display:inline-block;text-align:left;">${item.local || ''}</span>
+            </div>
+            <div style="min-width:110px;text-align:right;">
+              <span class="badge ${item.estado==='quebrado'?'bg-danger':item.estado==='parado'?'bg-warning text-dark':'bg-success'}" style="font-size:1em;">${item.estado || '—'}</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-end gap-1 mt-2">
+            <button class="btn btn-sm btn-outline-primary" onclick="editarUnidadeGrupo(${item.id}, '${item.local||''}', '${item.estado||''}')">Editar</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="excluirUnidadeGrupo(${item.id}, '${nomeGrupo}')">Excluir</button>
+          </div>
+          <div class="row g-2 d-none" id="editGrupoCampos${item.id}">
+            <div class="col-md-6">
+              <select class="form-select" id="editGrupoLocal${item.id}">
+                <option value="">Selecionar local...</option>
+                <option value="Almoxarifado">Sala de limpeza</option>
+                <option value="Sala de Aula">Sala de Aula</option>
+                <option value="Biblioteca">Biblioteca</option>
+                <option value="Sala dos Professores">Sala dos Professores</option>
+                <option value="Diretoria">Diretoria</option>
+                <option value="Quadra">Sala de material esportivo</option>
+                <option value="Cantina">Cantina</option>
+                <option value="Laboratório de Quimica">Laboratório de Quimica</option>
+                <option value="Laboratório de Informática">Laboratório de Informática</option>
+                <option value="Laboratório de Informática 2">Laboratório de Informática 2</option>
+                <option value="Laboratório de Informática 3">Laboratório de Informática 3</option>
+                <option value="Sala de Armazenamento Técnico">Sala de Armazenamento Técnico</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <select class="form-select" id="editGrupoEstado${item.id}">
+                <option value="">Selecionar estado...</option>
+                <option value="em uso">Em uso</option>
+                <option value="parado">Parado</option>
+                <option value="quebrado">Quebrado</option>
+              </select>
+            </div>
+            <div class="col-12 mt-2">
+              <button class="btn btn-success btn-sm" onclick="salvarEdicaoUnidadeGrupo(${item.id}, '${nomeGrupo}')">Salvar</button>
+              <button class="btn btn-secondary btn-sm" onclick="cancelarEdicaoUnidadeGrupo(${item.id})">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      lista.innerHTML = html;
+    })
+    .catch(() => {
+      lista.innerHTML = '<span class="text-danger">Erro ao buscar itens do grupo.</span>';
+    });
+  modal.show();
+}
+
+// Funções auxiliares para editar/excluir unidade do grupo
+window.editarUnidadeGrupo = function(id, local, estado) {
+  document.getElementById('editGrupoCampos'+id).classList.remove('d-none');
+  document.getElementById('editGrupoLocal'+id).value = local;
+  document.getElementById('editGrupoEstado'+id).value = estado;
+};
+window.cancelarEdicaoUnidadeGrupo = function(id) {
+  document.getElementById('editGrupoCampos'+id).classList.add('d-none');
+};
+window.salvarEdicaoUnidadeGrupo = function(id, nomeGrupo) {
+  const local = document.getElementById(`editGrupoLocal${id}`).value;
+  const estado = document.getElementById(`editGrupoEstado${id}`).value;
+  fetch(`http://localhost:3000/api/itens/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ local, estado })
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Erro ao salvar');
+      // Recarregar a lista do grupo após salvar
+      abrirModalGrupo(nomeGrupo);
+    })
+    .catch(() => {
+      alert('Erro ao salvar alterações.');
+    });
+};
+window.excluirUnidadeGrupo = function(id, nomeGrupo) {
+  if (!confirm('Tem certeza que deseja excluir esta unidade?')) return;
+  const alerta = document.getElementById('alertaGrupo');
+  alerta.classList.add('d-none');
+  fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
+    .then(resp => resp.json())
+    .then(data => {
+      if (data.erro) throw new Error(data.erro);
+      abrirModalGrupo(nomeGrupo);
+    })
+    .catch(e => {
+      alerta.classList.remove('d-none');
+      alerta.classList.add('alert-danger');
+      alerta.textContent = e.message || 'Erro ao excluir unidade.';
+    });
+};
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
-  <script type="module">
-    import { carregarGraficosMenuVisitante, destruirGraficosMenuVisitante } from '/assets/js/graficos-visitante-menu.js';
-
-    // Ativa somente em telas mobile
-    const isMobile = () => window.matchMedia('(max-width: 767.98px)').matches;
-
-    (function() {
+  <script src="/assets/js/graficos-visitante-menu.js" type="module"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Offcanvas menu mobile
+      const isMobile = () => window.matchMedia('(max-width: 767.98px)').matches;
       const btn = document.getElementById('btnMenuGraficos');
       const menu = document.getElementById('menuGraficos');
-      if (!btn || !menu) return;
-      const offcanvas = new bootstrap.Offcanvas(menu);
-      btn.addEventListener('click', function() {
-        if (!isMobile()) return; // somente mobile
-        offcanvas.show();
-      });
-      menu.addEventListener('shown.bs.offcanvas', function() {
-        try { btn.style.display = 'none'; } catch (e) {}
-        setTimeout(() => { if (isMobile()) carregarGraficosMenuVisitante(); }, 30);
-      });
-      menu.addEventListener('hidden.bs.offcanvas', function() {
-        try { btn.style.display = 'flex'; } catch (e) {}
-        destruirGraficosMenuVisitante();
-      });
-    })();
+      if (btn && menu && window.bootstrap && window.bootstrap.Offcanvas) {
+        const offcanvas = new bootstrap.Offcanvas(menu);
+        btn.addEventListener('click', function() {
+          if (!isMobile()) return;
+          offcanvas.show();
+        });
+        menu.addEventListener('shown.bs.offcanvas', function() {
+          try { btn.style.display = 'none'; } catch (e) {}
+          setTimeout(() => { if (isMobile() && window.carregarGraficosMenuVisitante) window.carregarGraficosMenuVisitante(); }, 30);
+        });
+        menu.addEventListener('hidden.bs.offcanvas', function() {
+          try { btn.style.display = 'flex'; } catch (e) {}
+          if (window.destruirGraficosMenuVisitante) window.destruirGraficosMenuVisitante();
+        });
+      }
+      // Gatilho de carregamento inicial da lista e dos gráficos
+      try { carregarItens(); } catch (e) { console.error('Erro carregarItens inicial:', e); }
+      try { if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais(); } catch (e) { console.error('Erro carregarGraficosPrincipais inicial:', e); }
+    });
   </script>
   <script>
     document.getElementById('btnFiltro').addEventListener('click', function() {

@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 08/10/2025 às 15:15
+-- Tempo de geração: 14-Out-2025 às 11:40
 -- Versão do servidor: 8.0.30
--- Versão do PHP: 8.3.4
+-- versão do PHP: 8.3.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `categoria`
+-- Estrutura da tabela `categoria`
 --
 
 CREATE TABLE `categoria` (
@@ -34,7 +34,7 @@ CREATE TABLE `categoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Despejando dados para a tabela `categoria`
+-- Extraindo dados da tabela `categoria`
 --
 
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
@@ -45,7 +45,7 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `entrada`
+-- Estrutura da tabela `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -58,7 +58,7 @@ CREATE TABLE `entrada` (
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `itens`
+-- Estrutura da tabela `itens`
 --
 
 CREATE TABLE `itens` (
@@ -73,7 +73,7 @@ CREATE TABLE `itens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Despejando dados para a tabela `itens`
+-- Extraindo dados da tabela `itens`
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`, `estado`) VALUES
@@ -89,12 +89,24 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 (13, 'dfhgfjhgfh', 3434, 'dsfdsfdv', 1, 'Sala dos Professores', '2025-10-06', 'parado'),
 (14, 'dsfgsdfdsfdsf', 444, 'fddsfsdf', 2, 'Diretoria', '2025-10-06', 'em uso'),
 (15, 'PenDrive', 12, 'armazenamento util', 1, 'Sala de Armazenamento Técnico', '2025-10-08', NULL),
-(16, 'rtyrtyt', 55, 'gfhfghfg', 1, 'Sala dos Professores', '2025-10-08', NULL);
+(16, 'rtyrtyt', 55, 'gfhfghfg', 1, 'Sala dos Professores', '2025-10-08', NULL),
+(17, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'parado'),
+(18, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(19, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(20, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(21, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(22, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(23, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(24, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(25, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
+(26, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Armazenamento Técnico', '2025-10-14', 'em uso'),
+(27, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática', '2025-10-14', 'em uso'),
+(28, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática 2', '2025-10-14', 'em uso');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `perfil`
+-- Estrutura da tabela `perfil`
 --
 
 CREATE TABLE `perfil` (
@@ -104,7 +116,7 @@ CREATE TABLE `perfil` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Despejando dados para a tabela `perfil`
+-- Extraindo dados da tabela `perfil`
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
@@ -115,7 +127,7 @@ INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `saida`
+-- Estrutura da tabela `saida`
 --
 
 CREATE TABLE `saida` (
@@ -130,41 +142,41 @@ CREATE TABLE `saida` (
 --
 
 --
--- Índices de tabela `categoria`
+-- Índices para tabela `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Índices de tabela `entrada`
+-- Índices para tabela `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- Índices de tabela `itens`
+-- Índices para tabela `itens`
 --
 ALTER TABLE `itens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
 
 --
--- Índices de tabela `perfil`
+-- Índices para tabela `perfil`
 --
 ALTER TABLE `perfil`
   ADD PRIMARY KEY (`CPF`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- Índices de tabela `saida`
+-- Índices para tabela `saida`
 --
 ALTER TABLE `saida`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- AUTO_INCREMENT para tabelas despejadas
+-- AUTO_INCREMENT de tabelas despejadas
 --
 
 --
@@ -183,7 +195,7 @@ ALTER TABLE `entrada`
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
@@ -192,11 +204,11 @@ ALTER TABLE `saida`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Restrições para tabelas despejadas
+-- Restrições para despejos de tabelas
 --
 
 --
--- Restrições para tabelas `itens`
+-- Limitadores para a tabela `itens`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);
