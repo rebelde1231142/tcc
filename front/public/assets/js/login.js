@@ -4,7 +4,7 @@ $(document).ready(() => {
         e.preventDefault();
         const email = $('#email').val();
         const senha = $('#senha').val();
-        fetch('http://localhost:3000/usuarios')
+    fetch('/usuarios')
             .then(response => response.json())
             .then(usuarios => {
                 const usuario = usuarios.find(u => u.email === email && u.senha === senha);

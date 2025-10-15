@@ -20,7 +20,7 @@ $(document).ready(() => {
             Senha: $('#senha').val()
         };
 
-        fetch('http://localhost:3000/api/usuarios', {
+    fetch('/api/usuarios', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuario)

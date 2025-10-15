@@ -1,3 +1,4 @@
+require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
 const loginRouter = require('./loginRouter');
@@ -9,6 +10,59 @@ const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, Text
 const path = require('path');
 const { enviarErro } = require('./utils/errorHandler');
 const app = express(); // <-- ESTA LINHA TEM QUE VIR ANTES DAS ROTAS
+// Lista de CPFs autorizados a ver auditoria (pode vir do .env depois)
+const digitsOnly = (s) => (s ? String(s).replace(/\D/g, '') : '');
+const ADMIN_CPF_WHITELIST = (process.env.ADMIN_CPFS || '')
+  .split(',')
+  .map(s => digitsOnly(s))
+  .filter(Boolean);
+
+// Cria tabela de auditoria se não existir e helper para registrar ações
+async function ensureAuditTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS Auditoria (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        dataHora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        cpf VARCHAR(20) NULL,
+        acao VARCHAR(50) NOT NULL,
+        recurso VARCHAR(50) NOT NULL,
+        referencia VARCHAR(100) NULL,
+        grupo VARCHAR(100) NULL,
+        itemId INT NULL,
+        detalhes JSON NULL,
+        endpoint VARCHAR(120) NULL,
+        ip VARCHAR(64) NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    // Garantir colunas adicionais caso a tabela já existisse
+    try { await pool.query('ALTER TABLE Auditoria ADD COLUMN IF NOT EXISTS grupo VARCHAR(100) NULL'); } catch (_) {}
+    try { await pool.query('ALTER TABLE Auditoria ADD COLUMN IF NOT EXISTS itemId INT NULL'); } catch (_) {}
+  } catch (e) {
+    console.error('Falha ao garantir tabela Auditoria:', e);
+  }
+}
+
+async function logAuditoria({ cpf, acao, recurso, referencia, grupo, itemId, detalhes }, req) {
+  try {
+    await pool.query(
+      'INSERT INTO Auditoria (cpf, acao, recurso, referencia, grupo, itemId, detalhes, endpoint, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        cpf || null,
+        acao,
+        recurso,
+        referencia || null,
+        grupo || null,
+        itemId != null ? Number(itemId) : null,
+        JSON.stringify(detalhes || null),
+        (req && req.originalUrl) || null,
+        (req && (req.ip || (req.headers['x-forwarded-for']||'').split(',')[0] || req.connection?.remoteAddress)) || null
+      ]
+    );
+  } catch (e) {
+    console.error('Erro ao registrar auditoria:', e);
+  }
+}
 
 // Middlewares
 app.use(cors());
@@ -17,6 +71,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'front', 'public')));
 app.use('/api', loginRouter);
 app.use('/api', usuarioRouter);
+// Garantir tabela de auditoria ao subir
+ensureAuditTable();
 
 // Middleware global de tratamento de erros (captura exceções não tratadas nas rotas)
 app.use((err, req, res, next) => {
@@ -195,23 +251,70 @@ app.get('/api/relatorio-word', async (req, res) => {
   }
 });
 
+// Rota de consulta à auditoria (somente CPFs autorizados)
+app.get('/api/auditoria', async (req, res) => {
+  try {
+    const solicitante = digitsOnly(req.headers['x-user-cpf'] || '');
+    const allowed = ADMIN_CPF_WHITELIST.length > 0 ? ADMIN_CPF_WHITELIST.includes(solicitante) : false;
+    if (!allowed) return res.status(403).json({ erro: 'Acesso negado.' });
+
+    const { cpf, acao, recurso, grupo, itemId, inicio, fim, limit = 20, offset = 0 } = req.query;
+    const where = [];
+    const params = [];
+    if (cpf) { where.push('cpf = ?'); params.push(cpf); }
+    if (acao) { where.push('acao = ?'); params.push(acao); }
+    if (recurso) { where.push('recurso = ?'); params.push(recurso); }
+    if (grupo) { where.push('grupo = ?'); params.push(grupo); }
+    if (itemId) { where.push('itemId = ?'); params.push(Number(itemId)); }
+    if (inicio) { where.push('dataHora >= ?'); params.push(inicio); }
+    if (fim) { where.push('dataHora <= ?'); params.push(fim); }
+    const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
+    const lim = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
+    const off = Math.max(0, parseInt(offset, 10) || 0);
+    const [rows] = await pool.query(`SELECT * FROM Auditoria ${whereSql} ORDER BY dataHora DESC LIMIT ? OFFSET ?`, [...params, lim, off]);
+    const [[{ total } = { total: 0 }]] = await pool.query(`SELECT COUNT(*) as total FROM Auditoria ${whereSql}`, params);
+    res.json({ total, items: rows });
+  } catch (error) {
+    console.error('Erro ao consultar auditoria:', error);
+    return enviarErro(res, 500, 'Não foi possível consultar o histórico agora.', error);
+  }
+});
+
+// Endpoint para checar permissão de acesso ao histórico no front
+app.get('/api/auditoria/permissao', (req, res) => {
+  try {
+    const solicitante = digitsOnly(req.headers['x-user-cpf'] || '');
+    const allowed = ADMIN_CPF_WHITELIST.length > 0 ? ADMIN_CPF_WHITELIST.includes(solicitante) : false;
+    return res.json({ permitido: allowed });
+  } catch (error) {
+    console.error('Erro ao checar permissão:', error);
+    return res.status(500).json({ permitido: false });
+  }
+});
+
 // Rota para editar um item pelo id
 app.put('/api/itens/:id', async (req, res) => {
   const { id } = req.params;
   // Permitimos atualização parcial: qualquer subconjunto dos campos abaixo
   const permitidos = ['nome', 'quantidade', 'descricao', 'fk_Categoria_id', 'local', 'estado'];
   const dados = req.body || {};
+  let conn;
   try {
     console.log('PUT /api/itens/:id - Recebido:', { id, body: dados });
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
     // Verifica se o item existe
-    const [itemExistente] = await pool.query('SELECT * FROM Itens WHERE id = ?', [id]);
-    if (itemExistente.length === 0) {
+    const [itemExistRows] = await conn.query('SELECT * FROM Itens WHERE id = ?', [id]);
+    if (itemExistRows.length === 0) {
+      await conn.rollback();
       return res.status(404).json({ erro: 'Item não encontrado.' });
     }
+    const itemExistente = itemExistRows[0];
     // Se vier categoria, valida
     if (dados.fk_Categoria_id) {
-      const [categoria] = await pool.query('SELECT * FROM Categoria WHERE Id = ?', [dados.fk_Categoria_id]);
+      const [categoria] = await conn.query('SELECT * FROM Categoria WHERE Id = ?', [dados.fk_Categoria_id]);
       if (categoria.length === 0) {
+        await conn.rollback();
         return res.status(400).json({ erro: 'Categoria inválida.' });
       }
     }
@@ -225,16 +328,53 @@ app.put('/api/itens/:id', async (req, res) => {
       }
     }
     if (campos.length === 0) {
+      await conn.rollback();
       return res.status(400).json({ erro: 'Nenhum campo válido para atualizar.' });
     }
     valores.push(id);
     const sql = `UPDATE Itens SET ${campos.join(', ')} WHERE id = ?`;
-    const [updateResult] = await pool.query(sql, valores);
+    const [updateResult] = await conn.query(sql, valores);
     console.log('Resultado UPDATE:', updateResult);
+
+    // Registrar entrada/saida se houver alteração de quantidade
+    if (Object.prototype.hasOwnProperty.call(dados, 'quantidade')) {
+      const beforeQ = Number(itemExistente.quantidade) || 0;
+      const afterQ = Number(dados.quantidade);
+      if (!Number.isNaN(afterQ)) {
+        const delta = afterQ - beforeQ;
+        if (delta !== 0) {
+          const hoje = new Date().toISOString().slice(0,10);
+          if (delta > 0) {
+            // Aumentou quantidade: registra entrada com delta
+            await conn.query('INSERT INTO entrada (fk_Itens_id, data, quantidade) VALUES (?, ?, ?)', [id, hoje, delta]);
+          } else {
+            // Diminuiu quantidade: registra saída com |delta|
+            await conn.query('INSERT INTO saida (fk_Itens_id, data, quantidade) VALUES (?, ?, ?)', [id, hoje, Math.abs(delta)]);
+          }
+        }
+      }
+    }
+
+    await conn.commit();
     res.status(200).json({ mensagem: 'Item atualizado com sucesso.' });
+    try {
+      const cpf = (req.headers['x-user-cpf'] || '').trim();
+      await logAuditoria({
+        cpf,
+        acao: 'editar',
+        recurso: 'item',
+        referencia: String(id),
+        grupo: itemExistente && itemExistente.nome ? itemExistente.nome : null,
+        itemId: Number(id),
+        detalhes: { antes: itemExistente, alteracoes: dados }
+      }, req);
+    } catch (_) {}
   } catch (error) {
+    if (conn) { try { await conn.rollback(); } catch (_) {} }
     console.error('Erro ao editar item:', error);
     return enviarErro(res, 500, 'Não foi possível editar o item no momento.', error);
+  } finally {
+    if (conn) { try { conn.release(); } catch (_) {} }
   }
 });
 
@@ -245,6 +385,7 @@ app.post('/api/itens', async (req, res) => {
   nome = (nome || '').trim();
   quantidade = parseInt(quantidade, 10) || 1;
   if (quantidade < 1) quantidade = 1;
+  let conn;
   try {
     // Verificar se a categoria existe
     const [categoria] = await pool.query('SELECT * FROM Categoria WHERE Id = ?', [fk_Categoria_id]);
@@ -277,16 +418,48 @@ app.post('/api/itens', async (req, res) => {
       }
     }
 
-    await pool.query(
+    // Usa transação para inserir Itens e registrar as respectivas entradas
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    const [result] = await conn.query(
       'INSERT INTO Itens (nome, quantidade, descricao, fk_Categoria_id, local, dataAdicionado, estado) VALUES ?'
       , [insertValues]
     );
 
+    // Registra as entradas na tabela `entrada`: uma por item criado (quantidade=1)
+    const firstId = Number(result.insertId) || 0;
+    const total = insertValues.length;
+    if (firstId > 0 && total > 0) {
+      const entradaValues = [];
+      for (let i = 0; i < total; i++) {
+        entradaValues.push([firstId + i, dataAdicionado, 1]); // fk_Itens_id, data, quantidade
+      }
+      await conn.query('INSERT INTO entrada (fk_Itens_id, data, quantidade) VALUES ?', [entradaValues]);
+    }
+
+    await conn.commit();
+
     // Retorno simplificado; o front recarrega a lista após cadastrar
     res.status(201).json({ mensagem: 'Itens cadastrados com sucesso!', totalInseridos: insertValues.length });
+    try {
+      const cpf = (req.headers['x-user-cpf'] || '').trim();
+      await logAuditoria({
+        cpf,
+        acao: 'criar',
+        recurso: 'item',
+        referencia: nome,
+        grupo: nome,
+        itemId: null,
+        detalhes: { nome, quantidade, descricao, fk_Categoria_id, local, estado, unidades: Array.isArray(unidades) ? unidades : null }
+      }, req);
+    } catch (_) {}
   } catch (error) {
+    if (conn) { try { await conn.rollback(); } catch (_) {} }
     console.error('Erro ao cadastrar item:', error);
     return enviarErro(res, 500, 'Não foi possível cadastrar o item no momento.', error);
+  } finally {
+    if (conn) { try { conn.release(); } catch (_) {} }
   }
 });
 
@@ -326,14 +499,46 @@ app.get('/api/itens/grupo/:nome', async (req, res) => {
 app.delete('/api/itens/grupo/:nome', async (req, res) => {
   const { nome } = req.params;
   try {
-    const [result] = await pool.query(
-      'DELETE FROM Itens WHERE TRIM(nome) = TRIM(?)',
-      [nome]
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ erro: 'Nenhum item encontrado para este grupo.' });
+    const conn = await pool.getConnection();
+    let afetados = 0;
+    try {
+      await conn.beginTransaction();
+      const [antes] = await conn.query('SELECT id FROM Itens WHERE TRIM(nome) = TRIM(?)', [nome]);
+      if (!antes || antes.length === 0) {
+        await conn.rollback();
+        return res.status(404).json({ erro: 'Nenhum item encontrado para este grupo.' });
+      }
+      const ids = antes.map(r => r.id);
+      const [result] = await conn.query(
+        'DELETE FROM Itens WHERE TRIM(nome) = TRIM(?)',
+        [nome]
+      );
+      afetados = result.affectedRows || 0;
+      const hoje = new Date().toISOString().slice(0,10);
+      if (ids.length > 0) {
+        const saidas = ids.map(i => [i, hoje, 1]);
+        await conn.query('INSERT INTO saida (fk_Itens_id, data, quantidade) VALUES ?', [saidas]);
+      }
+      await conn.commit();
+    } catch (e) {
+      try { await conn.rollback(); } catch (_) {}
+      throw e;
+    } finally {
+      try { conn.release(); } catch (_) {}
     }
-    return res.status(200).json({ mensagem: 'Grupo deletado com sucesso.', afetados: result.affectedRows });
+    try {
+      const cpf = (req.headers['x-user-cpf'] || '').trim();
+      await logAuditoria({
+        cpf,
+        acao: 'deletar-grupo',
+        recurso: 'item',
+        referencia: nome,
+        grupo: nome,
+        itemId: null,
+        detalhes: { grupo: nome, qtdRemovida: afetados }
+      }, req);
+    } catch (_) {}
+    return res.status(200).json({ mensagem: 'Grupo deletado com sucesso.', afetados });
   } catch (error) {
     console.error('Erro ao deletar grupo:', error);
     return enviarErro(res, 500, 'Não foi possível deletar o grupo no momento.', error);
@@ -345,8 +550,28 @@ app.delete('/api/itens/:id', async (req, res) => {
   const { id } = req.params;
   console.log('ID recebido para exclusão:', id); // Log do ID recebido
   try {
-    // Deletar o item do banco de dados
-    const [result] = await pool.query('DELETE FROM Itens WHERE id = ?', [id]);
+    // Buscar antes para log e deletar o item do banco de dados, registrando saída
+    const [antes] = await pool.query('SELECT * FROM Itens WHERE id = ?', [id]);
+    if (!antes || antes.length === 0) {
+      return res.status(404).json({ erro: 'Item não encontrado.' });
+    }
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      const [result] = await conn.query('DELETE FROM Itens WHERE id = ?', [id]);
+      if (result.affectedRows === 0) {
+        await conn.rollback();
+        return res.status(404).json({ erro: 'Item não encontrado.' });
+      }
+      const hoje = new Date().toISOString().slice(0,10);
+      await conn.query('INSERT INTO saida (fk_Itens_id, data, quantidade) VALUES (?, ?, ?)', [id, hoje, 1]);
+      await conn.commit();
+    } catch (e) {
+      try { await conn.rollback(); } catch (_) {}
+      throw e;
+    } finally {
+      try { conn.release(); } catch (_) {}
+    }
 
     if (result.affectedRows === 0) {
       console.error('Item não encontrado para exclusão:', id); // Log de item não encontrado
@@ -354,6 +579,18 @@ app.delete('/api/itens/:id', async (req, res) => {
     }
 
     res.status(200).json({ mensagem: 'Item deletado com sucesso.' });
+    try {
+      const cpf = (req.headers['x-user-cpf'] || '').trim();
+      await logAuditoria({
+        cpf,
+        acao: 'deletar',
+        recurso: 'item',
+        referencia: String(id),
+        grupo: (antes && antes[0] && antes[0].nome) || null,
+        itemId: Number(id),
+        detalhes: { antes: (antes && antes[0]) || null }
+      }, req);
+    } catch (_) {}
   } catch (error) {
     console.error('Erro ao deletar item:', error); // Log do erro completo
     return enviarErro(res, 500, 'Não foi possível deletar o item no momento.', error);

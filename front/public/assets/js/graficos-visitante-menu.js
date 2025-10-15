@@ -19,7 +19,7 @@ function fixarAlturaCanvas(id, h = 180) {
 
 export async function carregarGraficosMenuVisitante() {
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+  const response = await fetch('/api/itens');
     const itens = await response.json();
 
     // 1. Itens por Local

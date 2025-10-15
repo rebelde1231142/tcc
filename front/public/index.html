@@ -5,7 +5,6 @@
         if (isAndroid) {
           const btns = [
             { id: 'btnAdicionarItem', cls: 'btn-primary' },
-            { id: 'btnEditarMassa', cls: 'btn-warning' },
             { id: 'btnDeletarMassa', cls: 'btn-danger' },
             { id: 'btnRelatorio', cls: 'btn-success' },
             { id: 'btnFiltro', cls: 'btn-info' }
@@ -176,9 +175,10 @@ function selecionarLocalidadeParaFiltro(local) {
           <i class="fa fa-gear"></i> Meu Painel
         </a>
       </h4>
-      <nav class="flex-grow-1">
+    <nav class="flex-grow-1">
   <a href="#" class="d-block mb-2 text-white"><i class="fa fa-home"></i> Dashboard</a>
-      </nav>
+  <a id="linkHistorico" href="/page/admin/historico.html" class="d-block mb-2 text-white d-none"><i class="fa fa-history"></i> Histórico</a>
+    </nav>
       <div class="mt-auto">
         <button class="btn btn-danger w-100" id="btnSair"><i class="fa fa-sign-out-alt"></i> Logout</button>
       </div>
@@ -238,12 +238,84 @@ function selecionarLocalidadeParaFiltro(local) {
         <div class="row mb-4 justify-content-center">
           <div class="col-12">
             <div class="d-flex flex-wrap gap-2 justify-content-center py-2 rounded shadow-sm" style="background:#f7f7f7;">
-              <button class="btn px-4 py-2" id="btnAdicionarItem" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-plus"></i> Adicionar Item</button>
-              <button class="btn px-4 py-2" id="btnEditarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-edit"></i> Editar Itens</button>
               <button class="btn px-4 py-2" id="btnDeletarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-trash"></i> Deletar Itens</button>
               <button class="btn px-4 py-2" id="btnRelatorio" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-download"></i> Baixar Relatório</button>
               <button class="btn px-4 py-2" id="btnFiltro" style="background:#6c757d;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-filter"></i> Filtrar</button>
+              <button class="btn px-4 py-2" id="btnAdicionarGrupo" style="background:#0d6efd;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;" data-bs-toggle="modal" data-bs-target="#modalAdicionarItem"><i class="fa fa-plus"></i> Adicionar Grupo</button>
+              <a href="/page/admin/historico.html" id="btnHistoricoAcoes" class="btn px-4 py-2 btn-warning d-none" style="color:#212529;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-history"></i> Histórico</a>
+              <style>
+                #btnHistoricoAcoes {
+                  background: linear-gradient(90deg, #ffe082 0%, #ffd54f 100%);
+                  border: 2px solid #ffb300;
+                  color: #212529 !important;
+                  font-weight: bold;
+                  box-shadow: 0 2px 12px #ffecb3cc, 0 1.5px 6px #ffb30044;
+                  border-radius: 12px !important;
+                  transition: box-shadow 0.2s, border 0.2s;
+                }
+                #btnHistoricoAcoes:hover, #btnHistoricoAcoes:focus {
+                  background: linear-gradient(90deg, #ffd54f 0%, #ffe082 100%);
+                  border: 2.5px solid #ffa000;
+                  box-shadow: 0 4px 18px #ffecb3ee, 0 2px 8px #ffb30066;
+                }
+              </style>
             </div>
+            <script>
+              // Exibir botão de histórico na barra de ações se permitido (apenas admin)
+              document.addEventListener('DOMContentLoaded', function() {
+                try {
+                  const u = JSON.parse(localStorage.getItem('usuarioLogado')||'null');
+                  const btnHist = document.getElementById('btnHistoricoAcoes');
+                  if (u && btnHist) {
+                    const cpf = (u.CPF || u.cpf || '').replace(/\D/g,'');
+                    fetch('/api/auditoria/permissao', { headers: { 'X-User-CPF': cpf } })
+                      .then(r => r.ok ? r.json() : { permitido:false })
+                      .then(j => { if (j && j.permitido) btnHist.classList.remove('d-none'); })
+                      .catch(() => {});
+                  }
+                  // Corrige eventos dos botões principais
+                  const btnDeletarMassa = document.getElementById('btnDeletarMassa');
+                  if (btnDeletarMassa) btnDeletarMassa.onclick = function() {
+                    const modal = new bootstrap.Modal(document.getElementById('modalDeletarMassa'));
+                    modal.show();
+                  };
+                  const btnRelatorio = document.getElementById('btnRelatorio');
+                  if (btnRelatorio) btnRelatorio.onclick = function() {
+                    fetch('/api/relatorio-word')
+                      .then(response => {
+                        if (!response.ok) throw new Error('Erro ao gerar relatório Word.');
+                        return response.blob();
+                      })
+                      .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'relatorio-itens.docx';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                      })
+                      .catch(error => {
+                        alert(error.message || 'Erro ao baixar o relatório Word.');
+                      });
+                  };
+                  const btnFiltro = document.getElementById('btnFiltro');
+                  if (btnFiltro) btnFiltro.onclick = function() {
+                    const modal = new bootstrap.Modal(document.getElementById('modalFiltro'));
+                    modal.show();
+                  };
+                  const btnAdicionarGrupo = document.getElementById('btnAdicionarGrupo');
+                  if (btnAdicionarGrupo) btnAdicionarGrupo.onclick = function() {
+                    const modal = new bootstrap.Modal(document.getElementById('modalAdicionarItem'));
+                    modal.show();
+                  };
+                  if (btnHist) btnHist.onclick = function(e) {
+                    e.preventDefault();
+                    window.location.href = '/page/admin/historico.html';
+                  };
+                } catch (_) {}
+              });
+            </script>
           </div>
         </div>
         <div class="row">
@@ -423,20 +495,45 @@ async function carregarMiniGraficos() {
     });
   } catch {}
 }
-// Função para filtrar itens pela barra de pesquisa
-document.getElementById('barraPesquisa').addEventListener('input', async function() {
-  const termo = this.value.toLowerCase();
+// Pesquisa com debounce e cancelamento para evitar "flicker" e corridas de requisições
+let _searchDebounceTimer = null;
+let _searchAbortController = null;
+let _searchSeq = 0;
+
+document.getElementById('barraPesquisa').addEventListener('input', function() {
+  const termo = this.value.trim().toLowerCase();
+  clearTimeout(_searchDebounceTimer);
+
+  // Se limpar o termo, aborta buscas e volta ao carregamento padrão
+  if (termo === '') {
+    if (_searchAbortController) { try { _searchAbortController.abort(); } catch (_) {} _searchAbortController = null; }
+    try { carregarItens(); } catch (_) {}
+    return;
+  }
+
+  _searchDebounceTimer = setTimeout(() => executarPesquisa(termo), 250);
+});
+
+async function executarPesquisa(termo) {
   const lista = document.getElementById('itensBanco');
   const paginacaoEl = document.getElementById('paginacaoItens');
   if (paginacaoEl) paginacaoEl.innerHTML = '';
-  if (!termo) {
-    await carregarItens();
-    return;
-  }
-  lista.innerHTML = '<span class="text-muted">Buscando...</span>';
+
+  // Cancela requisição anterior
+  if (_searchAbortController) { try { _searchAbortController.abort(); } catch (_) {} }
+  _searchAbortController = new AbortController();
+  const signal = _searchAbortController.signal;
+  const seq = ++_searchSeq;
+
+  // Mantém a lista atual enquanto busca para evitar "piscada"
+  // lista.innerHTML = '<span class="text-muted">Buscando...</span>';
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+    const response = await fetch('http://localhost:3000/api/itens', { signal });
+    if (!response.ok) throw new Error('Falha ao buscar itens.');
     const itens = await response.json();
+    // Se outra busca mais recente foi iniciada, descarta este resultado
+    if (seq !== _searchSeq) return;
+
     const nomesLocais = {
       'Almoxarifado': 'Sala de limpeza',
       'Sala de Aula': 'Sala de Aula',
@@ -473,30 +570,98 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
       lista.innerHTML = '<span class="text-muted">Nenhum item encontrado.</span>';
       return;
     }
-    lista.innerHTML = '';
+
+    const gruposMap = new Map();
     resultados.forEach(item => {
-      const div = document.createElement('div');
-      div.className = "card mb-2 shadow-sm";
-      const nomeLocal = nomesLocais[item.local] || item.local || '';
-      const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
-      let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
-      if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
-      else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
-      div.innerHTML = `
-        <div class="card-body">
-          <h6 class="card-title">
-            ${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}
-          </h6>
-          <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-          <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-        </div>
-      `;
-      lista.appendChild(div);
+      const key = (item.nome || '').trim();
+      if (!gruposMap.has(key)) gruposMap.set(key, []);
+      gruposMap.get(key).push(item);
     });
+    const grupos = Array.from(gruposMap.entries()).sort((a,b)=> a[0].localeCompare(b[0]));
+
+    function resumoEstados(items) {
+      const cont = { 'em uso': 0, 'quebrado': 0, 'parado': 0, 'indefinido': 0 };
+      items.forEach(i => {
+        const e = (i.estado || '').toLowerCase();
+        if (e === 'em uso' || e === 'quebrado' || e === 'parado') cont[e]++;
+        else cont.indefinido++;
+      });
+      return cont;
+    }
+
+    let paginaAtual = 1;
+    const gruposPorPagina = 8;
+    const totalPaginas = Math.ceil(grupos.length / gruposPorPagina);
+
+    function renderPagina(pagina) {
+      // Se outra busca foi iniciada, evita render desatualizado
+      if (seq !== _searchSeq) return;
+      lista.innerHTML = '';
+      const inicio = (pagina - 1) * gruposPorPagina;
+      const fim = inicio + gruposPorPagina;
+      const gruposPagina = grupos.slice(inicio, fim);
+      gruposPagina.forEach(([nomeGrupo, items]) => {
+        const primeiro = items[0] || {};
+        const nomeCategoria = nomesCategorias[primeiro.categoriaNome] || primeiro.categoriaNome || '';
+        const total = items.length;
+        const estados = resumoEstados(items);
+        const div = document.createElement('div');
+        div.className = 'card mb-2 shadow-sm';
+        div.innerHTML = `
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="card-title mb-0">${nomeGrupo} <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
+              <span class="badge bg-dark">${total} un.</span>
+            </div>
+            <div class="mt-2 small">
+              <span class="badge" style="background:#28a745;">Em uso: ${estados['em uso']}</span>
+              <span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado: ${estados['parado']}</span>
+              <span class="badge ms-1" style="background:#dc3545;">Quebrado: ${estados['quebrado']}</span>
+              ${estados['indefinido'] ? `<span class=\"badge ms-1 bg-secondary\">Indef.: ${estados['indefinido']}</span>` : ''}
+            </div>
+            <div class="mt-3 d-flex gap-2">
+              <button class="btn btn-info btn-sm" data-btn-grupo="${encodeURIComponent(nomeGrupo)}">Gerenciar itens</button>
+            </div>
+          </div>
+        `;
+        lista.appendChild(div);
+      });
+
+      lista.querySelectorAll('[data-btn-grupo]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const nomeGrupo = decodeURIComponent(btn.getAttribute('data-btn-grupo'));
+          abrirModalGrupo(nomeGrupo);
+        });
+      });
+
+      if (paginacaoEl) {
+        paginacaoEl.innerHTML = '';
+        paginacaoEl.style.display = 'flex';
+        paginacaoEl.style.justifyContent = 'center';
+        paginacaoEl.style.alignItems = 'center';
+        paginacaoEl.style.gap = '4px';
+        paginacaoEl.style.marginTop = '16px';
+        if (totalPaginas > 1) {
+          for (let i = 1; i <= totalPaginas; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-dark mx-1';
+            btn.textContent = i;
+            if (i === pagina) btn.classList.add('active');
+            btn.onclick = () => { if (seq !== _searchSeq) return; paginaAtual = i; renderPagina(paginaAtual); };
+            paginacaoEl.appendChild(btn);
+          }
+        } else {
+          paginacaoEl.innerHTML = '<button class="btn btn-dark mx-1" disabled>1</button>';
+        }
+      }
+    }
+
+    renderPagina(paginaAtual);
   } catch (error) {
+    if (error && error.name === 'AbortError') return; // busca cancelada
     lista.innerHTML = '<span class="text-danger">Erro ao buscar itens.</span>';
   }
-});
+}
 // Geração dinâmica de unidades detalhadas
 const qtdInput = document.getElementById('qtdItem');
 const unidadesContainer = document.getElementById('unidadesContainer');
@@ -579,7 +744,7 @@ qtdInput.addEventListener('input', () => {
               try {
         const response = await fetch('http://localhost:3000/api/itens', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') },
           body: JSON.stringify((() => {
             const q = quantidade;
             // Se houver detalhamento (container visível e há selects), envia unidades
@@ -627,7 +792,7 @@ qtdInput.addEventListener('input', () => {
   <!-- Modal para Deletar em Massa -->
   <div class="modal fade" id="modalDeletarMassa" tabindex="-1" aria-labelledby="modalDeletarMassaLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content text-dark">
+  <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="modalDeletarMassaLabel">Deletar por Grupo</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -649,7 +814,7 @@ qtdInput.addEventListener('input', () => {
   <!-- Modal de Editar Item -->
   <div class="modal fade" id="modalEditarItem" tabindex="-1" aria-labelledby="modalEditarItemLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content text-dark">
+  <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="modalEditarItemLabel">Editar Itens</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -832,8 +997,9 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
   <!-- ...existing code... -->
   <script>
 
-    // Função de edição em massa reescrita
-    document.getElementById('btnEditarMassa').addEventListener('click', function() {
+  // Função de edição em massa reescrita (botão foi removido; proteger para não quebrar o JS)
+  const _btnEditarMassa = document.getElementById('btnEditarMassa');
+  if (_btnEditarMassa) _btnEditarMassa.addEventListener('click', function() {
       fetch('http://localhost:3000/api/itens')
         .then(response => response.json())
         .then(itens => {
@@ -910,8 +1076,8 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           });
           const modal = new bootstrap.Modal(document.getElementById('modalEditarItem'));
           modal.show();
-        });
     });
+  });
 
     // Salvar edições em massa reescrita
     document.getElementById('btnSalvarEdicoes').addEventListener('click', function() {
@@ -965,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
       Promise.all(edits.map(async edit => {
         const response = await fetch(`http://localhost:3000/api/itens/${edit.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') },
           body: JSON.stringify(edit)
         });
         const data = await response.json();
@@ -1261,7 +1427,7 @@ window.addEventListener('resize', () => {
 
     function deletarItem(id) {
       if (confirm('Tem certeza que deseja deletar este item?')) {
-        fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
+    fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE', headers: { 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') } })
           .then(async response => {
             if (!response.ok) throw new Error('Erro ao deletar item.');
             await carregarItens();
@@ -1317,7 +1483,7 @@ if (formDeletarMassa) {
       return;
     }
     Promise.all(selecionados.map(nomeGrupo =>
-      fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`, { method: 'DELETE' })
+      fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`, { method: 'DELETE', headers: { 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') } })
     ))
     .then(async responses => {
       const ok = responses.every(r => r.ok);
@@ -1352,8 +1518,9 @@ if (formDeletarMassa) {
 }
 
 // Ao abrir editar, incluir checkbox por item
+// Botão de editar em massa removido da dashboard
 const btnEditarMassaEl = document.getElementById('btnEditarMassa');
-if (btnEditarMassaEl) {
+if (false && btnEditarMassaEl) {
   btnEditarMassaEl.addEventListener('click', function() {
     fetch('http://localhost:3000/api/itens')
       .then(response => response.json())
@@ -1437,7 +1604,7 @@ if (btnDelSel) {
       return;
     }
     try {
-      const responses = await Promise.all(selecionados.map(id => fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })));
+      const responses = await Promise.all(selecionados.map(id => fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE', headers: { 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') } })));
       if (responses.some(r => !r.ok)) throw new Error('Falha ao deletar um ou mais itens.');
       alerta.classList.remove('d-none', 'alert-danger');
       alerta.classList.add('alert-success');
@@ -1596,7 +1763,7 @@ function handleSalvarGrupoClickFactory(btnSalvarGrupo) {
       }
       const responses = await Promise.all(payloads.map(p => fetch(`http://localhost:3000/api/itens/${p.id}` , {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') },
         body: JSON.stringify({ local: p.local, estado: p.estado })
       })));
       if (responses.some(r => !r.ok)) {
@@ -1657,9 +1824,9 @@ document.addEventListener('DOMContentLoaded', () => {
         descricao: descGrupo || `Unidades adicionadas ao grupo ${nomeGrupo}`,
         fk_Categoria_id: Number.isInteger(categoriaId) ? categoriaId : 1 // fallback para 1 (DS) se não identificado
       };
-      fetch('http://localhost:3000/api/itens', {
+          fetch('/api/itens', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') },
         body: JSON.stringify(payload)
       })
         .then(async res => {
@@ -1689,7 +1856,7 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
   if (!confirm('Tem certeza que deseja excluir esta unidade?')) return;
   const alerta = document.getElementById('alertaGrupo');
   alerta.classList.add('d-none');
-  fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })
+  fetch(`/api/itens/${id}`, { method: 'DELETE', headers: { 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado')||'{}').CPF||'') } })
     .then(resp => resp.json())
     .then(data => {
       if (data.erro) throw new Error(data.erro);
@@ -1732,6 +1899,24 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
       // Gatilho de carregamento inicial da lista e dos gráficos
       try { carregarItens(); } catch (e) { console.error('Erro carregarItens inicial:', e); }
       try { if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais(); } catch (e) { console.error('Erro carregarGraficosPrincipais inicial:', e); }
+      // Mostrar link de histórico apenas se CPF estiver permitido no backend
+      try {
+        const u = JSON.parse(localStorage.getItem('usuarioLogado')||'null');
+        const linkHist = document.getElementById('linkHistorico');
+        if (u && linkHist) {
+          const cpf = (u.CPF || u.cpf || '').replace(/\D/g,'');
+          fetch('/api/auditoria/permissao', { headers: { 'X-User-CPF': cpf } })
+            .then(r => r.ok ? r.json() : { permitido:false })
+            .then(j => {
+              if (j && j.permitido) {
+                // Visível apenas em telas >= md
+                linkHist.classList.remove('d-none');
+                linkHist.classList.add('d-none', 'd-md-block');
+              }
+            })
+            .catch(() => {});
+        }
+      } catch (_) {}
     });
   </script>
   <script>
@@ -1740,29 +1925,124 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
       modal.show();
     });
 
-    document.getElementById('formFiltro').addEventListener('submit', function(e) {
+    document.getElementById('formFiltro').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const local = document.getElementById('filtroLocal').value;
+      const local = (document.getElementById('filtroLocal').value || '').trim();
       const lista = document.getElementById('itensBanco');
+      const paginacaoEl = document.getElementById('paginacaoItens');
+      if (paginacaoEl) paginacaoEl.innerHTML = '';
       lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
-      fetch('http://localhost:3000/api/itens')
-        .then(response => response.json())
-        .then(itens => {
-          lista.innerHTML = '';
-          itens.filter(item => !local || item.local === local)
-            .forEach(item => {
-              const div = document.createElement('div');
-              div.className = "card mb-2 shadow-sm";
-              div.innerHTML = `
-                <div class="card-body">
-                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
-                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-                </div>
-              `;
-              lista.appendChild(div);
-            });
+      try {
+  const response = await fetch('/api/itens');
+        const itens = await response.json();
+        const filtrados = itens.filter(item => !local || item.local === local);
+        if (filtrados.length === 0) {
+          lista.innerHTML = '<span class="text-muted">Nenhum item encontrado.</span>';
+          bootstrap.Modal.getInstance(document.getElementById('modalFiltro')).hide();
+          return;
+        }
+
+        // Mapas de exibição
+        const nomesCategorias = {
+          'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+          'Administração Escolar': 'Administração Escolar',
+          'Quimica': 'Química',
+          'Ds': 'Desenvolvimento de Sistemas',
+          'Administração': 'Administração Escolar',
+          'Qui': 'Química'
+        };
+
+        // Agrupa por nome (grupo)
+        const gruposMap = new Map();
+        filtrados.forEach(item => {
+          const key = (item.nome || '').trim();
+          if (!gruposMap.has(key)) gruposMap.set(key, []);
+          gruposMap.get(key).push(item);
         });
+        const grupos = Array.from(gruposMap.entries()).sort((a,b)=> a[0].localeCompare(b[0]));
+
+        function resumoEstados(items) {
+          const cont = { 'em uso': 0, 'quebrado': 0, 'parado': 0, 'indefinido': 0 };
+          items.forEach(i => {
+            const e = (i.estado || '').toLowerCase();
+            if (e === 'em uso' || e === 'quebrado' || e === 'parado') cont[e]++;
+            else cont.indefinido++;
+          });
+          return cont;
+        }
+
+        // Paginação
+        let paginaAtual = 1;
+        const gruposPorPagina = 8;
+        const totalPaginas = Math.ceil(grupos.length / gruposPorPagina);
+
+        function renderPagina(pagina) {
+          lista.innerHTML = '';
+          const inicio = (pagina - 1) * gruposPorPagina;
+          const fim = inicio + gruposPorPagina;
+          const gruposPagina = grupos.slice(inicio, fim);
+          gruposPagina.forEach(([nomeGrupo, items]) => {
+            const primeiro = items[0] || {};
+            const nomeCategoria = nomesCategorias[primeiro.categoriaNome] || primeiro.categoriaNome || '';
+            const total = items.length;
+            const estados = resumoEstados(items);
+            const div = document.createElement('div');
+            div.className = 'card mb-2 shadow-sm';
+            div.innerHTML = `
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="card-title mb-0">${nomeGrupo} <span class="badge bg-secondary ms-1">${nomeCategoria}</span></h6>
+                  <span class="badge bg-dark">${total} un.</span>
+                </div>
+                <div class="mt-2 small">
+                  <span class="badge" style="background:#28a745;">Em uso: ${estados['em uso']}</span>
+                  <span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado: ${estados['parado']}</span>
+                  <span class="badge ms-1" style="background:#dc3545;">Quebrado: ${estados['quebrado']}</span>
+                  ${estados['indefinido'] ? `<span class=\"badge ms-1 bg-secondary\">Indef.: ${estados['indefinido']}</span>` : ''}
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                  <button class="btn btn-info btn-sm" data-btn-grupo="${encodeURIComponent(nomeGrupo)}">Gerenciar itens</button>
+                </div>
+              </div>
+            `;
+            lista.appendChild(div);
+          });
+
+          // Bind botões Gerenciar
+          lista.querySelectorAll('[data-btn-grupo]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const nomeGrupo = decodeURIComponent(btn.getAttribute('data-btn-grupo'));
+              abrirModalGrupo(nomeGrupo);
+            });
+          });
+
+          // Paginação
+          if (paginacaoEl) {
+            paginacaoEl.innerHTML = '';
+            paginacaoEl.style.display = 'flex';
+            paginacaoEl.style.justifyContent = 'center';
+            paginacaoEl.style.alignItems = 'center';
+            paginacaoEl.style.gap = '4px';
+            paginacaoEl.style.marginTop = '16px';
+            if (totalPaginas > 1) {
+              for (let i = 1; i <= totalPaginas; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-dark mx-1';
+                btn.textContent = i;
+                if (i === pagina) btn.classList.add('active');
+                btn.onclick = () => { paginaAtual = i; renderPagina(paginaAtual); };
+                paginacaoEl.appendChild(btn);
+              }
+            } else {
+              paginacaoEl.innerHTML = '<button class="btn btn-dark mx-1" disabled>1</button>';
+            }
+          }
+        }
+
+        renderPagina(paginaAtual);
+      } catch (err) {
+        lista.innerHTML = '<span class="text-danger">Erro ao aplicar filtro.</span>';
+      }
       bootstrap.Modal.getInstance(document.getElementById('modalFiltro')).hide();
     });
   </script>

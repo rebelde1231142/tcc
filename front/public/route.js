@@ -80,7 +80,7 @@ export const getRouteLink = (path) => {
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('btn-editar-item')) {
     const id = e.target.getAttribute('data-id');
-    fetch(`http://localhost:3000/api/itens/${id}`)
+    fetch(`/api/itens/${id}`)
       .then(res => res.json())
       .then(item => {
         document.getElementById('editarItemId').value = item.id;
@@ -112,7 +112,7 @@ document.getElementById('formEditarItem').addEventListener('submit', function(e)
     return;
   }
 
-  fetch(`http://localhost:3000/api/itens/${id}`, {
+    fetch(`/api/itens/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id: parseInt(categoria) })

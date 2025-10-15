@@ -2,9 +2,9 @@
   "name": "gerenciador-estoque",
   "version": "1.0.0",
   "description": "",
-  "main": "db.json",
+  "main": "index.js",
   "scripts": {
-    "start": "npx json-server db.json"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",

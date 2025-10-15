@@ -4,6 +4,66 @@
 body {
   font-family: Arial, sans-serif;
 }
+/* Aparência do modal de acordo com o tema */
+body[data-tema="escuro"] .modal-content {
+  background: #2b2f33;
+  color: #e5e7eb;
+  border: 1px solid #3b4046;
+}
+body[data-tema="escuro"] .modal-header,
+body[data-tema="escuro"] .modal-footer {
+  border-color: #3b4046;
+}
+body[data-tema="claro"] .modal-content {
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+}
+body[data-tema="claro"] .modal-header,
+body[data-tema="claro"] .modal-footer {
+  border-color: #e5e7eb;
+}
+body[data-tema="padrao"] .modal-content {
+  background: #f7f7f7;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+}
+body[data-tema="padrao"] .modal-header,
+body[data-tema="padrao"] .modal-footer {
+  border-color: #e5e7eb;
+}
+
+/* Campos dentro do modal por tema */
+body[data-tema="escuro"] .modal-content .form-control,
+body[data-tema="escuro"] .modal-content .form-select {
+  background: #1f2327;
+  color: #e5e7eb;
+  border-color: #3b4046;
+}
+body[data-tema="escuro"] .modal-content .form-control::placeholder {
+  color: #9aa1a9;
+}
+body[data-tema="claro"] .modal-content .form-control,
+body[data-tema="claro"] .modal-content .form-select {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: #d1d5db;
+}
+body[data-tema="padrao"] .modal-content .form-control,
+body[data-tema="padrao"] .modal-content .form-select {
+  background: #fdfdfd;
+  color: #1f2937;
+  border-color: #d1d5db;
+}
+
+/* Botões do modal por tema (primário/secondary/danger/warning herdados do Bootstrap + ajustes sutis) */
+body[data-tema="escuro"] .modal-content .btn-close {
+  filter: invert(1) grayscale(100%);
+}
+body[data-tema="claro"] .modal-content .btn-close,
+body[data-tema="padrao"] .modal-content .btn-close {
+  filter: none;
+}
 body[data-tema="escuro"] {
   background: linear-gradient(135deg, #232526, #414345);
   color: #fff;

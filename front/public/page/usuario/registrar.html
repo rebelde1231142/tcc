@@ -73,7 +73,7 @@
         const msg = document.getElementById('msg');
         msg.textContent = '';
         try {
-          const resp = await fetch('http://localhost:3000/api/usuarios', {
+          const resp = await fetch('/api/usuarios', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ CPF: cpf, Email: email, Senha: senha })

@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     try {
-      const resp = await fetch('http://localhost:3000/api/usuarios/confirmar-troca-email', {
+  const resp = await fetch('/api/usuarios/confirmar-troca-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token })

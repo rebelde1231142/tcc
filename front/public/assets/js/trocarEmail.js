@@ -6,7 +6,7 @@ document.getElementById('trocarEmailForm').addEventListener('submit', async func
   mensagemDiv.textContent = '';
 
   try {
-  const resposta = await fetch('http://localhost:3000/api/usuarios/alterar-email', {
+  const resposta = await fetch('/api/usuarios/alterar-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cpf, novoEmail })

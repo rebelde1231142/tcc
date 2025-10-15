@@ -353,7 +353,7 @@ function renderizarGraficosPrincipais(itens, ids = {
 
 async function carregarGraficosPrincipais() {
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+  const response = await fetch('/api/itens');
     const itens = await response.json();
     renderizarGraficosPrincipais(itens);
   } catch (e) {}
@@ -427,7 +427,7 @@ async function carregarItens() {
   const lista = document.getElementById('itensBanco');
   lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+  const response = await fetch('/api/itens');
     const itens = await response.json();
     if (!Array.isArray(itens) || itens.length === 0) {
       lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
@@ -534,7 +534,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const lista = document.getElementById('itensBanco');
       if (!lista) return;
       lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
-      fetch('http://localhost:3000/api/itens')
+  fetch('/api/itens')
         .then(response => response.json())
         .then(itens => {
           lista.innerHTML = '';
@@ -579,7 +579,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const btnRelatorioEl = document.getElementById('btnRelatorio');
   if (btnRelatorioEl) {
     btnRelatorioEl.addEventListener('click', function () {
-      fetch('http://localhost:3000/api/relatorio-word')
+  fetch('/api/relatorio-word')
         .then(response => {
           if (!response.ok) throw new Error('Erro ao gerar relatório Word.');
           return response.blob();
@@ -607,7 +607,7 @@ const btnBaixarCsv = document.getElementById('btnBaixarRelatorio');
 if (btnBaixarCsv) {
   btnBaixarCsv.addEventListener('click', async function() {
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+  const response = await fetch('/api/itens');
     const itens = await response.json();
     if (!Array.isArray(itens) || itens.length === 0) {
       alert('Nenhum item para baixar.');
@@ -637,7 +637,7 @@ const btnBaixarWord = document.getElementById('btnBaixarRelatorioWord');
 if (btnBaixarWord) {
   btnBaixarWord.addEventListener('click', async function() {
     try {
-      const response = await fetch('http://localhost:3000/api/relatorio-word');
+  const response = await fetch('/api/relatorio-word');
       if (!response.ok) throw new Error('Erro ao baixar relatório Word');
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -705,7 +705,7 @@ let chartQtdPorCategoriaMenu = null;
 let chartItensPorDiaMenu = null;
 async function carregarGraficosMenu() {
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+  const response = await fetch('/api/itens');
     const itens = await response.json();
     // 1. Itens por Local
     const locais = {};

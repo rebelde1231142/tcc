@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 14-Out-2025 às 11:40
--- Versão do servidor: 8.0.30
--- versão do PHP: 8.3.4
+-- Generation Time: Oct 15, 2025 at 12:27 AM
+-- Server version: 8.4.3
+-- PHP Version: 8.3.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `tcc`
+-- Database: `tcc`
 --
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `categoria`
+-- Table structure for table `categoria`
 --
 
 CREATE TABLE `categoria` (
@@ -34,7 +34,7 @@ CREATE TABLE `categoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `categoria`
+-- Dumping data for table `categoria`
 --
 
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
@@ -45,7 +45,7 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `entrada`
+-- Table structure for table `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -58,7 +58,7 @@ CREATE TABLE `entrada` (
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `itens`
+-- Table structure for table `itens`
 --
 
 CREATE TABLE `itens` (
@@ -73,7 +73,7 @@ CREATE TABLE `itens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `itens`
+-- Dumping data for table `itens`
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`, `estado`) VALUES
@@ -81,15 +81,9 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 (5, 'Béquer', 20, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-09-26', 'parado'),
 (6, 'Mapa Mundi', 1, 'Mapa mundial utilizado nas aulas de geografia e historia.', 2, 'Sala de Aula', '2025-09-26', 'em uso'),
 (7, 'Panos', 50, 'Panos utilizados para realizar a limpeza da escola.', 2, 'Almoxarifado', '2025-09-26', 'parado'),
-(8, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-09-30', 'parado'),
 (9, 'ESP-32', 20, 'USado nas aulas de sistemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'em uso'),
 (10, 'HaspBerry', 20, 'Usado nas aulas de sitemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'em uso'),
-(11, 'TV', 5, 'Quebraram ao cair', 2, 'Sala de Armazenamento Técnico', '2025-10-06', 'quebrado'),
-(12, 'cgdggfd', 33, 'fgdfgdfgf', 1, 'Diretoria', '2025-10-06', 'quebrado'),
-(13, 'dfhgfjhgfh', 3434, 'dsfdsfdv', 1, 'Sala dos Professores', '2025-10-06', 'parado'),
-(14, 'dsfgsdfdsfdsf', 444, 'fddsfsdf', 2, 'Diretoria', '2025-10-06', 'em uso'),
-(15, 'PenDrive', 12, 'armazenamento util', 1, 'Sala de Armazenamento Técnico', '2025-10-08', NULL),
-(16, 'rtyrtyt', 55, 'gfhfghfg', 1, 'Sala dos Professores', '2025-10-08', NULL),
+(15, 'PenDrive', 12, 'armazenamento util', 1, 'Sala de Armazenamento Técnico', '2025-10-08', 'parado'),
 (17, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'parado'),
 (18, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
 (19, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
@@ -101,12 +95,16 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 (25, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
 (26, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Armazenamento Técnico', '2025-10-14', 'em uso'),
 (27, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática', '2025-10-14', 'em uso'),
-(28, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática 2', '2025-10-14', 'em uso');
+(28, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática 2', '2025-10-14', 'em uso'),
+(29, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado'),
+(30, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado'),
+(31, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado'),
+(32, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `perfil`
+-- Table structure for table `perfil`
 --
 
 CREATE TABLE `perfil` (
@@ -116,7 +114,7 @@ CREATE TABLE `perfil` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `perfil`
+-- Dumping data for table `perfil`
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
@@ -127,7 +125,7 @@ INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `saida`
+-- Table structure for table `saida`
 --
 
 CREATE TABLE `saida` (
@@ -138,77 +136,77 @@ CREATE TABLE `saida` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Índices para tabelas despejadas
+-- Indexes for dumped tables
 --
 
 --
--- Índices para tabela `categoria`
+-- Indexes for table `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Índices para tabela `entrada`
+-- Indexes for table `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- Índices para tabela `itens`
+-- Indexes for table `itens`
 --
 ALTER TABLE `itens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
 
 --
--- Índices para tabela `perfil`
+-- Indexes for table `perfil`
 --
 ALTER TABLE `perfil`
   ADD PRIMARY KEY (`CPF`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- Índices para tabela `saida`
+-- Indexes for table `saida`
 --
 ALTER TABLE `saida`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- AUTO_INCREMENT de tabelas despejadas
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT de tabela `categoria`
+-- AUTO_INCREMENT for table `categoria`
 --
 ALTER TABLE `categoria`
   MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de tabela `entrada`
+-- AUTO_INCREMENT for table `entrada`
 --
 ALTER TABLE `entrada`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de tabela `itens`
+-- AUTO_INCREMENT for table `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
--- AUTO_INCREMENT de tabela `saida`
+-- AUTO_INCREMENT for table `saida`
 --
 ALTER TABLE `saida`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Restrições para despejos de tabelas
+-- Constraints for dumped tables
 --
 
 --
--- Limitadores para a tabela `itens`
+-- Constraints for table `itens`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);

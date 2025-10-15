@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Histórico de Alterações</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .tabela-historico th, .tabela-historico td { vertical-align: top; }
+    .tabela-historico .col-data { white-space: nowrap; width: 14%; }
+    .tabela-historico .col-cpf { white-space: nowrap; width: 12%; }
+    .tabela-historico .col-acao { white-space: nowrap; width: 10%; }
+    .tabela-historico .col-recurso { white-space: nowrap; width: 12%; }
+    .tabela-historico .col-grupo { white-space: nowrap; width: 14%; }
+    .tabela-historico .col-item { white-space: nowrap; width: 10%; }
+    .tabela-historico .col-ref { white-space: nowrap; width: 12%; }
+    .tabela-historico .col-detalhes { width: auto; }
+    .tabela-historico .col-detalhes div { margin-bottom: 2px; }
+  </style>
+</head>
+<body data-tema="padrao" class="bg-light">
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">Histórico de Alterações</span>
+      <button class="btn btn-outline-light" onclick="window.location.href='/'">Voltar</button>
+    </div>
+  </nav>
+  <main class="container mt-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">CPF</label>
+            <input id="fCpf" class="form-control" placeholder="Somente números" maxlength="11" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Ação</label>
+            <select id="fAcao" class="form-select">
+              <option value="">Todas</option>
+              <option value="criar">Criar</option>
+              <option value="editar">Editar</option>
+              <option value="deletar">Deletar</option>
+              <option value="deletar-grupo">Deletar Grupo</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Recurso</label>
+            <select id="fRecurso" class="form-select">
+              <option value="">Todos</option>
+              <option value="item">Item</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Período</label>
+            <div class="row g-2">
+              <div class="col-12 col-sm-6">
+                <input id="fInicio" type="date" class="form-control" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <input id="fFim" type="date" class="form-control" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+          <button id="btnAplicar" class="btn btn-primary">Aplicar</button>
+          <button id="btnLimpar" class="btn btn-secondary">Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-3">
+      <div class="card-body">
+        <div id="alerta" class="alert d-none" role="alert"></div>
+        <div class="table-responsive">
+          <table class="table table-sm tabela-historico">
+            <colgroup>
+              <col class="col-data" />
+              <col class="col-cpf" />
+              <col class="col-acao" />
+              <col class="col-recurso" />
+              <col class="col-grupo" />
+              <col class="col-item" />
+              <col class="col-ref" />
+              <col class="col-detalhes" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="col-data">Data/Hora</th>
+                <th class="col-cpf">CPF</th>
+                <th class="col-acao">Ação</th>
+                <th class="col-recurso">Recurso</th>
+                <th class="col-grupo">Grupo</th>
+                <th class="col-item">Item ID</th>
+                <th class="col-ref">Ref.</th>
+                <th class="col-detalhes">Detalhes</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAuditoria">
+              <tr><td colspan="8" class="text-muted">Sem dados</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="paginacao" class="d-flex justify-content-center gap-2"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function getCPFLogado() {
+      try { const u = JSON.parse(localStorage.getItem('usuarioLogado')||'null'); return (u && (u.CPF || u.cpf)) || ''; } catch { return ''; }
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+    function parseDetalhes(raw) {
+      try {
+        if (raw && typeof raw === 'string') return JSON.parse(raw);
+        return raw || {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function nomeCategoriaPorId(id) {
+      const map = { 1: 'Desenvolvimento de Sistemas', 2: 'Administração Escolar', 3: 'Química' };
+      const k = Number(id);
+      return map[k] || (id ?? '');
+    }
+
+    function listaKVP(pares) {
+      // pares: Array<[label, valor]> valor pode ser string/number/null
+      const itens = pares
+        .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+        .map(([k, v]) => `<div><strong>${escapeHTML(k)}:</strong> ${escapeHTML(String(v))}</div>`)
+        .join('');
+      return itens || '<div class="text-muted">Sem detalhes</div>';
+    }
+
+    function formatarAlteracoes(antes, alteracoes) {
+      const chaves = Object.keys(alteracoes || {});
+      if (chaves.length === 0) return '<div class="text-muted">Sem campos alterados</div>';
+      const linhas = chaves.map((k) => {
+        const de = antes ? antes[k] : undefined;
+        const para = alteracoes[k];
+        if (k === 'fk_Categoria_id') {
+          return `<div><strong>Categoria:</strong> ${escapeHTML(nomeCategoriaPorId(de))} → ${escapeHTML(nomeCategoriaPorId(para))}</div>`;
+        }
+        return `<div><strong>${escapeHTML(k)}:</strong> ${escapeHTML(String(de ?? ''))} → ${escapeHTML(String(para))}</div>`;
+      }).join('');
+      return linhas;
+    }
+
+    function humanizarDetalhes(reg) {
+      const d = parseDetalhes(reg.detalhes);
+      const ref = reg.referencia ? String(reg.referencia) : '';
+      const acao = reg.acao;
+      if (acao === 'criar') {
+        const unidades = Array.isArray(d.unidades) ? d.unidades.length : (Number(d.quantidade) || 1);
+        return `
+          ${listaKVP([
+            ['Item', d.nome],
+            ['Qtd', unidades],
+            ['Categoria', nomeCategoriaPorId(d.fk_Categoria_id)],
+            ['Local', d.local || (Array.isArray(d.unidades) && d.unidades[0]?.local) || ''],
+            ['Estado', d.estado || (Array.isArray(d.unidades) && d.unidades[0]?.estado) || ''],
+            ['Descrição', d.descricao]
+          ])}
+        `;
+      }
+      if (acao === 'editar') {
+        const idItem = ref || (d.antes && d.antes.id) || '';
+        const header = idItem ? `<div><strong>ID:</strong> ${escapeHTML(String(idItem))}</div>` : '';
+        const corpo = formatarAlteracoes(d.antes || {}, d.alteracoes || {});
+        return header + corpo;
+      }
+      if (acao === 'deletar') {
+        const antes = d.antes || {};
+        return listaKVP([
+          ['ID', (antes && antes.id) || ref || ''],
+          ['Item', antes.nome],
+          ['CategoriaId', antes.fk_Categoria_id],
+          ['Local', antes.local],
+          ['Estado', antes.estado],
+          ['Descrição', antes.descricao]
+        ]);
+      }
+      if (acao === 'deletar-grupo') {
+        return listaKVP([
+          ['Grupo', d.grupo || ref || ''],
+          ['Removidos', d.qtdRemovida]
+        ]);
+      }
+      // fallback genérico
+      return listaKVP(Object.entries(d || {}).map(([k,v]) => [k, typeof v === 'object' ? JSON.stringify(v) : v]));
+    }
+
+    // Guarda os últimos filtros utilizados para auto-reload
+    let _ultimoFiltro = { limit: 20, offset: 0 };
+
+    async function carregarAuditoria(p={}) {
+      const alerta = document.getElementById('alerta');
+      const tbody = document.getElementById('tbodyAuditoria');
+      const pag = document.getElementById('paginacao');
+      alerta.classList.add('d-none');
+      // Memoriza filtros atuais (para auto-reload)
+      const urlQ = new URLSearchParams(location.search);
+      _ultimoFiltro = {
+        cpf: p.cpf || '',
+        acao: p.acao || '',
+        recurso: p.recurso || '',
+        grupo: p.grupo || urlQ.get('grupo') || '',
+        itemId: p.itemId || urlQ.get('itemId') || '',
+        inicio: p.inicio || '',
+        fim: p.fim || '',
+        limit: p.limit || '20',
+        offset: p.offset || '0'
+      };
+      const params = new URLSearchParams();
+      if (_ultimoFiltro.cpf) params.set('cpf', _ultimoFiltro.cpf);
+      if (_ultimoFiltro.acao) params.set('acao', _ultimoFiltro.acao);
+      if (_ultimoFiltro.recurso) params.set('recurso', _ultimoFiltro.recurso);
+      if (_ultimoFiltro.grupo) params.set('grupo', _ultimoFiltro.grupo);
+      if (_ultimoFiltro.itemId) params.set('itemId', _ultimoFiltro.itemId);
+      if (_ultimoFiltro.inicio) params.set('inicio', _ultimoFiltro.inicio);
+      if (_ultimoFiltro.fim) params.set('fim', _ultimoFiltro.fim);
+      params.set('limit', _ultimoFiltro.limit||'20');
+      params.set('offset', _ultimoFiltro.offset||'0');
+  tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Carregando...</td></tr>';
+      try {
+          const response = await fetch('/api/auditoria?'+params.toString(), {
+          headers: { 'X-User-CPF': getCPFLogado() }
+        });
+        if (response.status === 403) {
+          throw new Error('Acesso negado: seu CPF não está autorizado a ver o histórico.');
+        }
+        if (!response.ok) {
+          const data = await response.json().catch(()=>({erro:'Erro'}));
+          throw new Error(data.erro || 'Acesso negado ou erro ao listar.');
+        }
+        const data = await response.json();
+        const items = data.items || [];
+        if (items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Sem dados</td></tr>';
+        } else {
+          tbody.innerHTML = items.map(r => {
+            const detalhesFmt = humanizarDetalhes(r);
+            return `<tr>
+              <td class="col-data">${new Date(r.dataHora).toLocaleString()}</td>
+              <td class="col-cpf">${r.cpf||''}</td>
+              <td class="col-acao">${r.acao}</td>
+              <td class="col-recurso">${r.recurso}</td>
+              <td class="col-grupo">${r.grupo||''}</td>
+              <td class="col-item">${r.itemId!=null?r.itemId:''}</td>
+              <td class="col-ref">${r.referencia||''}</td>
+              <td class="col-detalhes">${detalhesFmt}</td>
+            </tr>`;
+          }).join('');
+        }
+        // Paginação simples
+        const total = data.total || 0;
+        const limit = parseInt(p.limit||20,10);
+        const offset = parseInt(p.offset||0,10);
+        const totalPaginas = Math.max(1, Math.ceil(total/limit));
+        const paginaAtual = Math.floor(offset/limit)+1;
+        pag.innerHTML = '';
+        for (let i=1;i<=totalPaginas;i++){
+          const b = document.createElement('button');
+          b.className = 'btn btn-sm ' + (i===paginaAtual?'btn-dark':'btn-outline-dark');
+          b.textContent = i;
+          b.onclick = () => carregarAuditoria({
+            cpf: _ultimoFiltro.cpf,
+            acao: _ultimoFiltro.acao,
+            recurso: _ultimoFiltro.recurso,
+            grupo: _ultimoFiltro.grupo,
+            itemId: _ultimoFiltro.itemId,
+            inicio: _ultimoFiltro.inicio,
+            fim: _ultimoFiltro.fim,
+            limit,
+            offset: (i-1)*limit
+          });
+          pag.appendChild(b);
+        }
+      } catch (e) {
+        alerta.classList.remove('d-none');
+        alerta.classList.add('alert-danger');
+        alerta.textContent = e.message || 'Erro ao carregar auditoria.';
+      }
+    }
+
+    document.getElementById('btnAplicar').addEventListener('click', () => carregarAuditoria({
+      cpf: document.getElementById('fCpf').value.trim(),
+      acao: document.getElementById('fAcao').value,
+      recurso: document.getElementById('fRecurso').value,
+      inicio: document.getElementById('fInicio').value,
+      fim: document.getElementById('fFim').value,
+      limit: 20,
+      offset: 0
+    }));
+    document.getElementById('btnLimpar').addEventListener('click', () => {
+      document.getElementById('fCpf').value = '';
+      document.getElementById('fAcao').value = '';
+      document.getElementById('fRecurso').value = '';
+      document.getElementById('fInicio').value = '';
+      document.getElementById('fFim').value = '';
+      carregarAuditoria({ limit: 20, offset: 0 });
+    });
+
+    // Gate simples: só carrega se houver usuarioLogado
+    (function init(){
+      const cpf = getCPFLogado();
+      if (!cpf) {
+        alert('Faça login para acessar.');
+        window.location.href = '/page/usuario/login.html';
+        return;
+      }
+      carregarAuditoria({ limit: 20, offset: 0 });
+      // Auto-atualização a cada 10s quando a aba estiver visível
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          carregarAuditoria(_ultimoFiltro);
+        }
+      }, 10000);
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
