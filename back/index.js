@@ -1,15 +1,77 @@
-require('dotenv').config();
-const cors = require('cors');
+const { execFile } = require('child_process');
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
+const cors = require('cors');
 const loginRouter = require('./loginRouter');
 const usuarioRouter = require('./usuarioRouter');
 const pool = require('./db');
 const { Parser } = require('json2csv');
 const PDFDocument = require('pdfkit');
 const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, TextRun, HeadingLevel, AlignmentType, BorderStyle } = require('docx');
-const path = require('path');
 const { enviarErro } = require('./utils/errorHandler');
-const app = express(); // <-- ESTA LINHA TEM QUE VIR ANTES DAS ROTAS
+require('dotenv').config();
+
+const app = express();
+
+// Rota para gerar relatório Excel (.xlsx) usando Python e dados reais do banco
+app.get('/api/relatorio-excel', async (req, res) => {
+  // Garante CORS para esta rota, inclusive em erro
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  try {
+    // Consulta SQL para buscar itens organizados por grupo (nome)
+    const [itens] = await pool.query(`
+      SELECT 
+        Itens.nome AS Grupo,
+        Itens.nome AS Nome,
+        Itens.quantidade AS Quantidade,
+        Itens.descricao AS Descrição,
+        Categoria.Nome AS Categoria,
+        Itens.local AS Local,
+        Itens.estado AS Estado,
+        DATE(Itens.dataAdicionado) AS 'Data de Adição'
+      FROM Itens
+      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      ORDER BY Categoria.Nome ASC, Itens.nome ASC
+    `);
+    if (!itens || itens.length === 0) {
+      return res.status(404).json({ erro: 'Nenhum item encontrado no banco de dados.' });
+    }
+    // Salva dados em arquivo temporário JSON
+    const tmpJson = path.join(os.tmpdir(), `relatorio_itens_${Date.now()}.json`);
+    fs.writeFileSync(tmpJson, JSON.stringify(itens, null, 2), 'utf-8');
+    // Define caminho de saída temporário para o Excel
+    const tmpExcel = path.join(os.tmpdir(), `relatorio_itens_${Date.now()}.xlsx`);
+    const scriptPath = path.join(__dirname, '../scripts/relatorio_excel.py');
+    // Executa o script Python passando os caminhos dos arquivos
+    execFile('python', [scriptPath, tmpJson, tmpExcel], (error, stdout, stderr) => {
+      // Remove o arquivo JSON temporário após uso
+      try { fs.unlinkSync(tmpJson); } catch (_) {}
+      if (error) {
+        console.error('Erro ao gerar relatório Excel:', error, stderr);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        return res.status(500).send('Erro ao gerar relatório Excel.');
+      }
+      // Lê o arquivo Excel gerado e envia para download
+      fs.readFile(tmpExcel, (err, data) => {
+        // Remove o arquivo Excel temporário após uso
+        try { fs.unlinkSync(tmpExcel); } catch (_) {}
+        if (err) {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          return res.status(500).send('Erro ao ler o arquivo Excel.');
+        }
+        res.setHeader('Content-Disposition', 'attachment; filename=relatorio_itens.xlsx');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(data);
+      });
+    });
+  } catch (error) {
+    console.error('Erro ao preparar relatório Excel:', error);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(500).send('Erro ao preparar relatório Excel.');
+  }
+});
 // Lista de CPFs autorizados a ver auditoria (pode vir do .env depois)
 const digitsOnly = (s) => (s ? String(s).replace(/\D/g, '') : '');
 const ADMIN_CPF_WHITELIST = (process.env.ADMIN_CPFS || '')
@@ -65,7 +127,7 @@ async function logAuditoria({ cpf, acao, recurso, referencia, grupo, itemId, det
 }
 
 // Middlewares
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 // Serve arquivos estáticos do front-end
 app.use(express.static(path.join(__dirname, '..', 'front', 'public')));
