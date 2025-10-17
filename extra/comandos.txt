@@ -2,3 +2,4 @@ cd front
 npm start
 cd back
 node index.js
+pip install pandas openpyxl

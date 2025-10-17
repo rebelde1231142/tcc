@@ -4,12 +4,11 @@
         const isAndroid = /Android/i.test(navigator.userAgent);
         if (isAndroid) {
           const btns = [
-            { id: 'btnAdicionarItem', cls: 'btn-primary' },
-            { id: 'btnEditarMassa', cls: 'btn-warning' },
-            { id: 'btnDeletarMassa', cls: 'btn-danger' },
-            { id: 'btnRelatorio', cls: 'btn-success' },
-            { id: 'btnFiltro', cls: 'btn-info' }
-          ];
+              { id: 'btnAdicionarItem', cls: 'btn-primary' },
+              { id: 'btnDeletarMassa', cls: 'btn-danger' },
+              { id: 'btnRelatorio', cls: 'btn-success' },
+              { id: 'btnFiltro', cls: 'btn-info' }
+            ];
           btns.forEach(({id, cls}) => {
             const el = document.getElementById(id);
             if (el) {
@@ -150,19 +149,19 @@ function selecionarLocalidadeParaFiltro(local) {
     </div>
     <div class="offcanvas-body">
       <div class="mb-4">
-        <canvas id="graficoPorLocalMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <canvas id="graficoPorLocalMenu" style="width:100%;max-width:100vw;height:160px;"></canvas>
         <div class="small text-dark mt-2">Itens por Local</div>
       </div>
       <div class="mb-4">
-        <canvas id="graficoPorCategoriaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <canvas id="graficoPorCategoriaMenu" style="width:100%;max-width:100vw;height:160px;"></canvas>
         <div class="small text-dark mt-2">Itens por Categoria</div>
       </div>
       <div class="mb-4">
-        <canvas id="graficoQtdPorCategoriaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <canvas id="graficoQtdPorCategoriaMenu" style="width:100%;max-width:100vw;height:160px;"></canvas>
         <div class="small text-dark mt-2">Quantidade por Categoria</div>
       </div>
       <div class="mb-4">
-        <canvas id="graficoItensPorDiaMenu" style="width:100%;max-width:300px;height:180px;"></canvas>
+        <canvas id="graficoItensPorDiaMenu" style="width:100%;max-width:100vw;height:160px;"></canvas>
         <div class="small text-dark mt-2">Itens Adicionados por Dia</div>
       </div>
     </div>
@@ -239,6 +238,7 @@ function selecionarLocalidadeParaFiltro(local) {
           <div class="col-12">
             <div class="d-flex flex-wrap gap-2 justify-content-center py-2 rounded shadow-sm" style="background:#f7f7f7;">
               <button class="btn px-4 py-2" id="btnAdicionarItem" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-layer-group"></i> Adicionar Grupo</button>
+              <!-- Botão Editar oculto no mobile, visível apenas em md+ -->
               <button class="btn px-4 py-2 d-none" id="btnEditarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-edit"></i> Editar Itens</button>
               <button class="btn px-4 py-2" id="btnDeletarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-trash"></i> Deletar Grupos</button>
               <button class="btn px-4 py-2" id="btnRelatorio" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-download"></i> Baixar Relatório</button>
@@ -352,75 +352,111 @@ let chartMini3 = null;
 let chartMini4 = null;
 async function carregarMiniGraficos() {
   try {
-    const response = await fetch('http://localhost:3000/api/itens/categorias');
-    const dados = await response.json();
-  // Nomes amigáveis das categorias
-  const labels = ['Desenvolvimento de Sistemas', 'Administração Escolar', 'Química'];
-  const values = [dados.ds||0, dados.administracao||0, dados.qui||0];
-    const cores = ['#FF6384', '#36A2EB', '#FFCE56'];
-    // Destroi gráficos antigos se existirem
-    if (chartMini1) { chartMini1.destroy(); }
-    if (chartMini2) { chartMini2.destroy(); }
-    if (chartMini3) { chartMini3.destroy(); }
-    if (chartMini4) { chartMini4.destroy(); }
-    // Gráfico 1: Itens/Categoria
-    chartMini1 = new Chart(document.getElementById('graficoMini1').getContext('2d'), {
-      type: 'doughnut',
-      data: { labels, datasets: [{ data: values, backgroundColor: cores }] },
-      options: {
-        plugins: {
-          legend: { display: false },
-          datalabels: { color: '#fff', font: { weight: 'bold' } }
-        },
-        cutout: '70%',
-        layout: {},
-        elements: {},
-        color: '#fff',
-        font: { color: '#fff' }
+    const response = await fetch('http://localhost:3000/api/itens');
+    const itens = await response.json();
+    // Gráfico 1: Itens por Local
+    const locais = {};
+    itens.forEach(item => {
+      locais[item.local] = (locais[item.local] || 0) + 1;
+    });
+    const nomesLocais = {
+      'Almoxarifado': 'Sala de limpeza',
+      'Sala de Aula': 'Sala de Aula',
+      'Biblioteca': 'Biblioteca',
+      'Sala dos Professores': 'Sala dos Professores',
+      'Diretoria': 'Diretoria',
+      'Quadra': 'Sala de material esportivo',
+      'Cantina': 'Cantina',
+      'Laboratório de Quimica': 'Laboratório de Quimica',
+      'Laboratório de Informática': 'Laboratório de Informática',
+      'Laboratório de Informática 2': 'Laboratório de Informática 2',
+      'Laboratório de Informática 3': 'Laboratório de Informática 3',
+      'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
+    };
+    const locaisLabels = Object.keys(locais).map(l => nomesLocais[l] || l);
+    const locaisValues = Object.values(locais);
+    if (window.chartPorLocalMenu) window.chartPorLocalMenu.destroy();
+    const elLocal = document.getElementById('graficoPorLocalMenu');
+  // Paletas de cor para gráficos do menu lateral
+  const coresCinza = ['#bdbdbd', '#a3a3a3', '#e0e0e0', '#757575', '#b8bac0', '#bfc4c9', '#dee2e6', '#cfd8dc'];
+  const coresVivas = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#9966FF', '#00C853', '#D50000'];
+  // Verifica se está ativo (menu aberto)
+  const menuAtivo = document.getElementById('menuGraficos')?.classList.contains('show');
+    if (elLocal) {
+      window.chartPorLocalMenu = new Chart(elLocal.getContext('2d'), {
+        type: 'pie',
+        data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: menuAtivo ? coresVivas : coresCinza }] },
+        options: { plugins: { legend: { display: false } }, responsive: true }
+      });
+    }
+    // Gráfico 2: Itens por Categoria
+    const categorias = {};
+    itens.forEach(item => {
+      categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
+    });
+    const nomesCategorias = {
+      'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
+      'Administração Escolar': 'Administração Escolar',
+      'Quimica': 'Química',
+      'Ds': 'Desenvolvimento de Sistemas',
+      'Administração': 'Administração Escolar',
+      'Qui': 'Química'
+    };
+    const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
+    const catValues = Object.values(categorias);
+    if (window.chartPorCategoriaMenu) window.chartPorCategoriaMenu.destroy();
+    const elCat = document.getElementById('graficoPorCategoriaMenu');
+    if (elCat) {
+      window.chartPorCategoriaMenu = new Chart(elCat.getContext('2d'), {
+        type: 'pie',
+        data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: menuAtivo ? coresVivas : coresCinza }] },
+        options: { plugins: { legend: { display: false } }, responsive: true }
+      });
+    }
+    // Gráfico 3: Estado dos Itens (%)
+    const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
+    let totalEstados = 0;
+    itens.forEach(item => {
+      let estado = (item.estado || '').trim().toLowerCase();
+      let label = '';
+      if (estado === 'em uso') label = 'Em uso';
+      else if (estado === 'quebrado') label = 'Quebrado';
+      else if (estado === 'parado') label = 'Parado';
+      let qtd = Number(item.quantidade) || 0;
+      if (label && qtd > 0) {
+        estados[label] += qtd;
+        totalEstados += qtd;
       }
     });
-    // Gráfico 2: Qtd/Categoria
-    chartMini2 = new Chart(document.getElementById('graficoMini2').getContext('2d'), {
-      type: 'bar',
-      data: { labels, datasets: [{ data: values, backgroundColor: cores }] },
-      options: {
-        plugins: {
-          legend: { display: false },
-          datalabels: { color: '#fff', font: { weight: 'bold' } }
-        },
-        scales: { x: { display: false }, y: { display: false } },
-        color: '#fff',
-        font: { color: '#fff' }
+    const estadoLabels = Object.keys(estados);
+    const estadoValues = estadoLabels.map(e => totalEstados > 0 ? Math.round((estados[e] / totalEstados) * 100) : 0);
+    if (window.chartQtdPorCategoriaMenu) window.chartQtdPorCategoriaMenu.destroy();
+    const elQtd = document.getElementById('graficoQtdPorCategoriaMenu');
+    if (elQtd) {
+      window.chartQtdPorCategoriaMenu = new Chart(elQtd.getContext('2d'), {
+        type: 'bar',
+        data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: menuAtivo ? coresVivas : coresCinza }] },
+        options: { plugins: { legend: { display: false } }, responsive: true }
+      });
+    }
+    // Gráfico 4: Itens adicionados por dia
+    const dias = {};
+    itens.forEach(item => {
+      if (item.dataAdicionado) {
+        dias[item.dataAdicionado] = (dias[item.dataAdicionado] || 0) + 1;
       }
     });
-    // Gráfico 3: Itens/Dia (mock)
-    chartMini3 = new Chart(document.getElementById('graficoMini3').getContext('2d'), {
-      type: 'line',
-      data: { labels: ['Seg', 'Ter', 'Qua'], datasets: [{ data: [2,4,3], borderColor: '#36A2EB', fill: false }] },
-      options: {
-        plugins: {
-          legend: { display: false },
-          datalabels: { color: '#fff', font: { weight: 'bold' } }
-        },
-        scales: { x: { display: false }, y: { display: false } },
-        color: '#fff',
-        font: { color: '#fff' }
-      }
-    });
-    // Gráfico 4: % Categorias
-    const total = values.reduce((a,b)=>a+b,0);
-    chartMini4 = new Chart(document.getElementById('graficoMini4').getContext('2d'), {
-      type: 'pie',
-      data: { labels, datasets: [{ data: values.map(v=>total?((v/total)*100).toFixed(1):0), backgroundColor: cores }] },
-      options: {
-        plugins: {
-          legend: { display: false },
-          datalabels: { color: '#fff', font: { weight: 'bold' } }
-        },
-        color: '#fff',
-        font: { color: '#fff' }
-      }
-    });
+    const diasLabels = Object.keys(dias).sort();
+    const diasValues = diasLabels.map(d => dias[d]);
+    if (window.chartItensPorDiaMenu) window.chartItensPorDiaMenu.destroy();
+    const elDia = document.getElementById('graficoItensPorDiaMenu');
+    if (elDia) {
+      window.chartItensPorDiaMenu = new Chart(elDia.getContext('2d'), {
+        type: 'line',
+        data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: menuAtivo ? '#FF6384' : '#bdbdbd', backgroundColor: menuAtivo ? '#36A2EB' : '#e0e0e0', fill: true }] },
+        options: { plugins: { legend: { display: false } }, responsive: true }
+      });
+    }
   } catch {}
 }
 // Função para filtrar itens pela barra de pesquisa
@@ -1722,11 +1758,17 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
         });
         menu.addEventListener('shown.bs.offcanvas', function() {
           try { btn.style.display = 'none'; } catch (e) {}
-          setTimeout(() => { if (isMobile() && window.carregarGraficosMenuVisitante) window.carregarGraficosMenuVisitante(); }, 30);
+          setTimeout(() => {
+            if (isMobile() && typeof carregarMiniGraficos === 'function') carregarMiniGraficos();
+          }, 30);
         });
         menu.addEventListener('hidden.bs.offcanvas', function() {
           try { btn.style.display = 'flex'; } catch (e) {}
           if (window.destruirGraficosMenuVisitante) window.destruirGraficosMenuVisitante();
+          // Recria gráficos com cores acinzentadas ao fechar
+          setTimeout(() => {
+            if (typeof carregarMiniGraficos === 'function') carregarMiniGraficos();
+          }, 30);
         });
       }
       // Gatilho de carregamento inicial da lista e dos gráficos

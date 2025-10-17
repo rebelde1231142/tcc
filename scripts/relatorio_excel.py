@@ -13,6 +13,9 @@ def gerar_relatorio_excel(dados, caminho_arquivo):
     """
     # Cria DataFrame
     df = pd.DataFrame(dados)
+    # Ajusta o campo 'Data de Adição' para exibir apenas dia/mês/ano
+    if 'Data de Adição' in df.columns:
+        df['Data de Adição'] = pd.to_datetime(df['Data de Adição'], errors='coerce').dt.strftime('%d/%m/%Y')
     # Ordena colunas principais se existirem
     colunas_principais = ['Grupo', 'Nome', 'Quantidade', 'Descrição', 'Categoria', 'Local', 'Estado', 'Data de Adição']
     colunas = [c for c in colunas_principais if c in df.columns] + [c for c in df.columns if c not in colunas_principais]
