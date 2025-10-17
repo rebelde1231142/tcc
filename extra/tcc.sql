@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 16-Out-2025 às 17:40
+-- Tempo de geração: 17-Out-2025 às 12:29
 -- Versão do servidor: 8.0.30
 -- versão do PHP: 8.3.4
 
@@ -157,6 +157,7 @@ CREATE TABLE `perfil` (
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
 ('50316526336', 'fjberton@gmail.com', '$2b$10$DhKSmckghpCByA5qBr3QMu0KUbrgv9wwCvq3RKmgFI1k.kufw9piK'),
 ('52657628842', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$b.AWwoBhboOIVLakWLZvluIyzrO8j.YKlxqBUPBNXECRrW9H8J2Le'),
+('52657628843', 'leonelbrenodasilva1@gmail.com', '$2b$10$AMjeXTrWoFwF6yNaxJaCveqEthB9Td2.0QAk6hYIlKVQeoAz.dMWK'),
 ('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$y9XjPD8SEMtzsWSEijq0Y.VVEBs6k/Z6uXmV.d3CIfFcA7I6IrOEC');
 
 -- --------------------------------------------------------
