@@ -1,4 +1,157 @@
 <script>
+// Função global para abrir o modal de gerenciar itens do grupo
+function gerenciarItensGrupo(nomeGrupo) {
+  var modal = document.getElementById('modalGerenciarItens');
+  if (modal) {
+    // Preencher título
+    var titulo = modal.querySelector('.modal-title');
+    if (titulo) titulo.textContent = 'Itens do grupo: ' + nomeGrupo;
+    // Preencher lista de itens do grupo
+    var listaEl = modal.querySelector('#listaItensGrupo');
+    if (listaEl) {
+      // Buscar itens do grupo já agrupados na última pesquisa
+      let grupoItens = window._ultimoGrupoItens || [];
+      if (grupoItens.length === 0 && window._ultimoResultados) {
+        // Busca nos últimos resultados
+        const grupo = window._ultimoResultados.find(g => g.nome === nomeGrupo);
+        if (grupo && grupo._grupoItens) grupoItens = grupo._grupoItens;
+      }
+      window._ultimoGrupoItens = grupoItens;
+      // Renderiza itens
+      listaEl.innerHTML = grupoItens.map(item => `
+        <div class="border rounded p-2 mb-2 d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+          <div>
+            <strong>${item.nome}</strong> - ${item.descricao}<br>
+            <span class="badge bg-info">${item.local}</span>
+            <span class="badge bg-secondary ms-1">${item.categoriaNome}</span>
+            <span class="badge ms-1" style="background:#28a745;">${item.estado || 'Em uso'}</span>
+          </div>
+          <button class="btn btn-sm btn-outline-warning mt-2 mt-md-0" onclick="editarLocalEstadoItemGrupo('${item.id}', '${item.local}', '${item.estado}')"><i class="fa fa-edit"></i> Editar Local/Estado</button>
+        </div>
+      `).join('');
+
+      // Função global para editar localidade e estado
+      window.editarLocalEstadoItemGrupo = function(id, localAtual, estadoAtual) {
+        const itemDiv = Array.from(listaEl.children).find(div => div.innerHTML.includes(`editarLocalEstadoItemGrupo('${id}'`));
+        if (!itemDiv) return;
+        itemDiv.innerHTML = `
+          <form class="d-flex flex-column flex-md-row gap-2 align-items-md-center" onsubmit="salvarLocalEstadoItemGrupo(event, '${id}')">
+            <div>
+              <label class="form-label mb-1">Localidade</label>
+              <input type="text" class="form-control form-control-sm" name="local" value="${localAtual}">
+            </div>
+            <div>
+              <label class="form-label mb-1">Estado</label>
+              <select class="form-select form-select-sm" name="estado">
+                <option value="em uso"${estadoAtual==='em uso'?' selected':''}>Em uso</option>
+                <option value="parado"${estadoAtual==='parado'?' selected':''}>Parado</option>
+                <option value="quebrado"${estadoAtual==='quebrado'?' selected':''}>Quebrado</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary ms-2">Salvar</button>
+          </form>
+        `;
+      };
+
+      // Função global para salvar edição
+      window.salvarLocalEstadoItemGrupo = function(e, id) {
+        e.preventDefault();
+        const form = e.target;
+        const local = form.local.value;
+        const estado = form.estado.value;
+        // Atualiza visualmente o card
+        const itemDiv = form.parentElement;
+        // Atualiza o array de itens do grupo
+        let grupoItens = window._ultimoGrupoItens || [];
+        let item = grupoItens.find(i => i.id == id);
+        if (item) {
+          // Chamada à API para atualizar no backend
+          fetch(`http://localhost:3000/api/itens/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ local, estado })
+          })
+          .then(res => res.ok ? res.json() : Promise.reject('Erro ao salvar no banco'))
+          .then(() => {
+            item.local = local;
+            item.estado = estado;
+            // Atualiza também o array window._ultimoResultados
+            if (window._ultimoResultados) {
+              window._ultimoResultados.forEach(grupo => {
+                if (grupo._grupoItens) {
+                  grupo._grupoItens.forEach(i => {
+                    if (i.id == id) {
+                      i.local = local;
+                      i.estado = estado;
+                    }
+                  });
+                }
+                if (grupo.id == id) {
+                  grupo.local = local;
+                  grupo.estado = estado;
+                }
+              });
+            }
+            itemDiv.innerHTML = `
+              <div>
+                <strong>${item.nome}</strong><br>
+                <span class="badge bg-info">${local}</span>
+                <span class="badge ms-1" style="background:#28a745;">${estado}</span>
+              </div>
+              <button class="btn btn-sm btn-outline-warning mt-2 mt-md-0" onclick="editarLocalEstadoItemGrupo('${id}', '${local}', '${estado}')"><i class="fa fa-edit"></i> Editar Local/Estado</button>
+            `;
+            // Mensagem de sucesso
+            const alerta = document.getElementById('alertaGrupo');
+            if (alerta) {
+              alerta.className = 'alert alert-success';
+              alerta.textContent = 'Alteração salva com sucesso!';
+              alerta.classList.remove('d-none');
+              setTimeout(() => { alerta.classList.add('d-none'); }, 2500);
+            }
+          })
+          .catch(() => {
+            // Mensagem de erro
+            const alerta = document.getElementById('alertaGrupo');
+            if (alerta) {
+              alerta.className = 'alert alert-danger';
+              alerta.textContent = 'Erro ao salvar no banco.';
+              alerta.classList.remove('d-none');
+              setTimeout(() => { alerta.classList.add('d-none'); }, 3500);
+            }
+            itemDiv.innerHTML += `<div class='text-danger mt-2'>Erro ao salvar no banco.</div>`;
+          });
+        }
+      };
+      // Vincula eventos aos botões do modal
+      setTimeout(() => {
+        const btnAddGrupo = document.getElementById('btnAdicionarItemGrupo');
+        if (btnAddGrupo) {
+          btnAddGrupo.onclick = function() {
+            // Exemplo: abrir modal de adicionar item, ou executar ação customizada
+            const alerta = document.getElementById('alertaGrupo');
+            alerta.className = 'alert alert-info';
+            alerta.textContent = 'Funcionalidade de adicionar item em desenvolvimento.';
+            alerta.classList.remove('d-none');
+            setTimeout(() => { alerta.classList.add('d-none'); }, 2000);
+          };
+        }
+        const btnSalvarGrupo = document.getElementById('btnSalvarGrupo');
+        if (btnSalvarGrupo) {
+          btnSalvarGrupo.onclick = function() {
+            const alerta = document.getElementById('alertaGrupo');
+            alerta.className = 'alert alert-info';
+            alerta.textContent = 'Funcionalidade de salvar grupo em desenvolvimento.';
+            alerta.classList.remove('d-none');
+            setTimeout(() => { alerta.classList.add('d-none'); }, 2000);
+          };
+        }
+      }, 200);
+    }
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+  }
+}
       // Detecta Android e aplica classes vivas nos botões principais
       document.addEventListener('DOMContentLoaded', function() {
         const isAndroid = /Android/i.test(navigator.userAgent);
@@ -231,7 +384,7 @@ function selecionarLocalidadeParaFiltro(local) {
             <!-- vazio para alinhamento -->
           </div>
           <div class="col-md-3 order-1 order-md-2 mt-4 mt-md-0 mb-3 mb-md-0">
-            <input type="text" class="form-control" id="barraPesquisa" placeholder="Pesquisar itens...">
+            <input type="text" class="form-control" id="barraPesquisa" placeholder="Pesquisar grupos ou locais...">
           </div>
         </div>
         <div class="row mb-4 justify-content-center">
@@ -305,7 +458,7 @@ function selecionarLocalidadeParaFiltro(local) {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalAdicionarItemLabel">Adicionar Item</h5>
+          <h5 class="modal-title" id="modalAdicionarItemLabel">Adicionar Grupo</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -315,34 +468,33 @@ function selecionarLocalidadeParaFiltro(local) {
           </div>
           <form id="formAdicionarItem">
                       <div class="mb-3">
-                        <label for="nomeItem" class="form-label">Nome do Item</label>
-                        <input type="text" class="form-control" id="nomeItem" required>
+                        <label for="nomeItem" class="form-label">Nome do Grupo</label>
+                        <input type="text" class="form-control" id="nomeItem" required placeholder="Digite o nome do grupo">
                       </div>
                       <div class="mb-3">
-                        <label for="qtdItem" class="form-label">Quantidade (unidades)</label>
-                        <input type="number" class="form-control" id="qtdItem" required placeholder="Qtd de unidades" min="1" step="1">
+                        <label for="qtdItem" class="form-label">Quantidade de Itens</label>
+                        <input type="number" class="form-control" id="qtdItem" required placeholder="Quantidade de itens" min="1" step="1">
                       </div>
                       <div class="mb-3">
-                        <label for="descItem" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="descItem" rows="3" required></textarea>
+                        <label for="descItem" class="form-label">Descrição do Grupo</label>
+                        <textarea class="form-control" id="descItem" rows="3" required placeholder="Descreva o grupo"></textarea>
                       </div>
                       <div class="mb-3">
-                        <label for="categoriaItem" class="form-label">Categoria</label>
+                        <label for="categoriaItem" class="form-label">Categoria do Grupo</label>
                         <select class="form-select" id="categoriaItem" required>
                           <option value="">Selecione a categoria</option>
                           <option value="1">Desenvolvimento de Sistemas</option>
                           <option value="2">Administração Escolar</option>
-                          <option value="3">Quimica</option>
+                          <option value="3">Química</option>
                         </select>
                       </div>
-                      
                       <!-- Detalhar por unidade (aparece quando quantidade > 1) -->
                       <div class="mb-3 d-none" id="unidadesContainer">
                         <label class="form-label">Detalhar Local e Estado por Unidade</label>
                         <div id="listaUnidades"></div>
                         <div class="form-text">Defina o local e o estado para cada unidade criada.</div>
                       </div>
-                      <button type="submit" class="btn btn-primary">Salvar Item</button>
+                      <button type="submit" class="btn btn-primary">Salvar Grupo</button>
           </form>
           <script>
 // Função para carregar os 4 gráficos minimalistas
@@ -473,64 +625,58 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
   try {
     const response = await fetch('http://localhost:3000/api/itens');
     const itens = await response.json();
-    const nomesLocais = {
-      'Almoxarifado': 'Sala de limpeza',
-      'Sala de Aula': 'Sala de Aula',
-      'Biblioteca': 'Biblioteca',
-      'Sala dos Professores': 'Sala dos Professores',
-      'Diretoria': 'Diretoria',
-      'Quadra': 'Sala de material esportivo',
-      'Cantina': 'Cantina',
-      'Laboratório de Quimica': 'Laboratório de Quimica',
-      'Laboratório de Informática': 'Laboratório de Informática',
-      'Laboratório de Informática 2': 'Laboratório de Informática 2',
-      'Laboratório de Informática 3': 'Laboratório de Informática 3',
-      'Sala de Armazenamento Técnico': 'Sala de Armazenamento Técnico'
-    };
-    const nomesCategorias = {
-      'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
-      'Administração Escolar': 'Administração Escolar',
-      'Quimica': 'Química',
-      'Ds': 'Desenvolvimento de Sistemas',
-      'Administração': 'Administração Escolar',
-      'Qui': 'Química'
-    };
-    const resultados = itens.filter(item => {
-      const nomeLocal = nomesLocais[item.local] || item.local || '';
-      const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
-      return (
-        (item.nome && item.nome.toLowerCase().includes(termo)) ||
-        (nomeLocal && nomeLocal.toLowerCase().includes(termo)) ||
-        (nomeCategoria && nomeCategoria.toLowerCase().includes(termo)) ||
-        (item.descricao && item.descricao.toLowerCase().includes(termo))
-      );
+    // Agrupa itens por grupo
+    const grupos = {};
+    itens.forEach(item => {
+      const nomeGrupo = item.nome || '';
+      if (!grupos[nomeGrupo]) grupos[nomeGrupo] = [];
+      grupos[nomeGrupo].push(item);
     });
+    // Filtra grupos pelo termo (nome, local ou categoria)
+    const resultados = Object.keys(grupos)
+      .filter(nomeGrupo => {
+        const grupoItens = grupos[nomeGrupo];
+        return (
+          nomeGrupo.toLowerCase().includes(termo) ||
+          grupoItens.some(i => (i.local || '').toLowerCase().includes(termo)) ||
+          grupoItens.some(i => (i.categoriaNome || '').toLowerCase().includes(termo))
+        );
+      })
+      .map(nomeGrupo => {
+        const item = grupos[nomeGrupo][0];
+        item._grupoItens = grupos[nomeGrupo];
+        return item;
+      });
+    window._ultimoResultados = resultados;
+    window._ultimoGrupoItens = [];
     if (resultados.length === 0) {
-      lista.innerHTML = '<span class="text-muted">Nenhum item encontrado.</span>';
+      lista.innerHTML = '<span class="text-muted">Nenhum grupo encontrado.</span>';
       return;
     }
     lista.innerHTML = '';
     resultados.forEach(item => {
       const div = document.createElement('div');
       div.className = "card mb-2 shadow-sm";
-      const nomeLocal = nomesLocais[item.local] || item.local || '';
-      const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
       let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
       if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
       else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
       div.innerHTML = `
         <div class="card-body">
-          <h6 class="card-title">
-            ${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}
+          <h6 class="card-title d-flex flex-wrap gap-1 align-items-center">
+            <span>${item.nome}</span>
+            <span class="badge bg-info">${item.local || ''}</span>
+            <span class="d-block d-md-inline">${badgeEstado}</span>
+            <span class="badge bg-secondary ms-1">${item.categoriaNome || ''}</span>
           </h6>
-          <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
+          <p class="card-text"><strong>Quantidade:</strong> ${item._grupoItens.length}</p>
           <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
+          <button class="btn btn-sm btn-outline-primary mt-2" onclick="gerenciarItensGrupo('${item.nome}')">Gerenciar Itens</button>
         </div>
       `;
       lista.appendChild(div);
     });
   } catch (error) {
-    lista.innerHTML = '<span class="text-danger">Erro ao buscar itens.</span>';
+    lista.innerHTML = '<span class="text-danger">Erro ao buscar grupos.</span>';
   }
 });
 // Geração dinâmica de unidades detalhadas
@@ -551,14 +697,14 @@ function renderUnidadesDetalhadas(qtd, localDefault, estadoDefault) {
   for (let i = 0; i < qtd; i++) {
     html += `
       <div class="row g-2 align-items-end mb-2">
-        <div class="col-7">
+        <div class="col-12 mb-2">
           <label class="form-label">Local (unidade ${i+1})</label>
           <select class="form-select" id="unLocal${i}">
             <option value="">Selecionar...</option>
             ${nomesLocais.map(l=>`<option value="${l}" ${localDefault===l?'selected':''}>${l}</option>`).join('')}
           </select>
         </div>
-        <div class="col-5">
+        <div class="col-12 mb-2">
           <label class="form-label">Estado</label>
           <select class="form-select" id="unEstado${i}">
             <option value="">Selecionar...</option>
@@ -1939,4 +2085,23 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
             </script>
   </div>
 </body>
+<!-- Modal Gerenciar Itens do Grupo -->
+<div class="modal fade" id="modalGerenciarItens" tabindex="-1" aria-labelledby="modalGerenciarItensLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalGerenciarItensLabel">Itens do grupo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="alertaGrupo" class="alert d-none" role="alert"></div>
+        <div id="listaItensGrupo"></div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button id="btnAdicionarItemGrupo" class="btn btn-success"><i class="fa fa-plus"></i> Adicionar Item</button>
+        <button id="btnSalvarGrupo" class="btn btn-primary">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
 </html>
