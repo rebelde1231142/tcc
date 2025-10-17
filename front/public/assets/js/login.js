@@ -2,22 +2,24 @@
 $(document).ready(() => {
     $('#formLogin').on('submit', function (e) {
         e.preventDefault();
-        const email = $('#email').val();
+        const cpf = $('#cpf').val(); // ajuste conforme o campo do formulário
         const senha = $('#senha').val();
-    fetch('/usuarios')
-            .then(response => response.json())
-            .then(usuarios => {
-                const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-                if (usuario) {
-                    localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
-                    $('#alertaLogin')
-                        .removeClass('d-none alert-danger')
-                        .addClass('alert-success')
-                        .text('Login realizado com sucesso!');
-                    setTimeout(() => window.location.href = '/', 2000);
-                } else {
-                    throw new Error('E-mail ou senha inválidos.');
-                }
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cpf, senha })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('CPF ou senha inválidos.');
+                return response.json();
+            })
+            .then(usuario => {
+                localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+                $('#alertaLogin')
+                    .removeClass('d-none alert-danger')
+                    .addClass('alert-success')
+                    .text('Login realizado com sucesso!');
+                setTimeout(() => window.location.href = '/', 2000);
             })
             .catch(error => {
                 $('#alertaLogin')
@@ -27,8 +29,8 @@ $(document).ready(() => {
             });
     });
     // Redireciona para o cadastro ao clicar em "Cadastrar"
-    $('#linkCadastro').on('click', function(e) {
-        e.preventDefault();
-        window.location.href = '/usuario/cadastrousuario';
-    });
+        $('#linkCadastro').on('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/page/usuario/registrar.html';
+        });
 });

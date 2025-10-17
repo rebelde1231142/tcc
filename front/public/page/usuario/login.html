@@ -46,7 +46,6 @@
     <body style="background:#e0e0e0;">
     <div class="d-flex justify-content-center align-items-center min-vh-100">
         <div class="login-container">
-            <!-- Botão de voltar removido -->
             <form id="formLogin">
                 <h1>Login</h1>
                 <div class="mb-3">
@@ -94,7 +93,7 @@
                 const cpf = $('#cpf').val();
                 const senha = $('#senha').val();
 
-                fetch('/api/login', {
+                fetch('http://localhost:3000/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cpf, senha })

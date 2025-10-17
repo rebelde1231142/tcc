@@ -14,13 +14,12 @@ $(document).ready(() => {
 
     $('#formCadastroUsuario').on('submit', function (e) {
         e.preventDefault();
-
         const usuario = {
             CPF: $('#cpf').val(),
+            Email: $('#email').val(),
             Senha: $('#senha').val()
         };
-
-    fetch('/api/usuarios', {
+        fetch('/api/usuarios', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(usuario)
@@ -32,9 +31,11 @@ $(document).ready(() => {
                     .addClass('alert-success')
                     .text('Usuário cadastrado com sucesso!');
                 $('#formCadastroUsuario')[0].reset();
-                $('#previewFotoPerfil').attr('src', 'https://cdn-icons-png.flaticon.com/512/747/747376.png');
+                setTimeout(() => window.location.href = '/page/usuario/login.html', 1500);
             } else {
-                throw new Error('Erro ao cadastrar usuário.');
+                return response.json().then(data => {
+                    throw new Error(data.erro || 'Erro ao cadastrar usuário.');
+                });
             }
         })
         .catch(error => {
