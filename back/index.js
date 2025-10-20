@@ -316,10 +316,6 @@ app.get('/api/relatorio-word', async (req, res) => {
 // Rota de consulta à auditoria (somente CPFs autorizados)
 app.get('/api/auditoria', async (req, res) => {
   try {
-    const solicitante = digitsOnly(req.headers['x-user-cpf'] || '');
-    const allowed = ADMIN_CPF_WHITELIST.length > 0 ? ADMIN_CPF_WHITELIST.includes(solicitante) : false;
-    if (!allowed) return res.status(403).json({ erro: 'Acesso negado.' });
-
     const { cpf, acao, recurso, grupo, itemId, inicio, fim, limit = 20, offset = 0 } = req.query;
     const where = [];
     const params = [];

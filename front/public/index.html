@@ -87,6 +87,30 @@ function selecionarLocalidadeParaFiltro(local) {
       window.location.href = '/page/usuario/login.html';
     }
   </script>
+  <script>
+  // Injeta automaticamente o CPF do usuário logado no header X-User-CPF em todas as chamadas fetch
+  (function() {
+    const getCPF = () => {
+      try { const u = JSON.parse(localStorage.getItem('usuarioLogado')||'null'); return ((u && (u.CPF || u.cpf)) || '').replace(/\D/g,''); } catch { return ''; }
+    };
+    const origFetch = window.fetch;
+    window.fetch = function(input, init) {
+      try {
+        // Clona/ajusta headers respeitando existentes
+        const baseHeaders = (init && init.headers) || (typeof input !== 'string' && input && input.headers) || {};
+        const headers = new Headers(baseHeaders);
+        if (!headers.has('X-User-CPF')) {
+          const cpf = getCPF();
+          if (cpf) headers.set('X-User-CPF', cpf);
+        }
+        const newInit = Object.assign({}, init, { headers });
+        return origFetch.call(this, input, newInit);
+      } catch (e) {
+        return origFetch.call(this, input, init);
+      }
+    };
+  })();
+  </script>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -260,6 +284,7 @@ function selecionarLocalidadeParaFiltro(local) {
               <button class="btn px-4 py-2 d-none" id="btnEditarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-edit"></i> Editar Itens</button>
               <button class="btn px-4 py-2" id="btnDeletarMassa" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-trash"></i> Deletar Grupos</button>
               <button class="btn px-4 py-2" id="btnRelatorio" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-download"></i> Baixar Relatório</button>
+              <button class="btn px-4 py-2" id="btnHistorico" style="background:#444;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-list"></i> Histórico</button>
               <button class="btn px-4 py-2" id="btnFiltro" style="background:#6c757d;color:#fff;border:none;box-shadow:0 1px 4px #0001;border-radius:8px;"><i class="fa fa-filter"></i> Filtrar</button>
             </div>
           </div>
@@ -1088,6 +1113,14 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           alert(error.message || 'Erro ao baixar o relatório Excel.');
         });
     });
+
+    // Abre a página de histórico/auditoria
+    const btnHistorico = document.getElementById('btnHistorico');
+    if (btnHistorico) {
+      btnHistorico.addEventListener('click', function() {
+        window.location.href = '/page/admin/historico.html';
+      });
+    }
 
     let chartCategorias = null;
 
