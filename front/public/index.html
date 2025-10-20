@@ -1,159 +1,24 @@
 <script>
-// Função global para abrir o modal de gerenciar itens do grupo
+// Função global para abrir o modal de gerenciar itens do grupo (usa o modal unificado: modalGrupoItens)
 function gerenciarItensGrupo(nomeGrupo) {
-  var modal = document.getElementById('modalGerenciarItens');
-  if (modal) {
-    // Preencher título
-    var titulo = modal.querySelector('.modal-title');
-    if (titulo) titulo.textContent = 'Itens do grupo: ' + nomeGrupo;
-    // Preencher lista de itens do grupo
-    var listaEl = modal.querySelector('#listaItensGrupo');
-    if (listaEl) {
-      // Buscar itens do grupo já agrupados na última pesquisa
-      let grupoItens = window._ultimoGrupoItens || [];
-      if (grupoItens.length === 0 && window._ultimoResultados) {
-        // Busca nos últimos resultados
-        const grupo = window._ultimoResultados.find(g => g.nome === nomeGrupo);
-        if (grupo && grupo._grupoItens) grupoItens = grupo._grupoItens;
-      }
-      window._ultimoGrupoItens = grupoItens;
-      // Renderiza itens
-      listaEl.innerHTML = grupoItens.map(item => `
-        <div class="border rounded p-2 mb-2 d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-          <div>
-            <strong>${item.nome}</strong> - ${item.descricao}<br>
-            <span class="badge bg-info">${item.local}</span>
-            <span class="badge bg-secondary ms-1">${item.categoriaNome}</span>
-            <span class="badge ms-1" style="background:#28a745;">${item.estado || 'Em uso'}</span>
-          </div>
-          <button class="btn btn-sm btn-outline-warning mt-2 mt-md-0" onclick="editarLocalEstadoItemGrupo('${item.id}', '${item.local}', '${item.estado}')"><i class="fa fa-edit"></i> Editar Local/Estado</button>
-        </div>
-      `).join('');
-
-      // Função global para editar localidade e estado
-      window.editarLocalEstadoItemGrupo = function(id, localAtual, estadoAtual) {
-        const itemDiv = Array.from(listaEl.children).find(div => div.innerHTML.includes(`editarLocalEstadoItemGrupo('${id}'`));
-        if (!itemDiv) return;
-        itemDiv.innerHTML = `
-          <form class="d-flex flex-column flex-md-row gap-2 align-items-md-center" onsubmit="salvarLocalEstadoItemGrupo(event, '${id}')">
-            <div>
-              <label class="form-label mb-1">Localidade</label>
-              <input type="text" class="form-control form-control-sm" name="local" value="${localAtual}">
-            </div>
-            <div>
-              <label class="form-label mb-1">Estado</label>
-              <select class="form-select form-select-sm" name="estado">
-                <option value="em uso"${estadoAtual==='em uso'?' selected':''}>Em uso</option>
-                <option value="parado"${estadoAtual==='parado'?' selected':''}>Parado</option>
-                <option value="quebrado"${estadoAtual==='quebrado'?' selected':''}>Quebrado</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-sm btn-primary ms-2">Salvar</button>
-          </form>
-        `;
-      };
-
-      // Função global para salvar edição
-      window.salvarLocalEstadoItemGrupo = function(e, id) {
-        e.preventDefault();
-        const form = e.target;
-        const local = form.local.value;
-        const estado = form.estado.value;
-        // Atualiza visualmente o card
-        const itemDiv = form.parentElement;
-        // Atualiza o array de itens do grupo
-        let grupoItens = window._ultimoGrupoItens || [];
-        let item = grupoItens.find(i => i.id == id);
-        if (item) {
-          // Chamada à API para atualizar no backend
-          fetch(`http://localhost:3000/api/itens/${id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ local, estado })
-          })
-          .then(res => res.ok ? res.json() : Promise.reject('Erro ao salvar no banco'))
-          .then(() => {
-            item.local = local;
-            item.estado = estado;
-            // Atualiza também o array window._ultimoResultados
-            if (window._ultimoResultados) {
-              window._ultimoResultados.forEach(grupo => {
-                if (grupo._grupoItens) {
-                  grupo._grupoItens.forEach(i => {
-                    if (i.id == id) {
-                      i.local = local;
-                      i.estado = estado;
-                    }
-                  });
-                }
-                if (grupo.id == id) {
-                  grupo.local = local;
-                  grupo.estado = estado;
-                }
-              });
-            }
-            itemDiv.innerHTML = `
-              <div>
-                <strong>${item.nome}</strong><br>
-                <span class="badge bg-info">${local}</span>
-                <span class="badge ms-1" style="background:#28a745;">${estado}</span>
-              </div>
-              <button class="btn btn-sm btn-outline-warning mt-2 mt-md-0" onclick="editarLocalEstadoItemGrupo('${id}', '${local}', '${estado}')"><i class="fa fa-edit"></i> Editar Local/Estado</button>
-            `;
-            // Mensagem de sucesso
-            const alerta = document.getElementById('alertaGrupo');
-            if (alerta) {
-              alerta.className = 'alert alert-success';
-              alerta.textContent = 'Alteração salva com sucesso!';
-              alerta.classList.remove('d-none');
-              setTimeout(() => { alerta.classList.add('d-none'); }, 2500);
-            }
-          })
-          .catch(() => {
-            // Mensagem de erro
-            const alerta = document.getElementById('alertaGrupo');
-            if (alerta) {
-              alerta.className = 'alert alert-danger';
-              alerta.textContent = 'Erro ao salvar no banco.';
-              alerta.classList.remove('d-none');
-              setTimeout(() => { alerta.classList.add('d-none'); }, 3500);
-            }
-            itemDiv.innerHTML += `<div class='text-danger mt-2'>Erro ao salvar no banco.</div>`;
-          });
-        }
-      };
-      // Vincula eventos aos botões do modal
-      setTimeout(() => {
-        const btnAddGrupo = document.getElementById('btnAdicionarItemGrupo');
-        if (btnAddGrupo) {
-          btnAddGrupo.onclick = function() {
-            // Exemplo: abrir modal de adicionar item, ou executar ação customizada
-            const alerta = document.getElementById('alertaGrupo');
-            alerta.className = 'alert alert-info';
-            alerta.textContent = 'Funcionalidade de adicionar item em desenvolvimento.';
-            alerta.classList.remove('d-none');
-            setTimeout(() => { alerta.classList.add('d-none'); }, 2000);
-          };
-        }
-        const btnSalvarGrupo = document.getElementById('btnSalvarGrupo');
-        if (btnSalvarGrupo) {
-          btnSalvarGrupo.onclick = function() {
-            const alerta = document.getElementById('alertaGrupo');
-            alerta.className = 'alert alert-info';
-            alerta.textContent = 'Funcionalidade de salvar grupo em desenvolvimento.';
-            alerta.classList.remove('d-none');
-            setTimeout(() => { alerta.classList.add('d-none'); }, 2000);
-          };
-        }
-      }, 200);
+  try {
+    // Usa a rotina completa já existente para carregar o grupo e seus itens
+    if (typeof abrirModalGrupo === 'function') {
+      abrirModalGrupo(nomeGrupo);
+      return;
     }
-    bootstrap.Modal.getOrCreateInstance(modal).show();
+  } catch (_) {}
+  // Fallback: tenta apenas abrir o modal se a função não existir
+  const modalEl = document.getElementById('modalGrupoItens');
+  if (modalEl && window.bootstrap && bootstrap.Modal) {
+    try { modalEl.dataset.nomeGrupo = nomeGrupo; } catch (_) {}
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  } else {
+    console.warn('Modal de grupo não encontrado.');
   }
 }
       // Detecta Android e aplica classes vivas nos botões principais
-      document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
         const isAndroid = /Android/i.test(navigator.userAgent);
         if (isAndroid) {
           const btns = [
@@ -654,7 +519,7 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
       return;
     }
     lista.innerHTML = '';
-    resultados.forEach(item => {
+  resultados.forEach(item => {
       const div = document.createElement('div');
       div.className = "card mb-2 shadow-sm";
       let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
@@ -670,10 +535,20 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
           </h6>
           <p class="card-text"><strong>Quantidade:</strong> ${item._grupoItens.length}</p>
           <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-          <button class="btn btn-sm btn-outline-primary mt-2" onclick="gerenciarItensGrupo('${item.nome}')">Gerenciar Itens</button>
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-sm btn-outline-primary" onclick="gerenciarItensGrupo('${item.nome}')">Gerenciar Itens</button>
+            <button class="btn btn-sm btn-outline-secondary" data-btn-rename="${encodeURIComponent(item.nome)}">Editar nome</button>
+          </div>
         </div>
       `;
       lista.appendChild(div);
+    });
+    // Bind dos botões de renomear na busca
+    lista.querySelectorAll('[data-btn-rename]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const antigoNome = decodeURIComponent(btn.getAttribute('data-btn-rename'));
+        if (window.editarNomeGrupo) window.editarNomeGrupo(antigoNome);
+      });
     });
   } catch (error) {
     lista.innerHTML = '<span class="text-danger">Erro ao buscar grupos.</span>';
@@ -1223,7 +1098,12 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
       if (paginacaoEl) paginacaoEl.innerHTML = '';
       try {
         const response = await fetch('http://localhost:3000/api/itens');
-        const itens = await response.json();
+        let itens = await response.json();
+        // Aplica filtro de local (quando definido pelo modal de filtro)
+        const filtroLocal = (window._filtroLocal || '').trim();
+        if (filtroLocal) {
+          itens = itens.filter(item => (item.local || '') === filtroLocal);
+        }
         if (!Array.isArray(itens) || itens.length === 0) {
           lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
           if (paginacaoEl) paginacaoEl.innerHTML = '';
@@ -1282,30 +1162,8 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           const gruposPagina = grupos.slice(inicio, fim);
 
           if (grupos.length === 0 || gruposPagina.length === 0) {
-            // Fallback: render per item (layout antigo)
-            const itensPorPagina = 10;
-            const iInicio = (pagina - 1) * itensPorPagina;
-            const iFim = iInicio + itensPorPagina;
-            const itensPagina = itens.slice(iInicio, iFim);
-            itensPagina.forEach(item => {
-              const div = document.createElement('div');
-              div.className = 'card mb-2 shadow-sm';
-              const nomeLocal = nomesLocais[item.local] || item.local || '';
-              const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
-              let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
-              if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
-              else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
-              div.innerHTML = `
-                <div class="card-body">
-                  <h6 class="card-title">
-                    ${item.nome} <span class="badge bg-info">${nomeLocal}</span> <span class="badge bg-secondary ms-1">${nomeCategoria}</span> ${badgeEstado}
-                  </h6>
-                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-                </div>
-              `;
-              lista.appendChild(div);
-            });
+            // Sem grupos para exibir: mostra mensagem (não usar layout antigo)
+            lista.innerHTML = '<span class="text-muted">Nenhum item encontrado para o filtro aplicado.</span>';
           } else {
           gruposPagina.forEach(([nomeGrupo, items]) => {
             const primeiro = items[0] || {};
@@ -1328,6 +1186,7 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
                 </div>
                 <div class="mt-3 d-flex gap-2">
                   <button class="btn btn-info btn-sm" data-btn-grupo="${encodeURIComponent(nomeGrupo)}">Gerenciar itens</button>
+                  <button class="btn btn-outline-secondary btn-sm" data-btn-rename="${encodeURIComponent(nomeGrupo)}">Editar nome</button>
                 </div>
               </div>
             `;
@@ -1338,6 +1197,13 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
             btn.addEventListener('click', () => {
               const nomeGrupo = decodeURIComponent(btn.getAttribute('data-btn-grupo'));
               abrirModalGrupo(nomeGrupo);
+            });
+          });
+          // Bind botões Editar nome
+          lista.querySelectorAll('[data-btn-rename]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const antigoNome = decodeURIComponent(btn.getAttribute('data-btn-rename'));
+              if (window.editarNomeGrupo) window.editarNomeGrupo(antigoNome);
             });
           });
           }
@@ -1453,6 +1319,44 @@ window.addEventListener('resize', () => {
             alert(error.message || 'Erro ao deletar item.');
           });
       }
+    }
+
+    // Renomear grupo (apenas altera o nome, não mexe nas unidades)
+    window.editarNomeGrupo = function(antigoNome) {
+      const novoNome = prompt(`Renomear grupo "${antigoNome}" para:`, antigoNome);
+      if (novoNome === null) return; // cancelado
+      const nomeTrim = (novoNome || '').trim();
+      if (!nomeTrim) {
+        alert('Informe um nome válido.');
+        return;
+      }
+      if (nomeTrim === antigoNome) {
+        alert('O novo nome é igual ao antigo.');
+        return;
+      }
+      fetch('http://localhost:3000/api/grupos/renomear', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ antigoNome, novoNome: nomeTrim })
+      })
+        .then(async res => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.erro || 'Erro ao renomear grupo.');
+          // Atualiza listagem e gráficos
+          await carregarItens();
+          try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (_) {}
+          // Se o modal do grupo estiver aberto do grupo renomeado, reabra com o novo nome
+          try {
+            const modalEl = document.getElementById('modalGrupoItens');
+            const aberto = modalEl && modalEl.classList.contains('show');
+            if (aberto) {
+              const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+              inst.hide();
+              setTimeout(() => abrirModalGrupo(nomeTrim), 200);
+            }
+          } catch (_) {}
+        })
+        .catch(err => alert(err.message || 'Erro ao renomear grupo.'));
     }
 
     document.getElementById('btnSair').addEventListener('click', function() {
@@ -1931,27 +1835,11 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
     document.getElementById('formFiltro').addEventListener('submit', function(e) {
       e.preventDefault();
       const local = document.getElementById('filtroLocal').value;
-      const lista = document.getElementById('itensBanco');
-      lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
-      fetch('http://localhost:3000/api/itens')
-        .then(response => response.json())
-        .then(itens => {
-          lista.innerHTML = '';
-          itens.filter(item => !local || item.local === local)
-            .forEach(item => {
-              const div = document.createElement('div');
-              div.className = "card mb-2 shadow-sm";
-              div.innerHTML = `
-                <div class="card-body">
-                  <h6 class="card-title">${item.nome} <span class="badge bg-info">${item.local || ''}</span></h6>
-                  <p class="card-text"><strong>Quantidade:</strong> ${item.quantidade}</p>
-                  <p class="card-text"><strong>Descrição:</strong> ${item.descricao}</p>
-                </div>
-              `;
-              lista.appendChild(div);
-            });
-        });
-      bootstrap.Modal.getInstance(document.getElementById('modalFiltro')).hide();
+      // define filtro global e recarrega usando o layout agrupado/paginado
+      try { window._filtroLocal = (local || '').trim(); } catch (_) { window._filtroLocal = (local || '').trim(); }
+      carregarItens();
+      const inst = bootstrap.Modal.getInstance(document.getElementById('modalFiltro')) || bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFiltro'));
+      inst.hide();
     });
   </script>
   <!-- Modal de seleção de localidade (colocado no final do body para evitar problemas de stacking context) -->
@@ -2085,23 +1973,5 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
             </script>
   </div>
 </body>
-<!-- Modal Gerenciar Itens do Grupo -->
-<div class="modal fade" id="modalGerenciarItens" tabindex="-1" aria-labelledby="modalGerenciarItensLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalGerenciarItensLabel">Itens do grupo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <div id="alertaGrupo" class="alert d-none" role="alert"></div>
-        <div id="listaItensGrupo"></div>
-      </div>
-      <div class="modal-footer d-flex justify-content-between">
-        <button id="btnAdicionarItemGrupo" class="btn btn-success"><i class="fa fa-plus"></i> Adicionar Item</button>
-        <button id="btnSalvarGrupo" class="btn btn-primary">Salvar alterações</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Modal Gerenciar Itens do Grupo duplicado removido (usamos modalGrupoItens) -->
 </html>

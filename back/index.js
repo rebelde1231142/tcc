@@ -557,6 +557,55 @@ app.get('/api/itens/grupo/:nome', async (req, res) => {
   }
 });
 
+// Renomear grupo (apenas altera o campo "nome" de todos os itens do grupo)
+app.put('/api/grupos/renomear', async (req, res) => {
+  const antigoNome = (req.body && req.body.antigoNome ? String(req.body.antigoNome) : '').trim();
+  const novoNome = (req.body && req.body.novoNome ? String(req.body.novoNome) : '').trim();
+  if (!antigoNome || !novoNome) {
+    return res.status(400).json({ erro: 'Forneça antigoNome e novoNome.' });
+  }
+  if (antigoNome.toLowerCase() === novoNome.toLowerCase()) {
+    return res.status(400).json({ erro: 'O novo nome deve ser diferente do antigo.' });
+  }
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+    const [[{ total: existeAntigo } = { total: 0 }]] = await conn.query('SELECT COUNT(*) AS total FROM Itens WHERE TRIM(nome) = TRIM(?)', [antigoNome]);
+    if (!existeAntigo) {
+      await conn.rollback();
+      return res.status(404).json({ erro: 'Grupo não encontrado.' });
+    }
+    // Evita mesclar acidentalmente com outro grupo existente
+    const [[{ total: existeNovo } = { total: 0 }]] = await conn.query('SELECT COUNT(*) AS total FROM Itens WHERE TRIM(nome) = TRIM(?)', [novoNome]);
+    if (existeNovo) {
+      await conn.rollback();
+      return res.status(409).json({ erro: 'Já existe um grupo com esse nome.' });
+    }
+    const [result] = await conn.query('UPDATE Itens SET nome = ? WHERE TRIM(nome) = TRIM(?)', [novoNome, antigoNome]);
+    await conn.commit();
+    res.json({ mensagem: 'Grupo renomeado com sucesso.', afetados: result.affectedRows || 0 });
+    try {
+      const cpf = (req.headers['x-user-cpf'] || '').trim();
+      await logAuditoria({
+        cpf,
+        acao: 'renomear-grupo',
+        recurso: 'item',
+        referencia: `${antigoNome} -> ${novoNome}`,
+        grupo: novoNome,
+        itemId: null,
+        detalhes: { antigoNome, novoNome }
+      }, req);
+    } catch (_) {}
+  } catch (error) {
+    if (conn) { try { await conn.rollback(); } catch (_) {} }
+    console.error('Erro ao renomear grupo:', error);
+    return enviarErro(res, 500, 'Não foi possível renomear o grupo no momento.', error);
+  } finally {
+    if (conn) { try { conn.release(); } catch (_) {} }
+  }
+});
+
 // Deletar todos os itens de um grupo (por nome)
 app.delete('/api/itens/grupo/:nome', async (req, res) => {
   const { nome } = req.params;
