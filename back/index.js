@@ -26,7 +26,7 @@ app.options('/api/registro', (req, res) => {
 app.get('/api/registro', async (req, res) => {
   try {
     // Busca todos os registros da tabela Auditoria
-    const [rows] = await pool.query('SELECT dataHora, referencia, acao, recurso, detalhes, grupo, itemId FROM Auditoria ORDER BY dataHora DESC LIMIT 100');
+  const [rows] = await pool.query('SELECT dataHora, cpf, referencia, acao, recurso, detalhes, grupo, itemId FROM Auditoria ORDER BY dataHora DESC LIMIT 100');
     // Garante formato esperado pelo front
     let result = Array.isArray(rows) ? rows.map(reg => {
       let detalhesParsed = null;
@@ -58,6 +58,7 @@ app.get('/api/registro', async (req, res) => {
       return {
         dataHora: reg.dataHora || null,
         usuario: reg.referencia || '-',
+        cpf: reg.cpf || null,
         tipo: reg.acao || '-',
         recurso: reg.recurso || '-',
         detalhes: detalhesParsed,
@@ -171,9 +172,11 @@ async function ensureAuditTable() {
 
 async function logAuditoria({ cpf, acao, recurso, referencia, grupo, itemId, detalhes }, req) {
   try {
+    const cpfLimpo = digitsOnly(cpf);
     await pool.query(
-      'INSERT INTO Auditoria (acao, recurso, referencia, grupo, itemId, detalhes, endpoint, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO Auditoria (cpf, acao, recurso, referencia, grupo, itemId, detalhes, endpoint, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
+        cpfLimpo || null,
         acao,
         recurso,
         referencia || null,
