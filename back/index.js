@@ -15,6 +15,70 @@ require('dotenv').config();
 
 const app = express();
 
+// Rota para listar todas as modificações (registro)
+app.options('/api/registro', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(204).end();
+});
+
+app.get('/api/registro', async (req, res) => {
+  try {
+    // Busca todos os registros da tabela Auditoria
+    const [rows] = await pool.query('SELECT dataHora, referencia, acao, recurso, detalhes, grupo, itemId FROM Auditoria ORDER BY dataHora DESC LIMIT 100');
+    // Garante formato esperado pelo front
+    let result = Array.isArray(rows) ? rows.map(reg => {
+      let detalhesParsed = null;
+      let detalhesTexto = null;
+
+      if (reg.detalhes !== null && reg.detalhes !== undefined) {
+        if (typeof reg.detalhes === 'string') {
+          const trimmed = reg.detalhes.trim();
+          if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            try {
+              detalhesParsed = JSON.parse(trimmed);
+            } catch (err) {
+              detalhesTexto = reg.detalhes;
+            }
+          } else {
+            detalhesTexto = reg.detalhes;
+          }
+        } else if (typeof reg.detalhes === 'object') {
+          detalhesParsed = reg.detalhes;
+        } else {
+          detalhesTexto = String(reg.detalhes);
+        }
+      }
+
+      if (detalhesParsed === null && detalhesTexto === null) {
+        detalhesTexto = null;
+      }
+
+      return {
+        dataHora: reg.dataHora || null,
+        usuario: reg.referencia || '-',
+        tipo: reg.acao || '-',
+        recurso: reg.recurso || '-',
+        detalhes: detalhesParsed,
+        detalhesTexto,
+        grupo: reg.grupo || null,
+        itemId: reg.itemId != null ? reg.itemId : null
+      };
+    }) : [];
+    // Se não houver registros, envia array vazio
+    if (!result || !Array.isArray(result)) result = [];
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Erro ao consultar registro:', error);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.status(200).json([]);
+  }
+});
+
 // Rota para gerar relatório Excel (.xlsx) usando Python e dados reais do banco
 app.get('/api/relatorio-excel', async (req, res) => {
   // Garante CORS para esta rota, inclusive em erro
@@ -108,9 +172,8 @@ async function ensureAuditTable() {
 async function logAuditoria({ cpf, acao, recurso, referencia, grupo, itemId, detalhes }, req) {
   try {
     await pool.query(
-      'INSERT INTO Auditoria (cpf, acao, recurso, referencia, grupo, itemId, detalhes, endpoint, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO Auditoria (acao, recurso, referencia, grupo, itemId, detalhes, endpoint, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [
-        cpf || null,
         acao,
         recurso,
         referencia || null,
@@ -165,31 +228,20 @@ app.get('/', (req, res) => {
 app.get('/api/relatorio-pdf', async (req, res) => {
   try {
     const [itens] = await pool.query(`
-          SELECT 
-            Categoria.Nome AS categoriaNome,
-            Itens.nome AS itemNome,
-            Itens.quantidade AS quantidade,
-            Itens.descricao AS descricao,
-            Itens.local AS local
-          FROM Itens
-          JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
-          ORDER BY Categoria.Nome ASC, Itens.nome ASC
+      SELECT Categoria.Nome AS categoriaNome, Itens.nome AS itemNome, Itens.quantidade AS quantidade, Itens.local AS local, Itens.descricao AS descricao
+      FROM Itens
+      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      ORDER BY Categoria.Nome ASC, Itens.nome ASC
     `);
-
-    if (itens.length === 0) {
+    if (!itens || itens.length === 0) {
       return res.status(404).json({ erro: 'Nenhum item encontrado no banco de dados.' });
     }
-
-    // Criar documento PDF
-    const doc = new PDFDocument({ margin: 30, size: 'A4' });
-    res.setHeader('Content-Type', 'application/pdf');
+    const doc = new PDFDocument();
     res.setHeader('Content-Disposition', 'attachment; filename=relatorio-itens.pdf');
+    res.setHeader('Content-Type', 'application/pdf');
     doc.pipe(res);
-
     doc.fontSize(18).text('Relatório de Itens', { align: 'center' });
     doc.moveDown();
-
-    // Cabeçalho da tabela
     doc.fontSize(12).font('Helvetica-Bold');
     doc.text('Categoria', 50, doc.y, { continued: true, width: 100 });
     doc.text('Nome', 150, doc.y, { continued: true, width: 100 });
@@ -198,16 +250,13 @@ app.get('/api/relatorio-pdf', async (req, res) => {
     doc.text('Descrição', 430, doc.y, { width: 180 });
     doc.moveDown(0.5);
     doc.font('Helvetica');
-
-    // Linhas da tabela
-      itens.forEach(item => {
-    doc.text(item.categoriaNome, 50, doc.y, { continued: true, width: 100 });
-    doc.text(item.itemNome, 150, doc.y, { continued: true, width: 100 });
-    doc.text(item.local, 250, doc.y, { continued: true, width: 100 });
-    doc.text(String(item.quantidade), 350, doc.y, { continued: true, width: 80 });
-    doc.text(item.descricao || '', 430, doc.y, { width: 180 });
-      });
-
+    itens.forEach(item => {
+      doc.text(item.categoriaNome, 50, doc.y, { continued: true, width: 100 });
+      doc.text(item.itemNome, 150, doc.y, { continued: true, width: 100 });
+      doc.text(item.local, 250, doc.y, { continued: true, width: 100 });
+      doc.text(String(item.quantidade), 350, doc.y, { continued: true, width: 80 });
+      doc.text(item.descricao || '', 430, doc.y, { width: 180 });
+    });
     doc.end();
   } catch (error) {
     console.error('Erro ao gerar relatório PDF:', error);
@@ -314,41 +363,7 @@ app.get('/api/relatorio-word', async (req, res) => {
 });
 
 // Rota de consulta à auditoria (somente CPFs autorizados)
-app.get('/api/auditoria', async (req, res) => {
-  try {
-    const { cpf, acao, recurso, grupo, itemId, inicio, fim, limit = 20, offset = 0 } = req.query;
-    const where = [];
-    const params = [];
-    if (cpf) { where.push('cpf = ?'); params.push(cpf); }
-    if (acao) { where.push('acao = ?'); params.push(acao); }
-    if (recurso) { where.push('recurso = ?'); params.push(recurso); }
-    if (grupo) { where.push('grupo = ?'); params.push(grupo); }
-    if (itemId) { where.push('itemId = ?'); params.push(Number(itemId)); }
-    if (inicio) { where.push('dataHora >= ?'); params.push(inicio); }
-    if (fim) { where.push('dataHora <= ?'); params.push(fim); }
-    const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
-    const lim = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
-    const off = Math.max(0, parseInt(offset, 10) || 0);
-    const [rows] = await pool.query(`SELECT * FROM Auditoria ${whereSql} ORDER BY dataHora DESC LIMIT ? OFFSET ?`, [...params, lim, off]);
-    const [[{ total } = { total: 0 }]] = await pool.query(`SELECT COUNT(*) as total FROM Auditoria ${whereSql}`, params);
-    res.json({ total, items: rows });
-  } catch (error) {
-    console.error('Erro ao consultar auditoria:', error);
-    return enviarErro(res, 500, 'Não foi possível consultar o histórico agora.', error);
-  }
-});
 
-// Endpoint para checar permissão de acesso ao histórico no front
-app.get('/api/auditoria/permissao', (req, res) => {
-  try {
-    const solicitante = digitsOnly(req.headers['x-user-cpf'] || '');
-    const allowed = ADMIN_CPF_WHITELIST.length > 0 ? ADMIN_CPF_WHITELIST.includes(solicitante) : false;
-    return res.json({ permitido: allowed });
-  } catch (error) {
-    console.error('Erro ao checar permissão:', error);
-    return res.status(500).json({ permitido: false });
-  }
-});
 
 // Rota para editar um item pelo id
 app.put('/api/itens/:id', async (req, res) => {
