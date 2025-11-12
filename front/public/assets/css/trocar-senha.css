@@ -1,0 +1,69 @@
+/* Botão secundário (Atualizar Senha) com efeito azul no hover */
+.btn-secondary {
+  background: #6c757d;
+  border: none;
+  color: #fff;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-secondary:hover, .btn-secondary:focus {
+  background: #4f46e5;
+  color: #fff;
+}
+body {
+  background: #bdbdbd;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.troca-card {
+  background: #f8f9fa;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 32px 16px;
+  width: 100%;
+  max-width: 400px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border: 1px solid #d1d5db;
+}
+.troca-card h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+  color: #5a5a5a;
+}
+.form-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #374151;
+}
+.form-control {
+  font-size: 1.1rem;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px #6366f133;
+}
+.btn-primary {
+  background: #5a6268;
+  border: none;
+  color: #fff;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: #4f46e5;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #4f46e5;
+  color: #fff;
+}

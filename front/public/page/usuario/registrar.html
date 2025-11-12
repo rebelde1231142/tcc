@@ -14,25 +14,15 @@
         });
       })();
     </script>
-    <style>
-  body{min-height:100vh;background:#e0e0e0;display:flex;align-items:center;justify-content:center;padding:20px;margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial}
-  .card-reg{width:100%;max-width:480px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.10);background:#f7f7f7}
-  .card-body{padding:28px}
-  .btn-primary{background:#5a5a5a;border:none}
-  .btn-primary:hover{background:#444}
-  .btn-light{background:#d3d3d3;color:#333}
-  .text-primary{color:#5a5a5a!important}
-  .text-muted{color:#888!important}
-  @media(min-width:992px){.card-body{padding:36px 40px}}
-  @media(max-width:520px){.card-body{padding:20px}}
-    </style>
+    <link rel="stylesheet" href="/assets/css/registrar.css">
   </head>
   <body>
     <main class="container d-flex align-items-center justify-content-center min-vh-100">
       <div class="card card-reg shadow-lg w-100">
         <div class="card-body">
-          <a href="/page/usuario/login.html" class="btn btn-light btn-sm mb-3 shadow-sm">
-            <i class="bi bi-arrow-left"></i> Voltar
+          <a href="/page/usuario/login.html" class="btn btn-light btn-lg rounded-pill shadow-sm d-flex align-items-center gap-2 mb-3" style="width: fit-content;">
+            <i class="bi bi-arrow-left fs-5"></i>
+            <span class="fw-semibold">Voltar</span>
           </a>
           <div class="text-center mb-4">
             <i class="bi bi-person-plus fs-1 text-primary"></i>
@@ -64,33 +54,6 @@
       </div>
     </main>
 
-    <script>
-      document.getElementById('formRegistro').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const cpf = document.getElementById('cpf').value;
-        const email = document.getElementById('email').value;
-        const senha = document.getElementById('senha').value;
-        const msg = document.getElementById('msg');
-        msg.textContent = '';
-        try {
-          const resp = await fetch('/api/usuarios', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ CPF: cpf, Email: email, Senha: senha })
-          });
-          if (resp.ok) {
-            msg.textContent = 'Registrado com sucesso! Redirecionando...';
-            setTimeout(() => {
-              window.location.href = '/page/usuario/login.html';
-            }, 1200);
-          } else {
-            const data = await resp.json();
-            msg.textContent = data.erro || 'Erro ao registrar.';
-          }
-        } catch (err) {
-          msg.textContent = 'Erro de conexão.';
-        }
-      });
-    </script>
+    <script src="/assets/js/registrar.js"></script>
   </body>
 </html>

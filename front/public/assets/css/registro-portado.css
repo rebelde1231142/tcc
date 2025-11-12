@@ -1,0 +1,158 @@
+/* CSS portado de registro.html */
+:root {
+  --cor-primaria: #1f2937;
+  --cor-secundaria: #4b5563;
+  --cor-escura: #111827;
+  --cor-clara: #f3f4f6;
+}
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #1f2937;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px 32px;
+}
+.topbar {
+  background: rgba(17, 24, 39, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto 24px;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 14px 28px rgba(17, 24, 39, 0.35);
+}
+.topbar .container-fluid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0;
+}
+.topbar .info-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+}
+.topbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--cor-clara);
+}
+.topbar .topbar-subtitle {
+  color: #ffffff;
+  font-size: 0.9rem;
+  text-shadow: 0 1px 3px rgba(15, 23, 42, 0.65);
+}
+.topbar .btn-outline-light {
+  color: var(--cor-clara);
+  border-color: rgba(229, 231, 235, 0.7);
+  transition: all 0.2s ease;
+}
+.topbar .btn-outline-light:hover {
+  background: var(--cor-clara);
+  color: var(--cor-escura);
+}
+.page-wrapper {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-wrapper .card {
+  border-radius: 18px;
+  background: rgba(249, 250, 251, 0.94);
+  border: 1px solid rgba(209, 213, 219, 0.8);
+  box-shadow: 0 24px 45px rgba(17, 24, 39, 0.22);
+}
+.page-wrapper .card-body {
+  padding: 2rem;
+}
+#alerta {
+  border-radius: 12px;
+  font-weight: 600;
+}
+.table {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.table thead {
+  background: linear-gradient(90deg, rgba(75, 85, 99, 0.92), rgba(107, 114, 128, 0.92));
+  color: var(--cor-clara);
+  border: none;
+}
+.table thead th {
+  border: none;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+}
+.table tbody tr {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+}
+.table tbody tr:hover {
+  background-color: rgba(229, 231, 235, 0.85);
+}
+.table tbody td {
+  vertical-align: top;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+.badge-tipo {
+  font-size: 0.85rem;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  box-shadow: 0 8px 14px rgba(17, 24, 39, 0.2);
+}
+.badge-tipo.tipo-criar { background: #15803d; }
+.badge-tipo.tipo-editar { background: #3b82f6; }
+.badge-tipo.tipo-deletar { background: #dc2626; }
+.badge-tipo[title*="deletar-grupo"], .badge-tipo.tipo-deletar-grupo { background: #6b21a8; }
+.badge-tipo.tipo-renomear-grupo { background: #f97316; }
+.badge-tipo.tipo-visualizar { background: #0ea5e9; }
+.detalhes-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+}
+.detalhes-array {
+  border-left: 3px solid rgba(107, 114, 128, 0.35);
+  padding-left: 12px;
+}
+.detalhe-linha {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+}
+.detalhe-linha:last-child { border-bottom: none; }
+.detalhe-chave {
+  font-weight: 600;
+  min-width: 90px;
+  color: var(--cor-secundaria);
+  text-transform: capitalize;
+  font-size: 0.95em;
+}
+.detalhe-valor {
+  flex: 1;
+  color: #1f2937;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.95em;
+}
+.detalhe-texto {
+  color: #1f2937;
+  display: block;
+  white-space: pre-wrap;
+}

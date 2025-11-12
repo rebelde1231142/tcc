@@ -1,0 +1,229 @@
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  min-width: 140px;
+  max-width: 1px;
+  white-space: nowrap;
+  text-align: center;
+}
+/* Estilos extraídos de registro.html */
+.root {
+  --cor-primaria: #2575fc;
+  --cor-secundaria: #6a11cb;
+  --cor-escura: #222;
+  --cor-clara: #f8fafc;
+}
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 8px 32px;
+}
+.topbar {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto 24px;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+.topbar .container-fluid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0;
+}
+.topbar .info-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+}
+.topbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #2575fc;
+}
+.topbar .topbar-subtitle {
+  color: #666;
+  font-size: 0.95rem;
+}
+.topbar .btn-outline-light {
+  color: #2575fc;
+  border-color: #2575fc;
+  background: #fff;
+}
+.topbar .btn-outline-light:hover {
+  background: #2575fc;
+  color: #fff;
+}
+.page-wrapper {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-wrapper .card {
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.page-wrapper .card-body {
+  padding: 1.5rem;
+}
+#alerta {
+  border-radius: 12px;
+  font-weight: 600;
+}
+.table {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.table thead {
+  background: #2575fc;
+  color: #fff;
+  border: none;
+}
+.table thead th {
+  border: none;
+  text-transform: uppercase;
+  font-size: 0.92rem;
+  letter-spacing: 0.05em;
+}
+.table tbody tr {
+  background-color: #f3f4f6;
+  border-bottom: 3px solid #4b5563;
+  box-shadow: none;
+}
+.table tbody tr:nth-child(even) {
+  background-color: #fff;
+}
+.table tbody tr:hover {
+  background-color: #e2e8f0;
+  border-bottom: 3px solid #222;
+}
+.table tbody td {
+  vertical-align: top;
+  color: #222;
+  font-size: 1.08rem;
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+.table tbody td {
+  vertical-align: top;
+  color: #222;
+  font-size: 1rem;
+}
+.badge-tipo {
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  box-shadow: 0 2px 6px rgba(37,117,252,0.12);
+}
+.badge-tipo.tipo-criar { background: #15803d; }
+.badge-tipo.tipo-editar { background: #2575fc; }
+.badge-tipo.tipo-deletar { background: #dc2626; }
+.badge-tipo[title*="deletar-grupo"], .badge-tipo.tipo-deletar-grupo { background: #6b21a8; }
+.badge-tipo.tipo-renomear-grupo { background: #f97316; }
+.badge-tipo.tipo-visualizar { background: #0ea5e9; }
+.detalhes-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+}
+.detalhes-array {
+  border-left: 3px solid rgba(107, 114, 128, 0.35);
+  padding-left: 12px;
+}
+.detalhe-linha {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+}
+.detalhe-linha:last-child { border-bottom: none; }
+.detalhe-chave {
+  font-weight: 600;
+  min-width: 90px;
+  color: var(--cor-secundaria);
+  text-transform: capitalize;
+  font-size: 0.95em;
+}
+.detalhe-valor {
+  flex: 1;
+  color: #1f2937;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.95em;
+}
+.detalhe-texto {
+  color: #1f2937;
+  display: block;
+  white-space: pre-wrap;
+}
+@media (max-width: 992px) {
+  body {
+    padding: 16px 12px 24px;
+  }
+  .topbar {
+    max-width: 100%;
+    margin: 0 0 20px 0;
+  }
+  .topbar .container-fluid {
+    justify-content: space-between;
+  }
+  .topbar .info-bloco {
+    text-align: left;
+  }
+  .page-wrapper .card-body {
+    padding: 1.5rem;
+  }
+  .detalhe-chave {
+    min-width: 100px;
+  }
+}
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0.75rem 1rem;
+  }
+  .topbar .navbar-brand {
+    font-size: 1.1rem;
+  }
+  .page-wrapper .card-body {
+    padding: 1.25rem;
+  }
+  .detalhe-chave {
+    min-width: 80px;
+  }
+}
+@media (max-width: 576px) {
+  .topbar .container-fluid {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+    gap: 0.75rem;
+  }
+  .topbar .info-bloco {
+    text-align: center;
+  }
+  .topbar .btn-outline-light {
+    justify-self: center;
+  }
+  .table thead {
+    font-size: 0.75rem;
+  }
+  .table tbody td {
+    font-size: 0.85rem;
+  }
+}

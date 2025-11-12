@@ -6,96 +6,30 @@
     <title>Trocar E-mail</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-      body {
-        background: #e5e7eb;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        margin: 0;
-        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
-      }
-      .card-troca {
-        width: 100%;
-        max-width: 720px;
-        border-radius: 18px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border: 1px solid #d1d5db;
-      }
-      .card-body {
-        padding: 32px;
-      }
-      .logo-img {
-        width: 56px;
-        height: 56px;
-      }
-      .btn-secondary {
-        background: #6c757d;
-        border: none;
-        color: #fff;
-      }
-      .btn-secondary:hover {
-        background: #5a6268;
-        color: #fff;
-      }
-      @media (min-width: 992px) {
-        .card-body {
-          padding: 40px 48px;
-        }
-      }
-      @media (max-width: 520px) {
-        .card-body {
-          padding: 20px;
-        }
-        .logo-img {
-          width: 48px;
-          height: 48px;
-        }
-      }
-      .troca-card h2 {
-        font-size: 2rem;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 8px;
-        color: #5a5a5a; /* Alterado para a cor solicitada */
-      }
-    </style>
+    <link rel="stylesheet" href="/assets/css/trocar-email.css">
   </head>
   <body>
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-12 col-sm-10 col-md-8 col-lg-6">
-          <div class="card card-troca">
-            <div class="card-body">
-              <a href="/page/configuracao.html" class="btn btn-light btn-sm mb-3 shadow-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-                <i class="bi bi-arrow-left"></i> Voltar
-              </a>
-              <h2 class="h4 text-center fw-bold mb-3" style="color: #5a5a5a;">Trocar E-mail</h2>
-              <div class="text-center mb-3">
-                <img class="logo-img" src="https://cdn-icons-png.flaticon.com/512/2950/2950736.png" alt="Troca" />
-              </div>
-
-              <form id="trocarEmailForm" novalidate>
-                <div class="mb-3">
-                  <label for="cpf" class="form-label">CPF</label>
-                  <input id="cpf" name="cpf" class="form-control form-control-lg" type="text" placeholder="000.000.000-00" required />
-                </div>
-                <div class="mb-3">
-                  <label for="novoEmail" class="form-label">Novo e-mail</label>
-                  <input id="novoEmail" name="novoEmail" class="form-control form-control-lg" type="email" placeholder="seu@exemplo.com" required />
-                </div>
-                <div class="d-grid">
-                  <button class="btn btn-secondary btn-lg" type="submit">Trocar e-mail</button>
-                </div>
-              </form>
-
-              <div id="mensagem" class="text-center text-muted mt-3 small"></div>
-            </div>
-          </div>
+    <div class="troca-card">
+      <a href="/page/configuracao.html" class="btn btn-light btn-lg rounded-pill shadow-sm d-flex align-items-center gap-2 mb-3" style="width: fit-content;">
+        <i class="bi bi-arrow-left fs-5"></i>
+        <span class="fw-semibold">Voltar</span>
+      </a>
+      <h2 class="h4 text-center fw-bold mb-3" style="color: #5a5a5a;">Trocar E-mail</h2>
+      <form id="trocarEmailForm" novalidate>
+        <div class="mb-3 text-center">
+          <img class="logo-img" src="https://cdn-icons-png.flaticon.com/512/2950/2950736.png" alt="Troca" width="48" height="48" />
         </div>
-      </div>
+        <div class="mb-3">
+          <label for="cpf" class="form-label">CPF</label>
+          <input id="cpf" name="cpf" class="form-control" type="text" placeholder="000.000.000-00" required />
+        </div>
+        <div class="mb-3">
+          <label for="novoEmail" class="form-label">Novo e-mail</label>
+          <input id="novoEmail" name="novoEmail" class="form-control" type="email" placeholder="seu@exemplo.com" required />
+        </div>
+        <button class="btn btn-primary w-100" type="submit">Trocar e-mail</button>
+      </form>
+      <div id="mensagem" class="text-center text-muted mt-3 small"></div>
     </div>
 
     <script src="/assets/js/trocarEmail.js"></script>
