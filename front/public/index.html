@@ -16,49 +16,7 @@
     })();
   </script>
 </head>
-  <style>
-  /* Paginação fixa na base, centralizada, botões quadrados e cinza/escuro */
-  #paginacaoItens {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 32px auto 0 auto;
-    width: 100%;
-    position: relative;
-    background: #f7f7f7;
-    padding: 12px 24px;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  #paginacaoItens .btn {
-    border-radius: 8px !important;
-    width: 44px;
-    height: 44px;
-    margin: 0 4px;
-    background: #5a5a5a;
-    color: #fff;
-    font-weight: 600;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #paginacaoItens .btn:hover, #paginacaoItens .btn:focus {
-    background: #444;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-  }
-  #paginacaoItens .btn.active {
-    background: #263238;
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
-  }
-  </style>
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
   <body style="background:#e0e0e0;">
   <!-- Botão flutuante para configuração (mobile) -->
   <div id="btnConfigMobile" class="d-block d-md-none position-fixed" style="top:20px;left:20px;z-index:1050;">
@@ -1242,27 +1200,68 @@ window.addEventListener('resize', () => {
     }
 
     // Renomear grupo (apenas altera o nome, não mexe nas unidades)
+    // Modal estilizado para editar nome do grupo
     window.editarNomeGrupo = function(antigoNome) {
-      const novoNome = prompt(`Renomear grupo "${antigoNome}" para:`, antigoNome);
-      if (novoNome === null) return; // cancelado
-      const nomeTrim = (novoNome || '').trim();
-      if (!nomeTrim) {
-        alert('Informe um nome válido.');
-        return;
+      let modal = document.getElementById('modalEditarNomeGrupo');
+      if (!modal) {
+        const modalHtml = `
+        <div class="modal fade" id="modalEditarNomeGrupo" tabindex="-1" aria-labelledby="modalEditarNomeGrupoLabel" aria-hidden="true" style="--bs-modal-margin: 1.5rem auto 0 auto;">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarNomeGrupoLabel">Renomear Grupo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label for="inputNovoNomeGrupo" class="form-label">Novo nome para o grupo:</label>
+                  <input type="text" class="form-control form-control-lg" id="inputNovoNomeGrupo" value="" placeholder="Digite o novo nome">
+                  <div id="feedbackNomeGrupo" class="invalid-feedback"></div>
+                </div>
+              </div>
+              <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSalvarNomeGrupo">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modal = document.getElementById('modalEditarNomeGrupo');
       }
-      if (nomeTrim === antigoNome) {
-        alert('O novo nome é igual ao antigo.');
-        return;
-      }
-      fetch('http://localhost:3000/api/grupos/renomear', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ antigoNome, novoNome: nomeTrim })
-      })
-        .then(async res => {
+      const input = modal.querySelector('#inputNovoNomeGrupo');
+      const feedback = modal.querySelector('#feedbackNomeGrupo');
+      input.value = antigoNome;
+      input.classList.remove('is-invalid');
+      feedback.textContent = '';
+      const bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+      bsModal.show();
+      setTimeout(() => { input.focus(); input.select(); }, 200);
+      // Remover event listeners antigos
+      const btnSalvar = modal.querySelector('#btnSalvarNomeGrupo');
+      btnSalvar.onclick = null;
+      btnSalvar.onclick = async function() {
+        const nomeTrim = (input.value || '').trim();
+        if (!nomeTrim) {
+          input.classList.add('is-invalid');
+          feedback.textContent = 'Informe um nome válido.';
+          return;
+        }
+        if (nomeTrim === antigoNome) {
+          input.classList.add('is-invalid');
+          feedback.textContent = 'O novo nome é igual ao antigo.';
+          return;
+        }
+        btnSalvar.disabled = true;
+        try {
+          const res = await fetch('http://localhost:3000/api/grupos/renomear', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ antigoNome, novoNome: nomeTrim })
+          });
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.erro || 'Erro ao renomear grupo.');
-          // Atualiza listagem e gráficos
+          bsModal.hide();
           await carregarItens();
           try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (_) {}
           // Se o modal do grupo estiver aberto do grupo renomeado, reabra com o novo nome
@@ -1275,8 +1274,20 @@ window.addEventListener('resize', () => {
               setTimeout(() => abrirModalGrupo(nomeTrim), 200);
             }
           } catch (_) {}
-        })
-        .catch(err => alert(err.message || 'Erro ao renomear grupo.'));
+        } catch (err) {
+          input.classList.add('is-invalid');
+          feedback.textContent = err.message || 'Erro ao renomear grupo.';
+        } finally {
+          btnSalvar.disabled = false;
+        }
+      };
+      // Enter para salvar
+      input.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnSalvar.click();
+        }
+      };
     }
 
     document.getElementById('btnSair').addEventListener('click', function() {
@@ -1892,6 +1903,23 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
               })();
             </script>
   </div>
+    <script>
+    // Garante que o filtro de local funcione ao selecionar uma localidade no modal
+    function selecionarLocalidadeParaFiltro(local) {
+      const filtroInput = document.getElementById('filtroLocal');
+      if (filtroInput) filtroInput.value = local;
+      const modalEl = document.getElementById('modalLocalidades');
+      if (!modalEl) return;
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      if (modal) modal.hide();
+      modalEl.addEventListener('hidden.bs.modal', function handler() {
+        const modalFiltro = document.getElementById('modalFiltro');
+        if (modalFiltro) bootstrap.Modal.getOrCreateInstance(modalFiltro).show();
+        try { window._modalParentBeforeLocal = null; } catch (e) {}
+        modalEl.removeEventListener('hidden.bs.modal', handler);
+      }, { once: true });
+    }
+    </script>
 </body>
 <!-- Modal Gerenciar Itens do Grupo duplicado removido (usamos modalGrupoItens) -->
 </html>

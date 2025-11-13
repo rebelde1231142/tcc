@@ -10,14 +10,13 @@ app.use((req, res, next) => {
     next();
 });
 
-// Servir arquivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-
-
-// Página inicial: visitantes veem index-visitante.html
+// Página inicial: visitantes veem login.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index-visitante.html'));
+    res.sendFile(path.join(__dirname, 'public', 'page', 'usuario', 'login.html'));
 });
+
+// Servir arquivos estáticos (desabilita index.html como padrão)
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // Roteamento SPA: demais rotas caem no index.html (após login)
 app.get('*', (req, res) => {
@@ -29,5 +28,3 @@ const PORT = 3030; // Altere a porta se necessário
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
-
-// ...existing code...
