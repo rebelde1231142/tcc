@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 21, 2025 at 10:20 PM
--- Server version: 8.4.3
--- PHP Version: 8.3.26
+-- Tempo de geração: 13-Nov-2025 às 17:35
+-- Versão do servidor: 8.0.30
+-- versão do PHP: 8.3.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `tcc`
+-- Banco de dados: `tcc`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `auditoria`
+-- Estrutura da tabela `auditoria`
 --
 
 CREATE TABLE `auditoria` (
@@ -42,7 +42,7 @@ CREATE TABLE `auditoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `auditoria`
+-- Extraindo dados da tabela `auditoria`
 --
 
 INSERT INTO `auditoria` (`id`, `dataHora`, `cpf`, `acao`, `recurso`, `referencia`, `grupo`, `itemId`, `detalhes`, `endpoint`, `ip`) VALUES
@@ -55,12 +55,21 @@ INSERT INTO `auditoria` (`id`, `dataHora`, `cpf`, `acao`, `recurso`, `referencia
 (7, '2025-10-20 21:11:28', '52657628846', 'editar', 'item', '6', 'Mapa Mundi', 6, '{\"antes\": {\"id\": 6, \"nome\": \"Mapa Mundi\", \"local\": \"Sala de Aula\", \"estado\": \"em uso\", \"descricao\": \"Mapa mundial utilizado nas aulas de geografia e historia.\", \"quantidade\": 1, \"dataAdicionado\": \"2025-09-26T03:00:00.000Z\", \"fk_Categoria_id\": 2}, \"alteracoes\": {\"local\": \"Sala de Aula\", \"estado\": \"parado\"}}', '/api/itens/6', '::1'),
 (8, '2025-10-20 21:12:29', '52657628846', 'renomear-grupo', 'item', 'Mapa Mundi -> Mapa-Mundi', 'Mapa-Mundi', NULL, '{\"novoNome\": \"Mapa-Mundi\", \"antigoNome\": \"Mapa Mundi\"}', '/api/grupos/renomear', '::1'),
 (9, '2025-10-21 19:02:03', '52657628846', 'renomear-grupo', 'item', 'Béquer -> Béquer1', 'Béquer1', NULL, '{\"novoNome\": \"Béquer1\", \"antigoNome\": \"Béquer\"}', '/api/grupos/renomear', '::1'),
-(10, '2025-10-21 19:02:27', '52657628846', 'renomear-grupo', 'item', 'Béquer1 -> Béquer', 'Béquer', NULL, '{\"novoNome\": \"Béquer\", \"antigoNome\": \"Béquer1\"}', '/api/grupos/renomear', '::1');
+(10, '2025-10-21 19:02:27', '52657628846', 'renomear-grupo', 'item', 'Béquer1 -> Béquer', 'Béquer', NULL, '{\"novoNome\": \"Béquer\", \"antigoNome\": \"Béquer1\"}', '/api/grupos/renomear', '::1'),
+(11, '2025-11-13 14:03:45', NULL, 'criar', 'item', 'mdf', 'mdf', NULL, '{\"nome\": \"mdf\", \"unidades\": [{\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"parado\"}, {\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"parado\"}, {\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"quebrado\"}], \"descricao\": \"estruturas para corte\", \"quantidade\": 3, \"fk_Categoria_id\": \"2\"}', '/api/itens', '::1'),
+(12, '2025-11-13 14:04:10', NULL, 'renomear-grupo', 'item', 'mdf -> mdfs', 'mdfs', NULL, '{\"novoNome\": \"mdfs\", \"antigoNome\": \"mdf\"}', '/api/grupos/renomear', '::1'),
+(13, '2025-11-13 14:05:20', NULL, 'renomear-grupo', 'item', 'mdfs -> MDF', 'MDF', NULL, '{\"novoNome\": \"MDF\", \"antigoNome\": \"mdfs\"}', '/api/grupos/renomear', '::1'),
+(14, '2025-11-13 14:05:32', NULL, 'editar', 'item', '46', 'MDF', 46, '{\"antes\": {\"id\": 46, \"nome\": \"MDF\", \"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"parado\", \"descricao\": \"estruturas para corte\", \"quantidade\": 1, \"dataAdicionado\": \"2025-11-13T03:00:00.000Z\", \"fk_Categoria_id\": 2}, \"alteracoes\": {\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"em uso\"}}', '/api/itens/46', '::1'),
+(15, '2025-11-13 14:18:24', NULL, 'deletar-grupo', 'item', 'MDF', 'MDF', NULL, '{\"grupo\": \"MDF\", \"qtdRemovida\": 3}', '/api/itens/grupo/MDF', '::1'),
+(16, '2025-11-13 14:28:37', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Maravilhas -> Alice no Pais das Kengas', 'Alice no Pais das Kengas', NULL, '{\"novoNome\": \"Alice no Pais das Kengas\", \"antigoNome\": \"Alice no Pais das Maravilhas\"}', '/api/grupos/renomear', '::1'),
+(17, '2025-11-13 14:29:05', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Kengas -> Alice no Pais das MAravilhas', 'Alice no Pais das MAravilhas', NULL, '{\"novoNome\": \"Alice no Pais das MAravilhas\", \"antigoNome\": \"Alice no Pais das Kengas\"}', '/api/grupos/renomear', '::1'),
+(18, '2025-11-13 14:29:12', NULL, 'renomear-grupo', 'item', 'Alice no Pais das MAravilhas -> Alice no Pais das Mravilhas', 'Alice no Pais das Mravilhas', NULL, '{\"novoNome\": \"Alice no Pais das Mravilhas\", \"antigoNome\": \"Alice no Pais das MAravilhas\"}', '/api/grupos/renomear', '::1'),
+(19, '2025-11-13 14:29:18', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Mravilhas -> Alice no Pais das Maravilhas', 'Alice no Pais das Maravilhas', NULL, '{\"novoNome\": \"Alice no Pais das Maravilhas\", \"antigoNome\": \"Alice no Pais das Mravilhas\"}', '/api/grupos/renomear', '::1');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `categoria`
+-- Estrutura da tabela `categoria`
 --
 
 CREATE TABLE `categoria` (
@@ -70,7 +79,7 @@ CREATE TABLE `categoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `categoria`
+-- Extraindo dados da tabela `categoria`
 --
 
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
@@ -81,7 +90,7 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `entrada`
+-- Estrutura da tabela `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -92,17 +101,20 @@ CREATE TABLE `entrada` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `entrada`
+-- Extraindo dados da tabela `entrada`
 --
 
 INSERT INTO `entrada` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
 (1, 44, '2025-10-17', 1),
-(2, 45, '2025-10-20', 1);
+(2, 45, '2025-10-20', 1),
+(3, 46, '2025-11-13', 1),
+(4, 47, '2025-11-13', 1),
+(5, 48, '2025-11-13', 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `itens`
+-- Estrutura da tabela `itens`
 --
 
 CREATE TABLE `itens` (
@@ -117,7 +129,7 @@ CREATE TABLE `itens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `itens`
+-- Extraindo dados da tabela `itens`
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`, `estado`) VALUES
@@ -159,7 +171,7 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 -- --------------------------------------------------------
 
 --
--- Table structure for table `perfil`
+-- Estrutura da tabela `perfil`
 --
 
 CREATE TABLE `perfil` (
@@ -169,18 +181,20 @@ CREATE TABLE `perfil` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `perfil`
+-- Extraindo dados da tabela `perfil`
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
+('', '', '$2b$10$WXUeyFLLNxEV/gl/RFQ3TuF4PlYXKaH04YIWdeZplGiqjDQi9uxXm'),
 ('52657628842', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$b.AWwoBhboOIVLakWLZvluIyzrO8j.YKlxqBUPBNXECRrW9H8J2Le'),
 ('52657628843', 'leonelbrenodasilva1@gmail.com', '$2b$10$AMjeXTrWoFwF6yNaxJaCveqEthB9Td2.0QAk6hYIlKVQeoAz.dMWK'),
-('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$y9XjPD8SEMtzsWSEijq0Y.VVEBs6k/Z6uXmV.d3CIfFcA7I6IrOEC');
+('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$d6I.Uw1mojI9mKWA00.7PuQMzTFS5eOMk1D0RG4BtMGUjEzKTFvci'),
+('52657628848', 'leonelbrenodasilvaramosdepaula@gmail.com', '$2b$10$yITuEXytbLRsqdZeUOv22eEuLNyy8IxRrzWjOTC6uBxdWQCYkGCDa');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `saida`
+-- Estrutura da tabela `saida`
 --
 
 CREATE TABLE `saida` (
@@ -191,97 +205,100 @@ CREATE TABLE `saida` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `saida`
+-- Extraindo dados da tabela `saida`
 --
 
 INSERT INTO `saida` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
 (1, 15, '2025-10-16', 1),
-(2, 7, '2025-10-17', 1);
+(2, 7, '2025-10-17', 1),
+(3, 46, '2025-11-13', 1),
+(4, 47, '2025-11-13', 1),
+(5, 48, '2025-11-13', 1);
 
 --
--- Indexes for dumped tables
+-- Índices para tabelas despejadas
 --
 
 --
--- Indexes for table `auditoria`
+-- Índices para tabela `auditoria`
 --
 ALTER TABLE `auditoria`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `categoria`
+-- Índices para tabela `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Indexes for table `entrada`
+-- Índices para tabela `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- Indexes for table `itens`
+-- Índices para tabela `itens`
 --
 ALTER TABLE `itens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
 
 --
--- Indexes for table `perfil`
+-- Índices para tabela `perfil`
 --
 ALTER TABLE `perfil`
   ADD PRIMARY KEY (`CPF`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- Indexes for table `saida`
+-- Índices para tabela `saida`
 --
 ALTER TABLE `saida`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT de tabelas despejadas
 --
 
 --
--- AUTO_INCREMENT for table `auditoria`
+-- AUTO_INCREMENT de tabela `auditoria`
 --
 ALTER TABLE `auditoria`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT for table `categoria`
+-- AUTO_INCREMENT de tabela `categoria`
 --
 ALTER TABLE `categoria`
   MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `entrada`
+-- AUTO_INCREMENT de tabela `entrada`
 --
 ALTER TABLE `entrada`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `itens`
+-- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
--- AUTO_INCREMENT for table `saida`
+-- AUTO_INCREMENT de tabela `saida`
 --
 ALTER TABLE `saida`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- Constraints for dumped tables
+-- Restrições para despejos de tabelas
 --
 
 --
--- Constraints for table `itens`
+-- Limitadores para a tabela `itens`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);
