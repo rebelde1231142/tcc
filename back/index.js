@@ -173,6 +173,7 @@ async function ensureAuditTable() {
 async function logAuditoria({ cpf, acao, recurso, referencia, grupo, itemId, detalhes }, req) {
   try {
     const cpfLimpo = digitsOnly(cpf);
+    const detalhesJson = JSON.stringify(detalhes || null);
     await pool.query(
       'INSERT INTO Auditoria (cpf, acao, recurso, referencia, grupo, itemId, detalhes, endpoint, ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
@@ -182,13 +183,28 @@ async function logAuditoria({ cpf, acao, recurso, referencia, grupo, itemId, det
         referencia || null,
         grupo || null,
         itemId != null ? Number(itemId) : null,
-        JSON.stringify(detalhes || null),
+        detalhesJson,
         (req && req.originalUrl) || null,
         (req && (req.ip || (req.headers['x-forwarded-for']||'').split(',')[0] || req.connection?.remoteAddress)) || null
       ]
     );
   } catch (e) {
     console.error('Erro ao registrar auditoria:', e);
+    try {
+      console.error('Dados do logAuditoria:', {
+        cpf,
+        acao,
+        recurso,
+        referencia,
+        grupo,
+        itemId,
+        detalhes,
+        reqUrl: req && req.originalUrl,
+        reqIp: req && (req.ip || (req.headers['x-forwarded-for']||'').split(',')[0] || req.connection?.remoteAddress)
+      });
+    } catch (logErr) {
+      console.error('Falha ao logar dados do logAuditoria:', logErr);
+    }
   }
 }
 
@@ -680,10 +696,11 @@ app.delete('/api/itens/:id', async (req, res) => {
     if (!antes || antes.length === 0) {
       return res.status(404).json({ erro: 'Item não encontrado.' });
     }
+    let result = { affectedRows: 0 };
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
-      const [result] = await conn.query('DELETE FROM Itens WHERE id = ?', [id]);
+      [result] = await conn.query('DELETE FROM Itens WHERE id = ?', [id]);
       if (result.affectedRows === 0) {
         await conn.rollback();
         return res.status(404).json({ erro: 'Item não encontrado.' });

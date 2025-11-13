@@ -1741,9 +1741,13 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
       const data = await resp.json();
       if (data.erro) throw new Error(data.erro);
       bsModal.hide();
-      abrirModalGrupo(nomeGrupo);
-      try { carregarItens(); } catch (e) {}
-      try { if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais(); } catch (e) {}
+      // Aguarda o modal fechar antes de atualizar os itens do grupo e a lista principal
+      bsModal._element.addEventListener('hidden.bs.modal', async function handler() {
+        bsModal._element.removeEventListener('hidden.bs.modal', handler);
+        try { await abrirModalGrupo(nomeGrupo); } catch (e) {}
+        try { await carregarItens(); } catch (e) {}
+        try { if (typeof carregarGraficosPrincipais === 'function') await carregarGraficosPrincipais(); } catch (e) {}
+      });
     } catch (e) {
       alerta.classList.remove('d-none');
       alerta.classList.add('alert-danger');
