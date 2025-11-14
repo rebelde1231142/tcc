@@ -504,9 +504,11 @@ qtdInput.addEventListener('input', () => {
               }
 
               try {
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+        const cpf = usuarioLogado.CPF || usuarioLogado.cpf || '';
         const response = await fetch('http://localhost:3000/api/itens', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-User-CPF': cpf },
           body: JSON.stringify((() => {
             const q = quantidade;
             // Se houver detalhamento (container visível e há selects), envia unidades
@@ -870,8 +872,8 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
               quantidade: quantidade,
               descricao,
               fk_Categoria_id,
-              local: document.getElementById('editLocal'+id).value,
-              estado
+              local: document.getElementById('editLocal'+id).value || '',
+              estado: document.getElementById('editEstado'+id).value || ''
           });
         }
       });
@@ -890,9 +892,11 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
         return;
       }
       Promise.all(edits.map(async edit => {
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+        const cpf = usuarioLogado.CPF || usuarioLogado.cpf || '';
         const response = await fetch(`http://localhost:3000/api/itens/${edit.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-User-CPF': cpf },
           body: JSON.stringify(edit)
         });
         const data = await response.json();
@@ -1334,7 +1338,7 @@ if (formDeletarMassa) {
       return;
     }
     Promise.all(selecionados.map(nomeGrupo =>
-      fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`, { method: 'DELETE' })
+  fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`, { method: 'DELETE', headers: { 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado') || '{}').CPF || JSON.parse(localStorage.getItem('usuarioLogado') || '{}').cpf || '') } })
     ))
     .then(async responses => {
       const ok = responses.every(r => r.ok);
@@ -1454,7 +1458,9 @@ if (btnDelSel) {
       return;
     }
     try {
-      const responses = await Promise.all(selecionados.map(id => fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' })));
+  const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+  const cpf = usuarioLogado.CPF || usuarioLogado.cpf || '';
+  const responses = await Promise.all(selecionados.map(id => fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE', headers: { 'X-User-CPF': cpf } })));
       if (responses.some(r => !r.ok)) throw new Error('Falha ao deletar um ou mais itens.');
       alerta.classList.remove('d-none', 'alert-danger');
       alerta.classList.add('alert-success');
@@ -1613,8 +1619,8 @@ function handleSalvarGrupoClickFactory(btnSalvarGrupo) {
       }
       const responses = await Promise.all(payloads.map(p => fetch(`http://localhost:3000/api/itens/${p.id}` , {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ local: p.local, estado: p.estado })
+        headers: { 'Content-Type': 'application/json', 'X-User-CPF': (JSON.parse(localStorage.getItem('usuarioLogado') || '{}').CPF || JSON.parse(localStorage.getItem('usuarioLogado') || '{}').cpf || '') },
+  body: JSON.stringify({ local: p.local || '', estado: p.estado || '' })
       })));
       if (responses.some(r => !r.ok)) {
         const texts = await Promise.all(responses.map(r => r.text().catch(() => '')));
@@ -1674,9 +1680,11 @@ document.addEventListener('DOMContentLoaded', () => {
         descricao: descGrupo || `Unidades adicionadas ao grupo ${nomeGrupo}`,
         fk_Categoria_id: Number.isInteger(categoriaId) ? categoriaId : 1 // fallback para 1 (DS) se não identificado
       };
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+      const cpf = usuarioLogado.CPF || usuarioLogado.cpf || '';
       fetch('http://localhost:3000/api/itens', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-User-CPF': cpf },
         body: JSON.stringify(payload)
       })
         .then(async res => {
@@ -1737,7 +1745,9 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
     const alerta = document.getElementById('alertaGrupo');
     alerta.classList.add('d-none');
     try {
-      const resp = await fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE' });
+  const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+  const cpf = usuarioLogado.CPF || usuarioLogado.cpf || '';
+  const resp = await fetch(`http://localhost:3000/api/itens/${id}`, { method: 'DELETE', headers: { 'X-User-CPF': cpf } });
       const data = await resp.json();
       if (data.erro) throw new Error(data.erro);
       bsModal.hide();

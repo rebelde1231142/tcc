@@ -112,11 +112,15 @@ document.getElementById('formEditarItem').addEventListener('submit', function(e)
     return;
   }
 
-    fetch(`/api/itens/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id: parseInt(categoria) })
-  })
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+        const cpf = usuarioLogado.CPF || usuarioLogado.cpf || '';
+        const local = document.getElementById('editarLocalItem')?.value || '';
+        const estado = document.getElementById('editarEstadoItem')?.value || '';
+        fetch(`/api/itens/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-User-CPF': cpf },
+            body: JSON.stringify({ nome, quantidade, descricao, fk_Categoria_id: parseInt(categoria), local, estado })
+        })
   .then(response => {
     if (!response.ok) throw new Error('Erro ao editar item.');
     alerta.classList.remove('d-none', 'alert-danger');
