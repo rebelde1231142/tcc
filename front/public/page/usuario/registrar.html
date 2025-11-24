@@ -39,6 +39,25 @@
               <input type="email" class="form-control form-control-lg" id="email" required placeholder="Digite seu email">
             </div>
             <div class="mb-3">
+              <label for="nivel" class="form-label">Nível</label>
+              <select class="form-select form-select-lg" id="nivel" required>
+                <option value="aluno">Aluno</option>
+                <option value="professor">Professor</option>
+                <option value="coordenacao">Coordenação</option>
+                <option value="direcao">Direção</option>
+              </select>
+            </div>
+            <div class="mb-3" id="areaDiv" style="display:none;">
+              <label for="area" class="form-label">Área de atuação (apenas para professores)</label>
+              <select class="form-select form-select-lg" id="area">
+                <option value="comuns">Comuns</option>
+                <option value="desenvolvimentoSistemas">Desenvolvimento de Sistemas</option>
+                <option value="quimica">Química</option>
+                <option value="administracao">Administração</option>
+              </select>
+            </div>
+            </div>
+            <div class="mb-3">
               <label for="senha" class="form-label">Senha</label>
               <input type="password" class="form-control form-control-lg" id="senha" required placeholder="Digite sua senha" autocomplete="off" minlength="6">
               <small class="text-muted">A senha deve ter pelo menos 6 caracteres.</small>

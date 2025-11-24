@@ -177,7 +177,9 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 CREATE TABLE `perfil` (
   `CPF` varchar(14) NOT NULL,
   `Email` varchar(255) NOT NULL,
-  `Senha` varchar(255) NOT NULL
+  `Senha` varchar(255) NOT NULL,
+  `nivel` varchar(30) NOT NULL DEFAULT 'aluno',
+  `area` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --

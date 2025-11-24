@@ -35,6 +35,33 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // Permissões por nível
+  // Supondo que o backend retorna o usuário logado em window.usuarioLogado
+  // Exemplo:
+  // window.usuarioLogado = { nivel: 'professor', area: 'quimica' }
+  if (window.usuarioLogado) {
+    const { nivel, area } = window.usuarioLogado;
+    // Importa helpers.js se necessário
+    // Filtra botões de alteração
+    if (typeof podeAlterar === 'function' && !podeAlterar(nivel, area)) {
+      const btnsAlteracao = [
+        'btnAdicionarItem',
+        'btnDeletarMassa',
+        'btnEditarMassa'
+      ];
+      btnsAlteracao.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
+    // Exemplo: filtrar itens da dashboard
+    if (typeof getItensPermitidos === 'function') {
+      const itensPermitidos = getItensPermitidos(nivel, area);
+      // Aqui você pode usar itensPermitidos para renderizar menus, cards, etc.
+      // Exemplo: console.log('Itens permitidos:', itensPermitidos);
+    }
+  }
 });
 function selecionarLocalidade(local) {
   document.getElementById('localItem').value = local;
