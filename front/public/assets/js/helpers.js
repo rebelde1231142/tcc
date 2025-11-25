@@ -31,7 +31,8 @@ const permissoesDashboard = {
             'btnEditarMassa',
             'btnRelatorio',
             'btnFiltro',
-            'btnConfiguracoes'
+            'btnConfiguracoes',
+            'btnHistorico'
         ],
         podeAlterar: false,
         categoriasVisiveis: {}, // Será determinado pela área

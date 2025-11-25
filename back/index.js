@@ -81,10 +81,65 @@ app.get('/api/registro', async (req, res) => {
 });
 
 // Rota para gerar relatório Excel (.xlsx) usando Python e dados reais do banco
+// Helper function para filtrar itens por nível e área
+function construirFiltroRelatorio(nivel, area) {
+  let whereClause = '';
+  let params = [];
+
+  if (!nivel && !area) {
+    // Sem filtros, retorna tudo
+    return { whereClause: '', params: [] };
+  }
+
+  if (nivel && nivel !== 'todos') {
+    if (nivel === 'professor') {
+      // Professor vê apenas sua área
+      if (area) {
+        const areaID = mapearAreaParaID(area);
+        if (areaID) {
+          whereClause = ' WHERE Itens.fk_Categoria_id = ?';
+          params.push(areaID);
+        }
+      }
+    } else if (nivel === 'auxiliar_docente') {
+      // Auxiliar Docente de Desenvolvimento de Sistemas vê sua área (ID 1) + Administração (ID 2)
+      // Auxiliar Docente de Química vê apenas Química (ID 3)
+      if (area === 'Desenvolvimento de Sistemas' || area === 'Ds') {
+        whereClause = ' WHERE Itens.fk_Categoria_id IN (1, 2)';
+        params = [];
+      } else if (area === 'Química' || area === 'Qui') {
+        whereClause = ' WHERE Itens.fk_Categoria_id = 3';
+        params = [];
+      }
+    }
+    // Coordenação e Direção (nivel === 'todos') veem tudo, sem filtro
+  }
+
+  return { whereClause, params };
+}
+
+// Mapeia nomes das áreas para os IDs reais no banco de dados
+const mapearAreaParaID = (areaFromForm) => {
+  const mapaAreas = {
+    'Desenvolvimento de Sistemas': 1,
+    'Administração': 2,
+    'Química': 3,
+    'Ds': 1,
+    'Qui': 3,
+    'Coordenação': null
+  };
+  return mapaAreas[areaFromForm];
+};
+
 app.get('/api/relatorio-excel', async (req, res) => {
   // Garante CORS para esta rota, inclusive em erro
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
+    const { nivel, area } = req.query;
+    console.log('GET /api/relatorio-excel - Parâmetros recebidos:', { nivel, area });
+
+    const { whereClause, params } = construirFiltroRelatorio(nivel, area);
+
     // Consulta SQL para buscar itens organizados por grupo (nome)
     const [itens] = await pool.query(`
       SELECT 
@@ -98,8 +153,9 @@ app.get('/api/relatorio-excel', async (req, res) => {
         DATE(Itens.dataAdicionado) AS 'Data de Adição'
       FROM Itens
       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      ${whereClause}
       ORDER BY Categoria.Nome ASC, Itens.nome ASC
-    `);
+    `, params);
     if (!itens || itens.length === 0) {
       return res.status(404).json({ erro: 'Nenhum item encontrado no banco de dados.' });
     }
@@ -246,12 +302,18 @@ app.get('/', (req, res) => {
 // Rota para gerar relatório em PDF
 app.get('/api/relatorio-pdf', async (req, res) => {
   try {
+    const { nivel, area } = req.query;
+    console.log('GET /api/relatorio-pdf - Parâmetros recebidos:', { nivel, area });
+
+    const { whereClause, params } = construirFiltroRelatorio(nivel, area);
+
     const [itens] = await pool.query(`
       SELECT Categoria.Nome AS categoriaNome, Itens.nome AS itemNome, Itens.quantidade AS quantidade, Itens.local AS local, Itens.descricao AS descricao
       FROM Itens
       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      ${whereClause}
       ORDER BY Categoria.Nome ASC, Itens.nome ASC
-    `);
+    `, params);
     if (!itens || itens.length === 0) {
       return res.status(404).json({ erro: 'Nenhum item encontrado no banco de dados.' });
     }
@@ -286,6 +348,11 @@ app.get('/api/relatorio-pdf', async (req, res) => {
 // Rota para gerar relatório em Word (.docx)
 app.get('/api/relatorio-word', async (req, res) => {
   try {
+    const { nivel, area } = req.query;
+    console.log('GET /api/relatorio-word - Parâmetros recebidos:', { nivel, area });
+
+    const { whereClause, params } = construirFiltroRelatorio(nivel, area);
+
     const [itens] = await pool.query(`
           SELECT 
             Categoria.Nome AS categoriaNome,
@@ -294,8 +361,9 @@ app.get('/api/relatorio-word', async (req, res) => {
             Itens.local AS local
           FROM Itens
           JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+          ${whereClause}
           ORDER BY Categoria.Nome ASC, Itens.nome ASC
-    `);
+    `, params);
 
     if (itens.length === 0) {
       return res.status(404).json({ erro: 'Nenhum item encontrado no banco de dados.' });

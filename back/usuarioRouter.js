@@ -146,15 +146,54 @@ router.post('/usuarios/recuperar-senha', async (req, res) => {
 router.post('/usuarios', async (req, res) => {
   const { CPF, Email, Senha, Nivel, Area } = req.body;
   console.log('POST /api/usuarios - Dados recebidos:', { CPF, Email, Nivel, Area });
+  
   try {
+    // Validação: campos obrigatórios não vazios
+    if (!CPF || !String(CPF).trim()) {
+      return res.status(400).json({ erro: 'CPF é obrigatório.' });
+    }
+    
+    if (!Email || !String(Email).trim()) {
+      return res.status(400).json({ erro: 'Email é obrigatório.' });
+    }
+    
+    if (!Senha || !String(Senha).trim()) {
+      return res.status(400).json({ erro: 'Senha é obrigatória.' });
+    }
+    
+    if (!Nivel || !String(Nivel).trim()) {
+      return res.status(400).json({ erro: 'Nível é obrigatório.' });
+    }
+    
+    // Validação: professor e auxiliar_docente precisam ter área
+    if ((Nivel === 'professor' || Nivel === 'auxiliar_docente') && (!Area || !String(Area).trim())) {
+      return res.status(400).json({ erro: 'Área é obrigatória para este nível.' });
+    }
+    
+    // Validação: formato do CPF (11 dígitos)
+    const cpfLimpo = String(CPF).replace(/\D/g, '');
+    if (!/^\d{11}$/.test(cpfLimpo)) {
+      return res.status(400).json({ erro: 'CPF deve conter 11 dígitos.' });
+    }
+    
+    // Validação: formato de email - apenas @gmail.com
+    if (!/^[^\s@]+@gmail\.com$/.test(Email.trim())) {
+      return res.status(400).json({ erro: 'Email deve ser uma conta @gmail.com' });
+    }
+    
+    // Validação: comprimento mínimo da senha
+    if (String(Senha).trim().length < 6) {
+      return res.status(400).json({ erro: 'Senha deve ter no mínimo 6 caracteres.' });
+    }
+    
     // Verifica se já existe usuário com o mesmo CPF ou Email
-    const [existe] = await pool.query('SELECT 1 FROM Perfil WHERE CPF = ? OR Email = ?', [CPF, Email]);
+    const [existe] = await pool.query('SELECT 1 FROM Perfil WHERE CPF = ? OR Email = ?', [cpfLimpo, Email.trim()]);
     if (existe.length > 0) {
       return res.status(400).json({ erro: 'CPF ou Email já cadastrado.' });
     }
     const hash = await bcrypt.hash(Senha, 10); // Gera o hash da senha
-    await pool.query('INSERT INTO Perfil (CPF, Email, Senha, Nivel, Area) VALUES (?, ?, ?, ?, ?)', [CPF, Email, hash, Nivel || 'aluno', Area || null]);
-    console.log('Usuário cadastrado com sucesso:', { CPF, Email, Nivel, Area });
+    await pool.query('INSERT INTO Perfil (CPF, Email, Senha, Nivel, Area) VALUES (?, ?, ?, ?, ?)', [cpfLimpo, Email.trim(), hash, Nivel || 'aluno', Area ? Area.trim() : null]);
+    console.log('Usuário cadastrado com sucesso:', { CPF: cpfLimpo, Email: Email.trim(), Nivel, Area });
     res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso!' });
   } catch (error) {
     console.error('Erro ao cadastrar usuário:', error);

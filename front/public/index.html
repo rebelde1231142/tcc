@@ -946,7 +946,31 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
   // ...existing code...
 
     document.getElementById('btnRelatorio').addEventListener('click', function () {
-      fetch('http://localhost:3000/api/relatorio-excel')
+      // Obtém dados do usuário logado
+      const usuarioLogado = localStorage.getItem('usuarioLogado');
+      let nivel = '';
+      let area = '';
+      
+      if (usuarioLogado) {
+        try {
+          const usuario = JSON.parse(usuarioLogado);
+          nivel = usuario.nivel || usuario.Nivel || '';
+          area = usuario.area || usuario.Area || '';
+        } catch (e) {
+          console.error('Erro ao parsear usuário:', e);
+        }
+      }
+      
+      // Constrói URL com parâmetros de nível e área
+      let url = 'http://localhost:3000/api/relatorio-excel';
+      if (nivel || area) {
+        const params = new URLSearchParams();
+        if (nivel) params.append('nivel', nivel);
+        if (area) params.append('area', area);
+        url += '?' + params.toString();
+      }
+      
+      fetch(url)
         .then(response => {
           if (!response.ok) throw new Error('Erro ao gerar relatório Excel.');
           return response.blob();

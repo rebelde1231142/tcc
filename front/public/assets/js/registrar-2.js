@@ -61,18 +61,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.getElementById('formRegistro').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const cpf = document.getElementById('cpf').value;
-  const email = document.getElementById('email').value;
-  const senha = document.getElementById('senha').value;
-  const nivel = document.getElementById('nivel').value;
+  const cpf = document.getElementById('cpf').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+  const nivel = document.getElementById('nivel').value.trim();
   const nivelSelect = document.getElementById('nivel');
   const selectedOption = nivelSelect.options[nivelSelect.selectedIndex];
   let area = null;
   
   if (nivel === 'professor') {
-    area = document.getElementById('areaProfessor').value;
+    area = document.getElementById('areaProfessor').value.trim();
   } else if (nivel === 'auxiliar_docente') {
-    area = document.getElementById('areaAuxiliar').value;
+    area = document.getElementById('areaAuxiliar').value.trim();
   } else if (nivel === 'todos') {
     // Para Coordenação e Direção, usa um valor padrão que o backend reconhece
     area = 'Coordenação'; // Pode ser qualquer área, será ignorada pelo backend para "todos"
@@ -81,10 +81,63 @@ document.getElementById('formRegistro').addEventListener('submit', async functio
   const msg = document.getElementById('msg');
   msg.textContent = '';
 
+  // Validação completa de campos vazios
+  if (!cpf) {
+    msg.textContent = 'CPF é obrigatório.';
+    msg.classList.remove('text-muted', 'text-success');
+    msg.classList.add('text-danger');
+    return;
+  }
+
+  if (!email) {
+    msg.textContent = 'Email é obrigatório.';
+    msg.classList.remove('text-muted', 'text-success');
+    msg.classList.add('text-danger');
+    return;
+  }
+
+  if (!senha) {
+    msg.textContent = 'Senha é obrigatória.';
+    msg.classList.remove('text-muted', 'text-success');
+    msg.classList.add('text-danger');
+    return;
+  }
+
+  if (!nivel) {
+    msg.textContent = 'Nível é obrigatório.';
+    msg.classList.remove('text-muted', 'text-success');
+    msg.classList.add('text-danger');
+    return;
+  }
+
   // Validar se professor ou auxiliar docente selecionou uma área
   if ((nivel === 'professor' || nivel === 'auxiliar_docente') && !area) {
     msg.textContent = 'Por favor, selecione uma área de atuação.';
-    msg.classList.remove('text-muted');
+    msg.classList.remove('text-muted', 'text-success');
+    msg.classList.add('text-danger');
+    return;
+  }
+
+  // Validar formato do CPF (11 dígitos)
+  if (!/^\d{11}$/.test(cpf)) {
+    msg.textContent = 'CPF deve conter 11 dígitos.';
+    msg.classList.remove('text-muted', 'text-success');
+    msg.classList.add('text-danger');
+    return;
+  }
+
+  // Validar formato de email - apenas @gmail.com
+  if (!/^[^\s@]+@gmail\.com$/.test(email)) {
+    msg.textContent = 'Email deve ser uma conta @gmail.com';
+    msg.classList.remove('text-muted', 'text-success');
+    msg.classList.add('text-danger');
+    return;
+  }
+
+  // Validar comprimento mínimo da senha
+  if (senha.length < 6) {
+    msg.textContent = 'Senha deve ter no mínimo 6 caracteres.';
+    msg.classList.remove('text-muted', 'text-success');
     msg.classList.add('text-danger');
     return;
   }
@@ -99,7 +152,7 @@ document.getElementById('formRegistro').addEventListener('submit', async functio
     });
     if (resp.ok) {
       msg.textContent = 'Registrado com sucesso! Redirecionando...';
-      msg.classList.remove('text-muted');
+      msg.classList.remove('text-muted', 'text-danger');
       msg.classList.add('text-success');
       setTimeout(() => {
         window.location.href = '/page/usuario/login.html';
@@ -107,12 +160,12 @@ document.getElementById('formRegistro').addEventListener('submit', async functio
     } else {
       const data = await resp.json();
       msg.textContent = data.erro || 'Erro ao registrar.';
-      msg.classList.remove('text-muted');
+      msg.classList.remove('text-muted', 'text-success');
       msg.classList.add('text-danger');
     }
   } catch (err) {
     msg.textContent = 'Erro de conexão.';
-    msg.classList.remove('text-muted');
+    msg.classList.remove('text-muted', 'text-success');
     msg.classList.add('text-danger');
   }
 });

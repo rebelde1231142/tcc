@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 13-Nov-2025 às 17:35
--- Versão do servidor: 8.0.30
--- versão do PHP: 8.3.4
+-- Generation Time: Nov 25, 2025 at 12:29 PM
+-- Server version: 8.0.30
+-- PHP Version: 8.1.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `tcc`
+-- Database: `tcc`
 --
 
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `auditoria`
+-- Table structure for table `auditoria`
 --
 
 CREATE TABLE `auditoria` (
@@ -42,7 +42,7 @@ CREATE TABLE `auditoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `auditoria`
+-- Dumping data for table `auditoria`
 --
 
 INSERT INTO `auditoria` (`id`, `dataHora`, `cpf`, `acao`, `recurso`, `referencia`, `grupo`, `itemId`, `detalhes`, `endpoint`, `ip`) VALUES
@@ -69,7 +69,7 @@ INSERT INTO `auditoria` (`id`, `dataHora`, `cpf`, `acao`, `recurso`, `referencia
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `categoria`
+-- Table structure for table `categoria`
 --
 
 CREATE TABLE `categoria` (
@@ -79,7 +79,7 @@ CREATE TABLE `categoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `categoria`
+-- Dumping data for table `categoria`
 --
 
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
@@ -90,7 +90,7 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `entrada`
+-- Table structure for table `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -101,7 +101,7 @@ CREATE TABLE `entrada` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `entrada`
+-- Dumping data for table `entrada`
 --
 
 INSERT INTO `entrada` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
@@ -114,7 +114,7 @@ INSERT INTO `entrada` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `itens`
+-- Table structure for table `itens`
 --
 
 CREATE TABLE `itens` (
@@ -129,7 +129,7 @@ CREATE TABLE `itens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `itens`
+-- Dumping data for table `itens`
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`, `estado`) VALUES
@@ -171,7 +171,7 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `perfil`
+-- Table structure for table `perfil`
 --
 
 CREATE TABLE `perfil` (
@@ -182,21 +182,10 @@ CREATE TABLE `perfil` (
   `area` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Extraindo dados da tabela `perfil`
---
-
-INSERT INTO `perfil` (`CPF`, `Email`, `Senha`) VALUES
-('', '', '$2b$10$WXUeyFLLNxEV/gl/RFQ3TuF4PlYXKaH04YIWdeZplGiqjDQi9uxXm'),
-('52657628842', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$b.AWwoBhboOIVLakWLZvluIyzrO8j.YKlxqBUPBNXECRrW9H8J2Le'),
-('52657628843', 'leonelbrenodasilva1@gmail.com', '$2b$10$AMjeXTrWoFwF6yNaxJaCveqEthB9Td2.0QAk6hYIlKVQeoAz.dMWK'),
-('52657628846', 'leonelbrenodasilva@gmail.com', '$2b$10$d6I.Uw1mojI9mKWA00.7PuQMzTFS5eOMk1D0RG4BtMGUjEzKTFvci'),
-('52657628848', 'leonelbrenodasilvaramosdepaula@gmail.com', '$2b$10$yITuEXytbLRsqdZeUOv22eEuLNyy8IxRrzWjOTC6uBxdWQCYkGCDa');
-
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `saida`
+-- Table structure for table `saida`
 --
 
 CREATE TABLE `saida` (
@@ -207,7 +196,7 @@ CREATE TABLE `saida` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Extraindo dados da tabela `saida`
+-- Dumping data for table `saida`
 --
 
 INSERT INTO `saida` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
@@ -218,89 +207,89 @@ INSERT INTO `saida` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
 (5, 48, '2025-11-13', 1);
 
 --
--- Índices para tabelas despejadas
+-- Indexes for dumped tables
 --
 
 --
--- Índices para tabela `auditoria`
+-- Indexes for table `auditoria`
 --
 ALTER TABLE `auditoria`
   ADD PRIMARY KEY (`id`);
 
 --
--- Índices para tabela `categoria`
+-- Indexes for table `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Índices para tabela `entrada`
+-- Indexes for table `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- Índices para tabela `itens`
+-- Indexes for table `itens`
 --
 ALTER TABLE `itens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
 
 --
--- Índices para tabela `perfil`
+-- Indexes for table `perfil`
 --
 ALTER TABLE `perfil`
   ADD PRIMARY KEY (`CPF`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- Índices para tabela `saida`
+-- Indexes for table `saida`
 --
 ALTER TABLE `saida`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- AUTO_INCREMENT de tabelas despejadas
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT de tabela `auditoria`
+-- AUTO_INCREMENT for table `auditoria`
 --
 ALTER TABLE `auditoria`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT de tabela `categoria`
+-- AUTO_INCREMENT for table `categoria`
 --
 ALTER TABLE `categoria`
   MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de tabela `entrada`
+-- AUTO_INCREMENT for table `entrada`
 --
 ALTER TABLE `entrada`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT de tabela `itens`
+-- AUTO_INCREMENT for table `itens`
 --
 ALTER TABLE `itens`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
--- AUTO_INCREMENT de tabela `saida`
+-- AUTO_INCREMENT for table `saida`
 --
 ALTER TABLE `saida`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- Restrições para despejos de tabelas
+-- Constraints for dumped tables
 --
 
 --
--- Limitadores para a tabela `itens`
+-- Constraints for table `itens`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);
