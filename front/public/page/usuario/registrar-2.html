@@ -41,27 +41,37 @@
             <div class="mb-3">
               <label for="nivel" class="form-label">Nível</label>
               <select class="form-select form-select-lg" id="nivel" required>
-                <option value="aluno">Aluno</option>
+                <option value="auxiliar_docente">Auxiliar Docente</option>
                 <option value="professor">Professor</option>
-                <option value="coordenacao">Coordenação</option>
-                <option value="direcao">Direção</option>
+                <option value="todos" data-area="coordenacao">Coordenação</option>
+                <option value="todos" data-area="direcao">Direção</option>
               </select>
             </div>
-            <div class="mb-3" id="areaDiv">
-              <label for="area" class="form-label">Área de atuação (apenas para professores)</label>
-              <select class="form-select form-select-lg" id="area" disabled style="display:none;">
-                <option value="comuns">Comuns</option>
-                <option value="desenvolvimentoSistemas">Desenvolvimento de Sistemas</option>
-                <option value="quimica">Química</option>
-                <option value="administracao">Administração</option>
-                <option value="portugues">Língua Portuguesa</option>
-                <option value="matematica">Matemática</option>
-                <option value="historia">História</option>
-                <option value="geografia">Geografia</option>
-                <option value="biologia">Biologia</option>
-                <option value="fisica">Física</option>
-                <option value="educacaoFisica">Educação Física</option>
-                <option value="artes">Artes</option>
+            <input type="hidden" id="selectedArea" value="">
+            <div class="mb-3" id="areaProfessorDiv" style="display:none;">
+              <label for="areaProfessor" class="form-label">Área de atuação</label>
+              <select class="form-select form-select-lg" id="areaProfessor" disabled>
+                <option value="">Selecione uma área</option>
+                <option value="Administração">Administração</option>
+                <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
+                <option value="Química">Química</option>
+              </select>
+            </div>
+            <div class="mb-3" id="areaAuxiliarDiv" style="display:none;">
+              <label for="areaAuxiliar" class="form-label">Área de atuação</label>
+              <select class="form-select form-select-lg" id="areaAuxiliar" disabled>
+                <option value="">Selecione uma área</option>
+                <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
+                <option value="Química">Química</option>
+              </select>
+            </div>
+            <div class="mb-3" id="areaTodosDiv" style="display:none;">
+              <label for="areaTodos" class="form-label">Área de atuação</label>
+              <select class="form-select form-select-lg" id="areaTodos" disabled>
+                <option value="">Selecione uma área</option>
+                <option value="Administração">Administração</option>
+                <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
+                <option value="Química">Química</option>
               </select>
             </div>
             <div class="mb-3">

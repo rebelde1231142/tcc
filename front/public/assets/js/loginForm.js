@@ -15,12 +15,20 @@ $(document).ready(() => {
             return response.json();
         })
         .then(usuario => {
-            // Salva Email, CPF e outros dados recebidos do backend
+            // Salva Email, CPF, Nivel, Area e outros dados recebidos do backend
             localStorage.setItem('usuarioLogado', JSON.stringify({
                 CPF: usuario.CPF,
                 Email: usuario.Email,
-                // Adicione outros campos se necessário
+                Nivel: usuario.Nivel || usuario.nivel,
+                Area: usuario.Area || usuario.area
             }));
+            // Também armazena no window para uso imediato
+            window.usuarioLogado = {
+                CPF: usuario.CPF,
+                Email: usuario.Email,
+                Nivel: usuario.Nivel || usuario.nivel,
+                Area: usuario.Area || usuario.area
+            };
             $('#alertaLogin')
                 .removeClass('d-none alert-danger')
                 .addClass('alert-success')

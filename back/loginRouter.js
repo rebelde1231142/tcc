@@ -10,6 +10,12 @@ router.post('/login', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM Perfil WHERE CPF = ?', [cpf]);
     if (rows.length > 0) {
       const usuario = rows[0];
+      console.log('Usuário encontrado:', {
+        CPF: usuario.CPF,
+        Email: usuario.Email,
+        Nivel: usuario.Nivel || usuario.nivel,
+        Area: usuario.Area || usuario.area
+      });
       const senhaCorreta = await bcrypt.compare(senha, usuario.Senha);
       if (senhaCorreta) {
         return res.json(usuario);

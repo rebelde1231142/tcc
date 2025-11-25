@@ -14,7 +14,22 @@ function gerenciarItensGrupo(nomeGrupo) {
     console.warn('Modal de grupo não encontrado.');
   }
 }
-document.addEventListener('DOMContentLoaded', function() {
+
+// Função para aplicar permissões
+function aplicarPermissoes() {
+  // Primeiro, garante que window.usuarioLogado está carregado
+  if (!window.usuarioLogado) {
+    const usuarioLogadoStorage = localStorage.getItem('usuarioLogado');
+    if (usuarioLogadoStorage) {
+      try {
+        window.usuarioLogado = JSON.parse(usuarioLogadoStorage);
+        console.log('Usuário carregado do localStorage:', window.usuarioLogado);
+      } catch (e) {
+        console.error('Erro ao carregar usuário logado:', e);
+      }
+    }
+  }
+
   const isAndroid = /Android/i.test(navigator.userAgent);
   if (isAndroid) {
     const btns = [
@@ -37,32 +52,66 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Permissões por nível
-  // Supondo que o backend retorna o usuário logado em window.usuarioLogado
-  // Exemplo:
-  // window.usuarioLogado = { nivel: 'professor', area: 'quimica' }
   if (window.usuarioLogado) {
-    const { nivel, area } = window.usuarioLogado;
-    // Importa helpers.js se necessário
-    // Filtra botões de alteração
-    if (typeof podeAlterar === 'function' && !podeAlterar(nivel, area)) {
-      const btnsAlteracao = [
+    const nivel = window.usuarioLogado.Nivel || window.usuarioLogado.nivel;
+    const area = window.usuarioLogado.Area || window.usuarioLogado.area;
+    
+    console.log('Aplicando permissões para Nível:', nivel, 'Area:', area);
+    
+    // Obtém botões permitidos
+    if (typeof getBotoesPermitidos === 'function') {
+      const botoesPermitidos = getBotoesPermitidos(nivel, area);
+      console.log('Botões permitidos:', botoesPermitidos.join(', '));
+      
+      // Oculta botões que não são permitidos
+      const todosBotoes = [
         'btnAdicionarItem',
         'btnDeletarMassa',
-        'btnEditarMassa'
+        'btnEditarMassa',
+        'btnRelatorio',
+        'btnFiltro',
+        'btnConfiguracoes',
+        'btnHistorico'
       ];
-      btnsAlteracao.forEach(id => {
+      
+      todosBotoes.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+        if (el) {
+          if (botoesPermitidos.includes(id)) {
+            el.style.display = '';
+            console.log('Mostrando botão:', id);
+          } else {
+            el.style.display = 'none';
+            console.log('Ocultando botão:', id);
+          }
+        }
       });
+    } else {
+      console.warn('getBotoesPermitidos não definida');
     }
-    // Exemplo: filtrar itens da dashboard
-    if (typeof getItensPermitidos === 'function') {
-      const itensPermitidos = getItensPermitidos(nivel, area);
-      // Aqui você pode usar itensPermitidos para renderizar menus, cards, etc.
-      // Exemplo: console.log('Itens permitidos:', itensPermitidos);
+    
+    // Armazena configurações permitidas no window para uso em outras páginas
+    if (typeof getConfiguracoes === 'function') {
+      window.configuracoesPermitidas = getConfiguracoes(nivel, area);
+      console.log('Configurações permitidas:', window.configuracoesPermitidas.join(', '));
     }
+  } else {
+    console.warn('Nenhum usuário logado (window.usuarioLogado não definido)');
   }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  aplicarPermissoes();
 });
+
+// Também executa imediatamente em caso de script ser carregado após DOMContentLoaded
+if (document.readyState === 'loading') {
+  // DOM ainda está carregando
+  document.addEventListener('DOMContentLoaded', aplicarPermissoes);
+} else {
+  // DOM já foi carregado
+  aplicarPermissoes();
+}
 function selecionarLocalidade(local) {
   document.getElementById('localItem').value = local;
   var modalEl = document.getElementById('modalLocalidades');

@@ -239,8 +239,9 @@ let chartMini3 = null;
 let chartMini4 = null;
 async function carregarMiniGraficos() {
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+    const response = await fetchItensComPermissoes();
     const itens = await response.json();
+    console.log('carregarMiniGraficos - Itens retornados:', itens.length);
     // Gráfico 1: Itens por Local
     const locais = {};
     itens.forEach(item => {
@@ -358,7 +359,7 @@ document.getElementById('barraPesquisa').addEventListener('input', async functio
   }
   lista.innerHTML = '<span class="text-muted">Buscando...</span>';
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+    const response = await fetchItensComPermissoes();
     const itens = await response.json();
     // Agrupa itens por grupo
     const grupos = {};
@@ -608,8 +609,9 @@ async function carregarGraficosPrincipais() {
   const minimalColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#b8bac0', '#b5c2d1', '#e0cfc2', '#bfc4c9', '#dee2e6'];
   const minimalColorsHover = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#757575'];
   try {
-    const response = await fetch('http://localhost:3000/api/itens');
+    const response = await fetchItensComPermissoes();
     const itens = await response.json();
+    console.log('carregarGraficosPrincipais - Itens retornados:', itens.length);
 
     // 1. Itens por Local
     const locais = {};
@@ -763,7 +765,7 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
 
     // Função de edição em massa reescrita
     document.getElementById('btnEditarMassa').addEventListener('click', function() {
-      fetch('http://localhost:3000/api/itens')
+      fetchItensComPermissoes()
         .then(response => response.json())
         .then(itens => {
           const lista = document.getElementById('listaItensEditar');
@@ -979,12 +981,14 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
       lista.innerHTML = '<span class="text-muted">Carregando itens...</span>';
       if (paginacaoEl) paginacaoEl.innerHTML = '';
       try {
-        const response = await fetch('http://localhost:3000/api/itens');
+        const response = await fetchItensComPermissoes();
         let itens = await response.json();
+        console.log('carregarItens - Itens retornados antes do filtro:', itens.length);
         // Aplica filtro de local (quando definido pelo modal de filtro)
         const filtroLocal = (window._filtroLocal || '').trim();
         if (filtroLocal) {
           itens = itens.filter(item => (item.local || '') === filtroLocal);
+          console.log('carregarItens - Itens após filtro local:', itens.length);
         }
         if (!Array.isArray(itens) || itens.length === 0) {
           lista.innerHTML = '<span class="text-muted">Nenhum item cadastrado.</span>';
@@ -1131,7 +1135,7 @@ window.addEventListener('resize', () => {
 
     function listarItensBanco() {
       const div = document.getElementById('itensBanco');
-      fetch('http://localhost:3000/api/itens')
+      fetchItensComPermissoes()
         .then(response => response.json())
         .then(itens => {
           if (!itens || itens.length === 0) {
@@ -1301,7 +1305,7 @@ window.addEventListener('resize', () => {
 
     document.getElementById('btnDeletarMassa').addEventListener('click', function() {
   // Carrega os grupos (nomes únicos) no modal
-  fetch('http://localhost:3000/api/itens')
+  fetchItensComPermissoes()
     .then(response => response.json())
     .then(itens => {
       const lista = document.getElementById('listaItensDeletar');
@@ -1376,7 +1380,7 @@ if (formDeletarMassa) {
 const btnEditarMassaEl = document.getElementById('btnEditarMassa');
 if (btnEditarMassaEl) {
   btnEditarMassaEl.addEventListener('click', function() {
-    fetch('http://localhost:3000/api/itens')
+    fetchItensComPermissoes()
       .then(response => response.json())
       .then(itens => {
         const lista = document.getElementById('listaItensEditar');
@@ -1769,6 +1773,8 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
 };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/helpers.js"></script>
+  <script src="/assets/js/index.js"></script>
   <script src="/assets/js/graficos-visitante-menu.js" type="module"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {

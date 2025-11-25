@@ -557,14 +557,82 @@ app.post('/api/itens', async (req, res) => {
 
 app.get('/api/itens', async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT Itens.*, Categoria.Nome AS categoriaNome, Itens.dataAdicionado
+    const { nivel, area } = req.query;
+    console.log('GET /api/itens - Parâmetros recebidos:', { nivel, area });
+    
+    let query = `
+      SELECT Itens.id, Itens.nome, Itens.quantidade, Itens.descricao, Itens.fk_Categoria_id, 
+             Itens.local, Itens.estado, Itens.dataAdicionado, Categoria.Nome AS categoriaNome
       FROM Itens
       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
-      ORDER BY Categoria.Nome ASC, Itens.nome ASC
-    `);
+    `;
+    let whereConditions = [];
+    let queryParams = [];
+
+    // IMPORTANTE: Se não há nivel/area definidos, retorna TUDO
+    if (!nivel && !area) {
+      console.log('Nenhum filtro de permissão - retornando TODOS os itens');
+      query += ' ORDER BY Categoria.Nome ASC, Itens.nome ASC';
+      const [rows] = await pool.query(query, queryParams);
+      console.log('Itens retornados (sem filtro):', rows.length);
+      return res.json(rows);
+    }
+
+    // Mapeia nomes das áreas para os IDs reais no banco de dados
+    const mapearAreaParaID = (areaFromForm) => {
+      const mapaAreas = {
+        'Desenvolvimento de Sistemas': 1,
+        'Administração': 2,
+        'Química': 3,
+        'Ds': 1,
+        'Qui': 3,
+        'Coordenação': null
+      };
+      return mapaAreas[areaFromForm];
+    };
+
+    // Filtro por nível e área
+    if (nivel && nivel !== 'todos') {
+      if (nivel === 'professor') {
+        // Professor vê apenas sua área
+        if (area) {
+          const areaID = mapearAreaParaID(area);
+          if (areaID) {
+            whereConditions.push(`Itens.fk_Categoria_id = ?`);
+            queryParams.push(areaID);
+            console.log('Professor filter - área:', area, '-> ID:', areaID);
+          }
+        }
+      } else if (nivel === 'auxiliar_docente') {
+        // Auxiliar Docente de Desenvolvimento de Sistemas vê sua área (ID 1) + Administração (ID 2)
+        // Auxiliar Docente de Química vê apenas Química (ID 3)
+        if (area === 'Desenvolvimento de Sistemas' || area === 'Ds') {
+          whereConditions.push(`Itens.fk_Categoria_id IN (1, 2)`);
+          queryParams = [];
+          console.log('Auxiliar DS filter - categorias: 1 (Ds), 2 (Administração)');
+        } else if (area === 'Química' || area === 'Qui') {
+          whereConditions.push(`Itens.fk_Categoria_id = 3`);
+          queryParams = [];
+          console.log('Auxiliar Química filter - categoria: 3 (Qui)');
+        }
+      }
+      // Coordenação e Direção (nivel === 'todos') veem tudo, sem filtro
+    }
+
+    if (whereConditions.length > 0) {
+      query += ' WHERE ' + whereConditions.join(' AND ');
+    }
+
+    query += ' ORDER BY Categoria.Nome ASC, Itens.nome ASC';
+
+    console.log('Query final:', query);
+    console.log('Parâmetros:', queryParams);
+
+    const [rows] = await pool.query(query, queryParams);
+    console.log('Itens retornados:', rows.length, 'primeiros 3:', rows.slice(0, 3));
     res.json(rows);
   } catch (error) {
+    console.error('Erro em GET /api/itens:', error);
     return enviarErro(res, 500, 'Não foi possível buscar itens no momento.', error);
   }
 });

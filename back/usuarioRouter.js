@@ -145,6 +145,7 @@ router.post('/usuarios/recuperar-senha', async (req, res) => {
 // Cadastro de usuário
 router.post('/usuarios', async (req, res) => {
   const { CPF, Email, Senha, Nivel, Area } = req.body;
+  console.log('POST /api/usuarios - Dados recebidos:', { CPF, Email, Nivel, Area });
   try {
     // Verifica se já existe usuário com o mesmo CPF ou Email
     const [existe] = await pool.query('SELECT 1 FROM Perfil WHERE CPF = ? OR Email = ?', [CPF, Email]);
@@ -153,8 +154,10 @@ router.post('/usuarios', async (req, res) => {
     }
     const hash = await bcrypt.hash(Senha, 10); // Gera o hash da senha
     await pool.query('INSERT INTO Perfil (CPF, Email, Senha, Nivel, Area) VALUES (?, ?, ?, ?, ?)', [CPF, Email, hash, Nivel || 'aluno', Area || null]);
+    console.log('Usuário cadastrado com sucesso:', { CPF, Email, Nivel, Area });
     res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso!' });
   } catch (error) {
+    console.error('Erro ao cadastrar usuário:', error);
     return enviarErro(res, 500, 'Não foi possível cadastrar o usuário no momento.', error);
   }
 });

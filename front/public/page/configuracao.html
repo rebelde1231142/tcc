@@ -78,16 +78,32 @@
     window.addEventListener('DOMContentLoaded', () => {
       // Exibir email do usuário logado
       const usuarioLogado = localStorage.getItem('usuarioLogado');
+      let userNivel = null;
       if (usuarioLogado) {
         try {
           const user = JSON.parse(usuarioLogado);
           document.getElementById('emailUsuario').value = user.Email || '';
+          userNivel = user.Nivel || user.nivel;
         } catch {
           document.getElementById('emailUsuario').value = '';
         }
       } else {
         document.getElementById('emailUsuario').value = '';
       }
+      
+      // Ocultar botões de Trocar Senha e Trocar Email se não for "todos"
+      const btnTrocarSenha = document.getElementById('btnTrocarSenha');
+      const btnTrocarEmail = document.getElementById('btnTrocarEmail');
+      
+      if (userNivel !== 'todos') {
+        // Oculta os botões que não são permitidos
+        if (btnTrocarSenha) btnTrocarSenha.style.display = 'none';
+        if (btnTrocarEmail) btnTrocarEmail.style.display = 'none';
+        console.log('Usuário ' + userNivel + ' - Botões de Senha e Email ocultados');
+      } else {
+        console.log('Usuário "todos" - Todos os botões visíveis');
+      }
+      
       // Mostrar link de histórico somente se CPF estiver na whitelist
       try {
         const u = JSON.parse(localStorage.getItem('usuarioLogado')||'null');
@@ -104,15 +120,14 @@
             .catch(() => {});
         }
       } catch (_) {}
+      
       // Botão para troca de senha
-      const btnTrocarSenha = document.getElementById('btnTrocarSenha');
       if (btnTrocarSenha) {
         btnTrocarSenha.addEventListener('click', function() {
           window.location.href = '/page/usuario/trocar-senha.html';
         });
       }
       // Botão para troca de e-mail
-      const btnTrocarEmail = document.getElementById('btnTrocarEmail');
       if (btnTrocarEmail) {
         btnTrocarEmail.addEventListener('click', function() {
           window.location.href = '/page/usuario/trocar-email.html';
