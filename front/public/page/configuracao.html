@@ -20,6 +20,22 @@
                 <label for="emailUsuario" class="form-label" style="color: #555;">Email cadastrado</label>
                 <input type="email" class="form-control" id="emailUsuario" readonly style="background: #f8f9fa; color: #444; border: 1px solid #cfd8dc;">
               </div>
+              <!-- Informações de Nível e Área -->
+              <div class="row mb-3">
+                <div class="col-6">
+                  <label for="nivelUsuario" class="form-label" style="color: #555; font-size: 0.9em;">Nível da Conta</label>
+                  <div class="form-control" id="nivelUsuario" style="background: #f8f9fa; color: #444; border: 1px solid #cfd8dc; padding: 0.5rem 0.75rem; min-height: 38px; display: flex; align-items: center;">
+                    —
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label for="areaUsuario" class="form-label" style="color: #555; font-size: 0.9em;">Área de Atuação</label>
+                  <div class="form-control" id="areaUsuario" style="background: #f8f9fa; color: #444; border: 1px solid #cfd8dc; padding: 0.5rem 0.75rem; min-height: 38px; display: flex; align-items: center;">
+                    —
+                  </div>
+                </div>
+              </div>
+              <!-- Fim das informações de Nível e Área -->
               <div class="d-grid gap-3 mb-3">
                 <button type="button" class="btn btn-lg btn-cfg btn-cfg-senha" id="btnTrocarSenha"><i class="fa fa-key me-2"></i>Trocar senha</button>
                 <button type="button" class="btn btn-lg btn-cfg btn-cfg-email" id="btnTrocarEmail"><i class="fa fa-envelope me-2"></i>Trocar e-mail</button>
@@ -79,16 +95,39 @@
       // Exibir email do usuário logado
       const usuarioLogado = localStorage.getItem('usuarioLogado');
       let userNivel = null;
+      let userArea = null;
       if (usuarioLogado) {
         try {
           const user = JSON.parse(usuarioLogado);
           document.getElementById('emailUsuario').value = user.Email || '';
           userNivel = user.Nivel || user.nivel;
+          userArea = user.Area || user.area;
+          
+          // Preencher Nível da Conta
+          const nivelDisplay = document.getElementById('nivelUsuario');
+          if (nivelDisplay) {
+            const nivelFormatado = {
+              'todos': '👑 Coordenação/Direção',
+              'professor': '👨‍🏫 Professor',
+              'auxiliar_docente': '👨‍🍳 Auxiliar Docente'
+            };
+            nivelDisplay.textContent = nivelFormatado[userNivel] || userNivel || '—';
+          }
+          
+          // Preencher Área de Atuação
+          const areaDisplay = document.getElementById('areaUsuario');
+          if (areaDisplay) {
+            areaDisplay.textContent = userArea || '—';
+          }
         } catch {
           document.getElementById('emailUsuario').value = '';
+          document.getElementById('nivelUsuario').textContent = '—';
+          document.getElementById('areaUsuario').textContent = '—';
         }
       } else {
         document.getElementById('emailUsuario').value = '';
+        document.getElementById('nivelUsuario').textContent = '—';
+        document.getElementById('areaUsuario').textContent = '—';
       }
       
       // Ocultar botões de Trocar Senha e Trocar Email se não for "todos"

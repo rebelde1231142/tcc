@@ -66,6 +66,18 @@
   <a href="#" class="d-block mb-2 text-white"><i class="fa fa-home"></i> Dashboard</a>
       </nav>
       <div class="mt-auto">
+        <!-- Informações de Nível e Área -->
+        <div class="mb-3 p-2 rounded" style="background: rgba(255,255,255,0.1); font-size: 0.85em; color: #ddd;">
+          <div class="mb-2">
+            <small style="color: #aaa; display: block; margin-bottom: 4px;">Nível:</small>
+            <div id="sidebarNivel" style="font-weight: bold; color: #fff;">—</div>
+          </div>
+          <div>
+            <small style="color: #aaa; display: block; margin-bottom: 4px;">Área:</small>
+            <div id="sidebarArea" style="font-weight: bold; color: #fff;">—</div>
+          </div>
+        </div>
+        <!-- Fim das informações -->
         <button class="btn btn-danger w-100" id="btnSair"><i class="fa fa-sign-out-alt"></i> Logout</button>
       </div>
     </aside>
@@ -674,14 +686,14 @@ async function carregarGraficosPrincipais() {
     } catch (err) { console.error('Erro ao criar graficoPorCategoria', err); }
 
     // 3. Estado dos Itens (%)
-    const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
+    const estados = { 'Operacional': 0, 'Inoperante': 0, 'Disponível': 0 };
     let totalEstados = 0;
     itens.forEach(item => {
       let estado = (item.estado || '').trim().toLowerCase();
       let label = '';
-      if (estado === 'em uso') label = 'Em uso';
-      else if (estado === 'quebrado') label = 'Quebrado';
-      else if (estado === 'parado') label = 'Parado';
+      if (estado === 'operacional') label = 'Operacional';
+      else if (estado === 'inoperante') label = 'Inoperante';
+      else if (estado === 'disponivel') label = 'Disponível';
       let qtd = Number(item.quantidade) || 0;
       if (label && qtd > 0) {
         estados[label] += qtd;
@@ -817,9 +829,9 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
                           </div>
                           <div class="col-md-2">
                             <select class="form-select" id="editEstado${item.id}">
-                              <option value="em uso" ${item.estado=='em uso'?'selected':''}>Em uso</option>
-                              <option value="quebrado" ${item.estado=='quebrado'?'selected':''}>Quebrado</option>
-                              <option value="parado" ${item.estado=='parado'?'selected':''}>Parado</option>
+                              <option value="operacional" ${item.estado=='operacional'?'selected':''}>Operacional</option>
+                              <option value="disponivel" ${item.estado=='disponivel'?'selected':''}>Disponível</option>
+                              <option value="inoperante" ${item.estado=='inoperante'?'selected':''}>Inoperante</option>
                             </select>
                           </div>
                         </div>
@@ -1034,10 +1046,10 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
         const totalPaginas = Math.ceil(grupos.length / gruposPorPagina);
 
         function resumoEstados(items) {
-          const cont = { 'em uso': 0, 'quebrado': 0, 'parado': 0, 'indefinido': 0 };
+          const cont = { 'operacional': 0, 'inoperante': 0, 'disponivel': 0, 'indefinido': 0 };
           items.forEach(i => {
             const e = (i.estado || '').toLowerCase();
-            if (e === 'em uso' || e === 'quebrado' || e === 'parado') cont[e]++;
+            if (e === 'operacional' || e === 'inoperante' || e === 'disponivel') cont[e]++;
             else cont.indefinido++;
           });
           return cont;
@@ -1089,9 +1101,9 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
                   <span class="badge bg-dark">${total} un.</span>
                 </div>
                 <div class="mt-2 small">
-                  <span class="badge" style="background:#28a745;">Em uso: ${estados['em uso']}</span>
-                  <span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado: ${estados['parado']}</span>
-                  <span class="badge ms-1" style="background:#dc3545;">Quebrado: ${estados['quebrado']}</span>
+                  <span class="badge" style="background:#28a745;">Operacional: ${estados['operacional']}</span>
+                  <span class="badge ms-1" style="background:#ffc107;color:#212529;">Disponível: ${estados['disponivel']}</span>
+                  <span class="badge ms-1" style="background:#dc3545;">Inoperante: ${estados['inoperante']}</span>
                   ${estados['indefinido'] ? `<span class="badge ms-1 bg-secondary">Indef.: ${estados['indefinido']}</span>` : ''}
                 </div>
                 <div class="mt-3 d-flex gap-2">
@@ -1151,6 +1163,31 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
     }
     // Gatilho de carregamento inicial da lista e dos gráficos
     document.addEventListener('DOMContentLoaded', function() {
+      // Preencher informações de Nível e Área no sidebar
+      try {
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+        const nivel = usuarioLogado.Nivel || usuarioLogado.nivel || '—';
+        const area = usuarioLogado.Area || usuarioLogado.area || '—';
+        
+        const nivelDisplay = document.getElementById('sidebarNivel');
+        const areaDisplay = document.getElementById('sidebarArea');
+        
+        if (nivelDisplay) {
+          const nivelFormatado = {
+            'todos': '👑 Coordenação/Direção',
+            'professor': '👨‍🏫 Professor',
+            'auxiliar_docente': '👨‍🍳 Auxiliar Docente'
+          };
+          nivelDisplay.textContent = nivelFormatado[nivel] || nivel;
+        }
+        
+        if (areaDisplay) {
+          areaDisplay.textContent = area;
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar informações do usuário:', e);
+      }
+      
       try { carregarItens(); } catch (e) { console.error('Erro carregarItens inicial:', e); }
       try { if (typeof carregarGraficosPrincipais === 'function') carregarGraficosPrincipais(); } catch (e) { console.error('Erro carregarGraficosPrincipais inicial:', e); }
     });
@@ -1194,12 +1231,12 @@ window.addEventListener('resize', () => {
             const nomeLocal = nomesLocais[item.local] || item.local || '';
             const nomeCategoria = nomesCategorias[item.categoriaNome] || item.categoriaNome || '';
             let corEstado = '#28a745'; // verde
-            if (item.estado === 'quebrado') corEstado = '#dc3545'; // vermelho
-            else if (item.estado === 'parado') corEstado = '#ffc107'; // amarelo
+            if (item.estado === 'inoperante') corEstado = '#dc3545'; // vermelho
+            else if (item.estado === 'disponivel') corEstado = '#ffc107'; // amarelo
             // Badge de estado
-            let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Em uso</span>';
-            if (item.estado === 'quebrado') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Quebrado</span>';
-            else if (item.estado === 'parado') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Parado</span>';
+            let badgeEstado = '<span class="badge ms-1" style="background:#28a745;">Operacional</span>';
+            if (item.estado === 'inoperante') badgeEstado = '<span class="badge ms-1" style="background:#dc3545;">Inoperante</span>';
+            else if (item.estado === 'disponivel') badgeEstado = '<span class="badge ms-1" style="background:#ffc107;color:#212529;">Disponível</span>';
             card.innerHTML = `
               <div class="card-body">
                 <h6 class="card-title">
@@ -1523,7 +1560,16 @@ function abrirModalGrupo(nomeGrupo) {
   const alerta = document.getElementById('alertaGrupo');
   alerta.classList.add('d-none');
   lista.innerHTML = '<span class="text-muted">Carregando itens do grupo...</span>';
-  fetch(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`)
+  
+  // Constrói URL com parâmetros de permissão
+  const usuario = window.usuarioLogado || JSON.parse(localStorage.getItem('usuarioLogado') || '{}');
+  const nivel = usuario.Nivel || usuario.nivel;
+  const area = usuario.Area || usuario.area;
+  const url = new URL(`http://localhost:3000/api/itens/grupo/${encodeURIComponent(nomeGrupo)}`);
+  if (nivel) url.searchParams.append('nivel', nivel);
+  if (area) url.searchParams.append('area', area);
+  
+  fetch(url.toString())
     .then(response => response.json())
     .then(async itens => {
       if (!itens || itens.length === 0) {
@@ -1559,7 +1605,7 @@ function abrirModalGrupo(nomeGrupo) {
               <span class="badge bg-info" style="font-size:1em;width:100%;display:inline-block;text-align:left;">${item.local || ''}</span>
             </div>
             <div style="min-width:110px;text-align:right;">
-              <span class="badge ${item.estado==='quebrado'?'bg-danger':item.estado==='parado'?'bg-warning text-dark':'bg-success'}" style="font-size:1em;">${item.estado || '—'}</span>
+              <span class="badge ${item.estado==='inoperante'?'bg-danger':item.estado==='disponivel'?'bg-warning text-dark':'bg-success'}" style="font-size:1em;">${item.estado || '—'}</span>
             </div>
           </div>
           <div class="d-flex justify-content-end gap-1 mt-2">
@@ -1587,9 +1633,9 @@ function abrirModalGrupo(nomeGrupo) {
             <div class="col-md-6">
               <select class="form-select" id="editGrupoEstado${item.id}">
                 <option value="">Selecionar estado...</option>
-                <option value="em uso">Em uso</option>
-                <option value="parado">Parado</option>
-                <option value="quebrado">Quebrado</option>
+                <option value="operacional">Operacional</option>
+                <option value="disponivel">Disponível</option>
+                <option value="inoperante">Inoperante</option>
               </select>
             </div>
             <div class="col-12 mt-2">

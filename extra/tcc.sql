@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 25, 2025 at 12:29 PM
--- Server version: 8.0.30
--- PHP Version: 8.1.10
+-- Tempo de geração: 26-Nov-2025 às 15:14
+-- Versão do servidor: 8.0.30
+-- versão do PHP: 8.3.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `tcc`
+-- Banco de dados: `tcc`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `auditoria`
+-- Estrutura da tabela `auditoria`
 --
 
 CREATE TABLE `auditoria` (
@@ -42,7 +42,7 @@ CREATE TABLE `auditoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `auditoria`
+-- Extraindo dados da tabela `auditoria`
 --
 
 INSERT INTO `auditoria` (`id`, `dataHora`, `cpf`, `acao`, `recurso`, `referencia`, `grupo`, `itemId`, `detalhes`, `endpoint`, `ip`) VALUES
@@ -64,12 +64,15 @@ INSERT INTO `auditoria` (`id`, `dataHora`, `cpf`, `acao`, `recurso`, `referencia
 (16, '2025-11-13 14:28:37', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Maravilhas -> Alice no Pais das Kengas', 'Alice no Pais das Kengas', NULL, '{\"novoNome\": \"Alice no Pais das Kengas\", \"antigoNome\": \"Alice no Pais das Maravilhas\"}', '/api/grupos/renomear', '::1'),
 (17, '2025-11-13 14:29:05', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Kengas -> Alice no Pais das MAravilhas', 'Alice no Pais das MAravilhas', NULL, '{\"novoNome\": \"Alice no Pais das MAravilhas\", \"antigoNome\": \"Alice no Pais das Kengas\"}', '/api/grupos/renomear', '::1'),
 (18, '2025-11-13 14:29:12', NULL, 'renomear-grupo', 'item', 'Alice no Pais das MAravilhas -> Alice no Pais das Mravilhas', 'Alice no Pais das Mravilhas', NULL, '{\"novoNome\": \"Alice no Pais das Mravilhas\", \"antigoNome\": \"Alice no Pais das MAravilhas\"}', '/api/grupos/renomear', '::1'),
-(19, '2025-11-13 14:29:18', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Mravilhas -> Alice no Pais das Maravilhas', 'Alice no Pais das Maravilhas', NULL, '{\"novoNome\": \"Alice no Pais das Maravilhas\", \"antigoNome\": \"Alice no Pais das Mravilhas\"}', '/api/grupos/renomear', '::1');
+(19, '2025-11-13 14:29:18', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Mravilhas -> Alice no Pais das Maravilhas', 'Alice no Pais das Maravilhas', NULL, '{\"novoNome\": \"Alice no Pais das Maravilhas\", \"antigoNome\": \"Alice no Pais das Mravilhas\"}', '/api/grupos/renomear', '::1'),
+(20, '2025-11-26 10:57:10', '52657628842', 'criar', 'item', 'muitas coisas', 'muitas coisas', NULL, '{\"nome\": \"muitas coisas\", \"unidades\": [{\"local\": \"Laboratório de Informática 2\", \"estado\": \"parado\"}], \"descricao\": \"arroz\", \"quantidade\": 1, \"fk_Categoria_id\": \"1\"}', '/api/itens', '::1'),
+(21, '2025-11-26 11:53:50', '52657628842', 'criar', 'item', 'Alice no Pais das Maravilhas', 'Alice no Pais das Maravilhas', NULL, '{\"nome\": \"Alice no Pais das Maravilhas\", \"unidades\": null, \"descricao\": \"Livro novo\", \"quantidade\": 1, \"fk_Categoria_id\": 2}', '/api/itens', '::1'),
+(22, '2025-11-26 11:54:46', '52657628842', 'deletar', 'item', '50', 'Alice no Pais das Maravilhas', 50, '{\"antes\": {\"id\": 50, \"nome\": \"Alice no Pais das Maravilhas\", \"local\": null, \"estado\": null, \"descricao\": \"Livro novo\", \"quantidade\": 1, \"dataAdicionado\": \"2025-11-26T03:00:00.000Z\", \"fk_Categoria_id\": 2}}', '/api/itens/50', '::1');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `categoria`
+-- Estrutura da tabela `categoria`
 --
 
 CREATE TABLE `categoria` (
@@ -79,7 +82,7 @@ CREATE TABLE `categoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `categoria`
+-- Extraindo dados da tabela `categoria`
 --
 
 INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
@@ -90,7 +93,7 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `entrada`
+-- Estrutura da tabela `entrada`
 --
 
 CREATE TABLE `entrada` (
@@ -101,7 +104,7 @@ CREATE TABLE `entrada` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `entrada`
+-- Extraindo dados da tabela `entrada`
 --
 
 INSERT INTO `entrada` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
@@ -109,12 +112,14 @@ INSERT INTO `entrada` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
 (2, 45, '2025-10-20', 1),
 (3, 46, '2025-11-13', 1),
 (4, 47, '2025-11-13', 1),
-(5, 48, '2025-11-13', 1);
+(5, 48, '2025-11-13', 1),
+(6, 49, '2025-11-26', 1),
+(7, 50, '2025-11-26', 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `itens`
+-- Estrutura da tabela `itens`
 --
 
 CREATE TABLE `itens` (
@@ -125,53 +130,54 @@ CREATE TABLE `itens` (
   `fk_Categoria_id` int DEFAULT NULL,
   `local` varchar(50) DEFAULT NULL,
   `dataAdicionado` date DEFAULT NULL,
-  `estado` enum('em uso','quebrado','parado') DEFAULT NULL
+  `estado` enum('operacional','disponivel','inoperante') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `itens`
+-- Extraindo dados da tabela `itens`
 --
 
 INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`, `local`, `dataAdicionado`, `estado`) VALUES
-(4, 'Ssd', 20, 'Armazenamento veloz sendo utilizado no laboratorio de informatica 2', 1, 'Sala de Armazenamento Técnico', '2025-09-25', 'em uso'),
-(5, 'Béquer', 20, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-09-26', 'em uso'),
-(6, 'Mapa-Mundi', 1, 'Mapa mundial utilizado nas aulas de geografia e historia.', 2, 'Sala de Aula', '2025-09-26', 'parado'),
-(9, 'ESP-32', 20, 'USado nas aulas de sistemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'em uso'),
-(10, 'HaspBerry', 20, 'Usado nas aulas de sitemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'em uso'),
-(17, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'parado'),
-(18, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(19, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(20, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(21, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(22, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(23, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(24, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(25, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'em uso'),
-(26, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Armazenamento Técnico', '2025-10-14', 'em uso'),
-(27, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática', '2025-10-14', 'em uso'),
-(28, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática 2', '2025-10-14', 'em uso'),
-(29, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado'),
-(30, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado'),
-(31, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado'),
-(32, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'parado'),
-(33, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'parado'),
-(34, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'parado'),
-(35, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'parado'),
-(36, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'quebrado'),
-(37, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'quebrado'),
-(38, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'quebrado'),
-(39, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'parado'),
-(40, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'quebrado'),
-(41, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'parado'),
-(42, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'em uso'),
-(43, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'em uso'),
-(44, 'Panos', 1, 'utilizados na limpeza', 2, 'Almoxarifado', '2025-10-17', 'em uso'),
-(45, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-20', 'em uso');
+(4, 'Ssd', 20, 'Armazenamento veloz sendo utilizado no laboratorio de informatica 2', 1, 'Sala de Armazenamento Técnico', '2025-09-25', 'operacional'),
+(5, 'Béquer', 20, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-09-26', 'operacional'),
+(6, 'Mapa-Mundi', 1, 'Mapa mundial utilizado nas aulas de geografia e historia.', 2, 'Sala de Aula', '2025-09-26', 'disponivel'),
+(9, 'ESP-32', 20, 'USado nas aulas de sistemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'operacional'),
+(10, 'HaspBerry', 20, 'Usado nas aulas de sitemas embarcados', 1, 'Sala de Armazenamento Técnico', '2025-10-01', 'operacional'),
+(17, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'disponivel'),
+(18, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(19, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(20, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(21, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(22, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(23, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(24, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(25, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Aula', '2025-10-14', 'operacional'),
+(26, 'Tvs', 1, 'Aparelho televisorio', 2, 'Sala de Armazenamento Técnico', '2025-10-14', 'operacional'),
+(27, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática', '2025-10-14', 'operacional'),
+(28, 'Tvs', 1, 'Aparelho televisorio', 2, 'Laboratório de Informática 2', '2025-10-14', 'operacional'),
+(29, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'disponivel'),
+(30, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'disponivel'),
+(31, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'disponivel'),
+(32, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-14', 'disponivel'),
+(33, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'disponivel'),
+(34, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'disponivel'),
+(35, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'disponivel'),
+(36, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'inoperante'),
+(37, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'inoperante'),
+(38, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'inoperante'),
+(39, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'disponivel'),
+(40, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'inoperante'),
+(41, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'disponivel'),
+(42, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'operacional'),
+(43, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'operacional'),
+(44, 'Panos', 1, 'utilizados na limpeza', 2, 'Almoxarifado', '2025-10-17', 'operacional'),
+(45, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-20', 'operacional'),
+(49, 'muitas coisas', 1, 'arroz', 1, 'Laboratório de Informática 2', '2025-11-26', 'disponivel');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `perfil`
+-- Estrutura da tabela `perfil`
 --
 
 CREATE TABLE `perfil` (
@@ -182,10 +188,19 @@ CREATE TABLE `perfil` (
   `area` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Extraindo dados da tabela `perfil`
+--
+
+INSERT INTO `perfil` (`CPF`, `Email`, `Senha`, `nivel`, `area`) VALUES
+('52657628842', 'leonelbrenodasilva@gmail.com', '$2b$10$IlRPxJaGdqbTf9G92.rWh.IObHJlUGylNYG6XO9RJQ1HBF2JOAfoO', 'todos', 'Coordenação'),
+('52657628844', 'leonelbrenodasilva44@gmail.com', '$2b$10$yuNsO5ICzTryjGVM7vyX6unMNdaAbqWT1yB2Oz/CDH4.1TkuUYrda', 'professor', 'Desenvolvimento de Sistemas'),
+('52657628847', 'leonelbrenodasilva11@gmail.com', '$2b$10$I1NUai5i234lt2EX1ZSCheX9DVYxQJiZH/VQfJVWAKjH.nyNDgoDq', 'auxiliar_docente', 'Administração');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `saida`
+-- Estrutura da tabela `saida`
 --
 
 CREATE TABLE `saida` (
@@ -196,7 +211,7 @@ CREATE TABLE `saida` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `saida`
+-- Extraindo dados da tabela `saida`
 --
 
 INSERT INTO `saida` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
@@ -204,92 +219,93 @@ INSERT INTO `saida` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
 (2, 7, '2025-10-17', 1),
 (3, 46, '2025-11-13', 1),
 (4, 47, '2025-11-13', 1),
-(5, 48, '2025-11-13', 1);
+(5, 48, '2025-11-13', 1),
+(6, 50, '2025-11-26', 1);
 
 --
--- Indexes for dumped tables
+-- Índices para tabelas despejadas
 --
 
 --
--- Indexes for table `auditoria`
+-- Índices para tabela `auditoria`
 --
 ALTER TABLE `auditoria`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `categoria`
+-- Índices para tabela `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Indexes for table `entrada`
+-- Índices para tabela `entrada`
 --
 ALTER TABLE `entrada`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- Indexes for table `itens`
+-- Índices para tabela `itens`
 --
 ALTER TABLE `itens`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Categoria_id` (`fk_Categoria_id`);
 
 --
--- Indexes for table `perfil`
+-- Índices para tabela `perfil`
 --
 ALTER TABLE `perfil`
   ADD PRIMARY KEY (`CPF`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- Indexes for table `saida`
+-- Índices para tabela `saida`
 --
 ALTER TABLE `saida`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_Itens_id` (`fk_Itens_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT de tabelas despejadas
 --
 
 --
--- AUTO_INCREMENT for table `auditoria`
+-- AUTO_INCREMENT de tabela `auditoria`
 --
 ALTER TABLE `auditoria`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
--- AUTO_INCREMENT for table `categoria`
+-- AUTO_INCREMENT de tabela `categoria`
 --
 ALTER TABLE `categoria`
   MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `entrada`
+-- AUTO_INCREMENT de tabela `entrada`
 --
 ALTER TABLE `entrada`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `itens`
+-- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
--- AUTO_INCREMENT for table `saida`
+-- AUTO_INCREMENT de tabela `saida`
 --
 ALTER TABLE `saida`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- Constraints for dumped tables
+-- Restrições para despejos de tabelas
 --
 
 --
--- Constraints for table `itens`
+-- Limitadores para a tabela `itens`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);

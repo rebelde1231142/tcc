@@ -19,7 +19,8 @@ function fixarAlturaCanvas(id, h = 180) {
 
 export async function carregarGraficosMenuVisitante() {
   try {
-  const response = await fetch('/api/itens');
+    // Importa a função de helpers para respeitar permissões
+    const response = await fetchItensComPermissoes();
     const itens = await response.json();
 
     // 1. Itens por Local
@@ -81,16 +82,16 @@ export async function carregarGraficosMenuVisitante() {
       const isAndroid = /Android/i.test(navigator.userAgent);
       const vivid = ['#1976d2', '#e53935', '#43a047'];
       const vividHover = ['#1565c0', '#c62828', '#388e3c'];
-      const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
+      const estados = { 'Operacional': 0, 'Inoperante': 0, 'Disponível': 0 };
       let totalEstados = 0;
       itens.forEach(item => {
         const estadoRaw = (item.estado || '').trim().toLowerCase();
         const qtd = Number(item.quantidade) || 0;
-        if (estadoRaw === 'em uso') { estados['Em uso'] += qtd; totalEstados += qtd; }
-        else if (estadoRaw === 'quebrado') { estados['Quebrado'] += qtd; totalEstados += qtd; }
-        else if (estadoRaw === 'parado') { estados['Parado'] += qtd; totalEstados += qtd; }
+        if (estadoRaw === 'operacional') { estados['Operacional'] += qtd; totalEstados += qtd; }
+        else if (estadoRaw === 'inoperante') { estados['Inoperante'] += qtd; totalEstados += qtd; }
+        else if (estadoRaw === 'disponivel') { estados['Disponível'] += qtd; totalEstados += qtd; }
       });
-      const estadoLabels = ['Em uso','Quebrado','Parado'];
+      const estadoLabels = ['Operacional','Inoperante','Disponível'];
       const estadoValues = estadoLabels.map(l => totalEstados > 0 ? Math.round((estados[l] / totalEstados) * 100) : 0);
       const estadoColors = isAndroid ? vivid : ['#6c757d', '#a3b1c6', '#e0cfc2'];
       if (chartQtdPorCategoriaMenu) chartQtdPorCategoriaMenu.destroy();

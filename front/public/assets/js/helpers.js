@@ -98,12 +98,8 @@ function getCategoriasVisiveis(nivel, area) {
         return [area];
     }
     if (nivel === 'auxiliar_docente' && area) {
-        // Apenas Auxiliar Docente de Desenvolvimento de Sistemas vê Administração
-        if (area === 'Desenvolvimento de Sistemas') {
-            return ['Desenvolvimento de Sistemas', 'Administração'];
-        } else {
-            return [area];
-        }
+        // Auxiliar Docente vê apenas sua área
+        return [area];
     }
     return [];
 }
@@ -166,18 +162,28 @@ function fetchItensComPermissoes(baseUrl = 'http://localhost:3000/api/itens') {
   const nivel = usuario.Nivel || usuario.nivel;
   const area = usuario.Area || usuario.area;
   
-  // Se não há nível ou área, retorna todos os itens
-  if (!nivel || !area) {
-    console.warn('fetchItensComPermissoes: Nível ou área não definidos, retornando todos os itens');
+  console.log('fetchItensComPermissoes - Usuário:', { CPF: usuario.CPF, Nivel: nivel, Area: area });
+  
+  // Para professor e auxiliar_docente, SEMPRE precisa de área
+  if ((nivel === 'professor' || nivel === 'auxiliar_docente') && (!area || area.trim() === '')) {
+    console.error('fetchItensComPermissoes: Professor/Auxiliar sem área definida! Retornando fetch sem filtro como fallback');
+    return fetch(baseUrl);
+  }
+  
+  // Se não há nível e área, retorna todos (para coordenação/direção)
+  if (!nivel) {
+    console.warn('fetchItensComPermissoes: Nível não definido, retornando todos os itens');
     return fetch(baseUrl);
   }
   
   // Constrói URL com parâmetros
   const url = new URL(baseUrl);
   url.searchParams.append('nivel', nivel);
-  url.searchParams.append('area', area);
+  if (area) {
+    url.searchParams.append('area', area);
+  }
   
-  console.log('fetchItensComPermissoes - Nível:', nivel, 'Area:', area, 'URL:', url.toString());
+  console.log('fetchItensComPermissoes - URL:', url.toString());
   
   return fetch(url.toString());
 }

@@ -102,14 +102,13 @@ function construirFiltroRelatorio(nivel, area) {
         }
       }
     } else if (nivel === 'auxiliar_docente') {
-      // Auxiliar Docente de Desenvolvimento de Sistemas vê sua área (ID 1) + Administração (ID 2)
-      // Auxiliar Docente de Química vê apenas Química (ID 3)
-      if (area === 'Desenvolvimento de Sistemas' || area === 'Ds') {
-        whereClause = ' WHERE Itens.fk_Categoria_id IN (1, 2)';
-        params = [];
-      } else if (area === 'Química' || area === 'Qui') {
-        whereClause = ' WHERE Itens.fk_Categoria_id = 3';
-        params = [];
+      // Auxiliar Docente vê apenas sua área
+      if (area) {
+        const areaID = mapearAreaParaID(area);
+        if (areaID) {
+          whereClause = ' WHERE Itens.fk_Categoria_id = ?';
+          params.push(areaID);
+        }
       }
     }
     // Coordenação e Direção (nivel === 'todos') veem tudo, sem filtro
@@ -558,7 +557,7 @@ app.post('/api/itens', async (req, res) => {
     const normalizaEstado = (e) => {
       if (!e) return null;
       const v = String(e).toLowerCase().trim();
-      return (v === 'em uso' || v === 'quebrado' || v === 'parado') ? v : null;
+      return (v === 'operacional' || v === 'inoperante' || v === 'disponivel') ? v : null;
     };
     if (Array.isArray(unidades) && unidades.length > 0) {
       unidades.forEach(u => {
@@ -637,15 +636,6 @@ app.get('/api/itens', async (req, res) => {
     let whereConditions = [];
     let queryParams = [];
 
-    // IMPORTANTE: Se não há nivel/area definidos, retorna TUDO
-    if (!nivel && !area) {
-      console.log('Nenhum filtro de permissão - retornando TODOS os itens');
-      query += ' ORDER BY Categoria.Nome ASC, Itens.nome ASC';
-      const [rows] = await pool.query(query, queryParams);
-      console.log('Itens retornados (sem filtro):', rows.length);
-      return res.json(rows);
-    }
-
     // Mapeia nomes das áreas para os IDs reais no banco de dados
     const mapearAreaParaID = (areaFromForm) => {
       const mapaAreas = {
@@ -660,7 +650,7 @@ app.get('/api/itens', async (req, res) => {
     };
 
     // Filtro por nível e área
-    if (nivel && nivel !== 'todos') {
+    if (nivel) {
       if (nivel === 'professor') {
         // Professor vê apenas sua área
         if (area) {
@@ -672,19 +662,23 @@ app.get('/api/itens', async (req, res) => {
           }
         }
       } else if (nivel === 'auxiliar_docente') {
-        // Auxiliar Docente de Desenvolvimento de Sistemas vê sua área (ID 1) + Administração (ID 2)
-        // Auxiliar Docente de Química vê apenas Química (ID 3)
-        if (area === 'Desenvolvimento de Sistemas' || area === 'Ds') {
-          whereConditions.push(`Itens.fk_Categoria_id IN (1, 2)`);
-          queryParams = [];
-          console.log('Auxiliar DS filter - categorias: 1 (Ds), 2 (Administração)');
-        } else if (area === 'Química' || area === 'Qui') {
-          whereConditions.push(`Itens.fk_Categoria_id = 3`);
-          queryParams = [];
-          console.log('Auxiliar Química filter - categoria: 3 (Qui)');
+        // Auxiliar Docente vê apenas sua área
+        if (area) {
+          const areaID = mapearAreaParaID(area);
+          if (areaID) {
+            whereConditions.push(`Itens.fk_Categoria_id = ?`);
+            queryParams.push(areaID);
+            console.log('Auxiliar Docente filter - área:', area, '-> ID:', areaID);
+          }
         }
+      } else if (nivel === 'todos') {
+        // Coordenação e Direção veem tudo
+        console.log('Coordenação/Direção - sem filtro, vendo tudo');
       }
-      // Coordenação e Direção (nivel === 'todos') veem tudo, sem filtro
+      // Qualquer outro nível também retorna tudo (para compatibilidade)
+    } else {
+      // IMPORTANTE: Se não há nivel definido, retorna TUDO (comportamento padrão visitante)
+      console.log('Nenhum nível definido - retornando TODOS os itens');
     }
 
     if (whereConditions.length > 0) {
@@ -700,23 +694,60 @@ app.get('/api/itens', async (req, res) => {
     console.log('Itens retornados:', rows.length, 'primeiros 3:', rows.slice(0, 3));
     res.json(rows);
   } catch (error) {
-    console.error('Erro em GET /api/itens:', error);
-    return enviarErro(res, 500, 'Não foi possível buscar itens no momento.', error);
+    console.error('Erro ao buscar itens:', error);
+    return enviarErro(res, 500, 'Não foi possível buscar os itens no momento.', error);
   }
 });
 
 // Itens por grupo (nome)
 app.get('/api/itens/grupo/:nome', async (req, res) => {
   const { nome } = req.params;
+  const { nivel, area } = req.query;
   try {
-    const [rows] = await pool.query(
-      `SELECT Itens.*, Categoria.Nome AS categoriaNome
-       FROM Itens
-       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
-       WHERE TRIM(Itens.nome) = TRIM(?)
-       ORDER BY Itens.id ASC`,
-      [nome]
-    );
+    let query = `
+      SELECT Itens.*, Categoria.Nome AS categoriaNome
+      FROM Itens
+      JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      WHERE TRIM(Itens.nome) = TRIM(?)
+    `;
+    let params = [nome];
+
+    // Mapeia nomes das áreas para os IDs reais no banco de dados
+    const mapearAreaParaID = (areaFromForm) => {
+      const mapaAreas = {
+        'Desenvolvimento de Sistemas': 1,
+        'Administração': 2,
+        'Química': 3,
+        'Ds': 1,
+        'Qui': 3,
+        'Coordenação': null
+      };
+      return mapaAreas[areaFromForm];
+    };
+
+    // Filtro por nível e área (mesmo filtro do GET /api/itens)
+    if (nivel) {
+      if (nivel === 'professor' && area) {
+        const areaID = mapearAreaParaID(area);
+        if (areaID) {
+          query += ` AND Itens.fk_Categoria_id = ?`;
+          params.push(areaID);
+          console.log('Grupo - Professor filter - área:', area, '-> ID:', areaID);
+        }
+      } else if (nivel === 'auxiliar_docente' && area) {
+        const areaID = mapearAreaParaID(area);
+        if (areaID) {
+          query += ` AND Itens.fk_Categoria_id = ?`;
+          params.push(areaID);
+          console.log('Grupo - Auxiliar Docente filter - área:', area, '-> ID:', areaID);
+        }
+      }
+      // nivel === 'todos' vê tudo, sem filtro adicional
+    }
+
+    query += ` ORDER BY Itens.id ASC`;
+
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
     return enviarErro(res, 500, 'Não foi possível buscar itens do grupo no momento.', error);
@@ -894,8 +925,13 @@ app.get('/api/itens/categorias', async (req, res) => {
 
 app.get('/api/relatorio', async (req, res) => {
   try {
+    const { nivel, area } = req.query;
+    console.log('GET /api/relatorio - Parâmetros recebidos:', { nivel, area });
+
+    const { whereClause, params } = construirFiltroRelatorio(nivel, area);
+
     // Consulta SQL para buscar itens organizados por categoria e nome
-    const [itens] = await pool.query(`
+    let query = `
       SELECT 
         Categoria.Nome AS categoriaNome,
         Itens.nome AS itemNome,
@@ -903,8 +939,11 @@ app.get('/api/relatorio', async (req, res) => {
         Itens.descricao AS descricao
       FROM Itens
       JOIN Categoria ON Itens.fk_Categoria_id = Categoria.Id
+      ${whereClause}
       ORDER BY Categoria.Nome ASC, Itens.nome ASC
-    `);
+    `;
+
+    const [itens] = await pool.query(query, params);
 
     if (itens.length === 0) {
       return res.status(404).json({ erro: 'Nenhum item encontrado no banco de dados.' });
@@ -934,8 +973,85 @@ app.get('/api/relatorio', async (req, res) => {
   }
 });
 
+// Função para migrar estados dos itens (executa uma única vez ao iniciar)
+async function executarMigracaoEstados() {
+  try {
+    console.log('🔄 Verificando se é necessário migrar estados dos itens...');
+    
+    // Verifica se a coluna enum já tem o novo valor 'operacional'
+    const [result] = await pool.query(`
+      SELECT COLUMN_TYPE 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_NAME = 'itens' AND COLUMN_NAME = 'estado'
+    `);
+    
+    if (!result || !result[0]) {
+      console.log('⚠️  Não foi possível verificar a coluna estado');
+      return;
+    }
+    
+    const columnType = result[0].COLUMN_TYPE;
+    
+    // Se já contém 'operacional', a migração já foi feita
+    if (columnType.includes('operacional')) {
+      console.log('✅ Estados já foram migrados para: operacional, disponivel, inoperante');
+      return;
+    }
+    
+    console.log('📋 Coluna atual:', columnType);
+    console.log('🔧 Iniciando migração de estados...');
+    
+    // Passo 1: Alterar enum para incluir valores novos E antigos
+    console.log('  1️⃣  Alterando coluna enum para aceitar novos valores...');
+    await pool.query(`
+      ALTER TABLE \`itens\` 
+      CHANGE COLUMN \`estado\` \`estado\` 
+      ENUM('operacional', 'disponivel', 'inoperante', 'em uso', 'quebrado', 'parado') 
+      DEFAULT NULL
+    `);
+    console.log('     ✓ Coluna expandida');
+    
+    // Passo 2: Migrar dados antigos
+    console.log('  2️⃣  Migrando dados antigos...');
+    
+    const [updateEmUso] = await pool.query(
+      `UPDATE \`itens\` SET \`estado\` = 'operacional' WHERE \`estado\` = 'em uso'`
+    );
+    console.log(`     ✓ ${updateEmUso.affectedRows} itens com 'em uso' → 'operacional'`);
+    
+    const [updateParado] = await pool.query(
+      `UPDATE \`itens\` SET \`estado\` = 'disponivel' WHERE \`estado\` = 'parado'`
+    );
+    console.log(`     ✓ ${updateParado.affectedRows} itens com 'parado' → 'disponivel'`);
+    
+    const [updateQuebrado] = await pool.query(
+      `UPDATE \`itens\` SET \`estado\` = 'inoperante' WHERE \`estado\` = 'quebrado'`
+    );
+    console.log(`     ✓ ${updateQuebrado.affectedRows} itens com 'quebrado' → 'inoperante'`);
+    
+    // Passo 3: Remover valores antigos da enum
+    console.log('  3️⃣  Finalizando (removendo valores antigos)...');
+    await pool.query(`
+      ALTER TABLE \`itens\` 
+      CHANGE COLUMN \`estado\` \`estado\` 
+      ENUM('operacional', 'disponivel', 'inoperante') 
+      DEFAULT NULL
+    `);
+    console.log('     ✓ Coluna finalizada');
+    
+    console.log('✅ Migração concluída com sucesso!');
+    console.log('   Estados atualizados: operacional, disponivel, inoperante');
+  } catch (error) {
+    console.error('❌ Erro ao migrar estados:', error.message);
+    // Não interrompe o servidor se a migração falhar
+  }
+}
+
 // Certifique-se de que o servidor está ouvindo corretamente
 const PORT = 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Backend rodando em http://localhost:${PORT}`);
+  
+  // Executa migração de estados ao iniciar
+  await executarMigracaoEstados();
 });
