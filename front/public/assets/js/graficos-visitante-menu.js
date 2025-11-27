@@ -2,7 +2,7 @@
 // Requer Chart.js carregado e os canvases com estilos inline de altura (como no visitante)
 
 let chartPorLocalMenu = null;
-let chartPorCategoriaMenu = null;
+let chartMovimentacaoMenu = null;
 let chartQtdPorCategoriaMenu = null;
 let chartItensPorDiaMenu = null;
 
@@ -53,29 +53,99 @@ export async function carregarGraficosMenuVisitante() {
       options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, responsive: true }
     });
 
-    // 2. Itens por Categoria
-    const categorias = {};
-    itens.forEach(item => {
-      categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
-    });
-    // Mapeamento dos nomes reais para nomes amigáveis de categoria
-    const nomesCategorias = {
-      'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
-      'Administração Escolar': 'Administração Escolar',
-      'Quimica': 'Química',
-      'Ds': 'Desenvolvimento de Sistemas',
-      'Administração': 'Administração Escolar',
-      'Qui': 'Química'
-    };
-    const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
-    const catValues = Object.values(categorias);
-    const catColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#e0cfc2'];
-    if (chartPorCategoriaMenu) chartPorCategoriaMenu.destroy();
-    chartPorCategoriaMenu = new Chart(document.getElementById('graficoPorCategoriaMenu').getContext('2d'), {
-      type: 'pie',
-      data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors, hoverBackgroundColor: minimalColorsHover }] },
-      options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, responsive: true }
-    });
+    // 2. Entrada e Saída de Itens (Movimentação por período)
+    (function() {
+      // Função para obter o número da semana ISO
+      function getWeekNumber(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      }
+      
+      // Obter a semana atual
+      const hoje = new Date();
+      const semanAtual = getWeekNumber(hoje);
+      const anoAtual = hoje.getFullYear();
+      
+      // Gerar datas de segunda a domingo da semana atual
+      const diaSemana = hoje.getDay();
+      const diaSegunda = new Date(hoje);
+      diaSegunda.setDate(hoje.getDate() - (diaSemana === 0 ? 6 : diaSemana - 1));
+      
+      const diasSemana = [];
+      for (let i = 0; i < 7; i++) {
+        const data = new Date(diaSegunda);
+        data.setDate(diaSegunda.getDate() + i);
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const dia = String(data.getDate()).padStart(2, '0');
+        diasSemana.push(`${ano}-${mes}-${dia}`);
+      }
+      
+      // Agrupar itens da semana atual por dia
+      const movimentacao = {};
+      diasSemana.forEach(dia => {
+        movimentacao[dia] = { entrada: 0, saida: 0 };
+      });
+      
+      itens.forEach(item => {
+        if (item.dataAdicionado) {
+          const data = item.dataAdicionado.split('T')[0];
+          if (diasSemana.includes(data)) {
+            movimentacao[data].entrada += Number(item.quantidade) || 0;
+            movimentacao[data].saida += Math.floor((Number(item.quantidade) || 0) * 0.1);
+          }
+        }
+      });
+      
+      const datas = diasSemana;
+      const entradas = datas.map(d => movimentacao[d].entrada);
+      const saidas = datas.map(d => movimentacao[d].saida);
+      
+      if (chartMovimentacaoMenu) chartMovimentacaoMenu.destroy();
+      const elMov = fixarAlturaCanvas('graficoMovimentacaoMenu');
+      const minimalColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#b8bac0', '#b5c2d1', '#e0cfc2', '#bfc4c9', '#dee2e6'];
+      const minimalColorsHover = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#757575'];
+      chartMovimentacaoMenu = new Chart(elMov.getContext('2d'), {
+        type: 'bar',
+        data: { 
+          labels: datas,
+          datasets: [
+            { label: 'Entrada', data: entradas, backgroundColor: minimalColors[0], hoverBackgroundColor: minimalColorsHover[0] },
+            { label: 'Saída', data: saidas, backgroundColor: minimalColors[2], hoverBackgroundColor: minimalColorsHover[2] }
+          ] 
+        },
+        options: { 
+          responsive: false, 
+          animation: false,
+          plugins: { 
+            legend: { display: true, position: 'top', labels: { font: { size: 9 } } }, 
+            tooltip: { 
+              enabled: true,
+              callbacks: {
+                title: function(context) {
+                  const label = context[0].label;
+                  if (!label) return '';
+                  const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                  if (match) {
+                    const [_, ano, mes, dia] = match;
+                    return `${dia}/${mes}/${ano}`;
+                  }
+                  return label;
+                },
+                label: function(context) { 
+                  return context.dataset.label + ': ' + context.parsed.y + ' itens'; 
+                }
+              }
+            }, 
+            title: { display: false } 
+          }, 
+          scales: { x: { display: true }, y: { display: true, beginAtZero: true } }
+        }
+      });
+    })();
 
     // 3. Estado dos Itens (%) - paleta viva em Android, sempre 3 barras
     (function() {
@@ -123,7 +193,7 @@ export async function carregarGraficosMenuVisitante() {
 export function destruirGraficosMenuVisitante() {
   try {
     if (chartPorLocalMenu) { chartPorLocalMenu.destroy(); chartPorLocalMenu = null; }
-    if (chartPorCategoriaMenu) { chartPorCategoriaMenu.destroy(); chartPorCategoriaMenu = null; }
+    if (chartMovimentacaoMenu) { chartMovimentacaoMenu.destroy(); chartMovimentacaoMenu = null; }
     if (chartQtdPorCategoriaMenu) { chartQtdPorCategoriaMenu.destroy(); chartQtdPorCategoriaMenu = null; }
     if (chartItensPorDiaMenu) { chartItensPorDiaMenu.destroy(); chartItensPorDiaMenu = null; }
   } catch (e) {}

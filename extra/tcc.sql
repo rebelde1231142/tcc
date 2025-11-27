@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 26-Nov-2025 às 15:14
+-- Tempo de geração: 27-Nov-2025 às 17:42
 -- Versão do servidor: 8.0.30
 -- versão do PHP: 8.3.4
 
@@ -193,9 +193,9 @@ CREATE TABLE `perfil` (
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`, `nivel`, `area`) VALUES
-('52657628842', 'leonelbrenodasilva@gmail.com', '$2b$10$IlRPxJaGdqbTf9G92.rWh.IObHJlUGylNYG6XO9RJQ1HBF2JOAfoO', 'todos', 'Coordenação'),
-('52657628844', 'leonelbrenodasilva44@gmail.com', '$2b$10$yuNsO5ICzTryjGVM7vyX6unMNdaAbqWT1yB2Oz/CDH4.1TkuUYrda', 'professor', 'Desenvolvimento de Sistemas'),
-('52657628847', 'leonelbrenodasilva11@gmail.com', '$2b$10$I1NUai5i234lt2EX1ZSCheX9DVYxQJiZH/VQfJVWAKjH.nyNDgoDq', 'auxiliar_docente', 'Administração');
+('52657628842', 'leonelbrenodasilva@gmail.com', '$2b$10$EZxnUKy/qt5OvDhW6Mj5YOUsHbS8EKV0rpkmYKTwNqssNHH9vDnHK', 'auxiliar_docente', 'Desenvolvimento de Sistemas'),
+('52657628843', 'leonelbrenodasilva1@gmail.com', '$2b$10$1VRb7oZbW.CnBONGG4BCtOZHYIrJtMKxACPttJroaIa9NV55EBD8a', 'professor', 'Química'),
+('52657628844', 'leonelbrenodasilva2@gmail.com', '$2b$10$MWAU8DT8DcYTBg1JY0NYouFuX0YpoV8m9Cm8rLJvuJFV70QWT1sRy', 'todos', 'Coordenação');
 
 -- --------------------------------------------------------
 

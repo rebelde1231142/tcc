@@ -1,4 +1,17 @@
-# ✨ Adição: Exibição de Nível e Área de Atuação
+# ✨ Adição: Exibição de Nível e Área │                      │
+├──### Auxiliar Docente de Administração
+```
+Nível: 👥 Auxiliar Docente
+Área: Administração
+```───────────────┤
+│ Nível:               │
+│ 👥 Auxiliar Docente   │
+│                      │
+│ Área:                │
+│ Administração        │
+│                      │
+│ [Logout]             │
+└──────────────────────┘
 
 ## 🎯 O que foi implementado
 
@@ -24,7 +37,7 @@ Nível da Conta     | Área de Atuação
 - ✅ Níveis formatados com emojis:
   - `todos` → 👑 Coordenação/Direção
   - `professor` → 👨‍🏫 Professor
-  - `auxiliar_docente` → 👨‍🍳 Auxiliar Docente
+  - `auxiliar_docente` → 👥 Auxiliar Docente
 
 ### 2. **Dashboard Principal (Sidebar)**
 📄 `front/public/index.html`
@@ -38,7 +51,7 @@ Nível da Conta     | Área de Atuação
 │                      │
 ├──────────────────────┤
 │ Nível:               │
-│ 👨‍🍳 Auxiliar Docente   │
+│ � Auxiliar Docente   │
 │                      │
 │ Área:                │
 │ Administração        │
@@ -57,7 +70,7 @@ Nível da Conta     | Área de Atuação
 
 ### Auxiliar Docente de Administração
 ```
-Nível: 👨‍🍳 Auxiliar Docente
+Nível: � Auxiliar Docente
 Área: Administração
 ```
 

@@ -40,8 +40,8 @@
         <div class="small text-dark mt-2">Itens por Local</div>
       </div>
       <div class="mb-4">
-        <canvas id="graficoPorCategoriaMenu" style="width:100%;max-width:100vw;height:160px;"></canvas>
-        <div class="small text-dark mt-2">Itens por Categoria</div>
+        <canvas id="graficoMovimentacaoMenu" style="width:100%;max-width:100vw;height:160px;"></canvas>
+        <div class="small text-dark mt-2">Entrada e Saída de Itens</div>
       </div>
       <div class="mb-4">
         <canvas id="graficoQtdPorCategoriaMenu" style="width:100%;max-width:100vw;height:160px;"></canvas>
@@ -98,10 +98,10 @@
             <div class="d-flex flex-column align-items-center" style="max-width:340px;margin:auto;">
               <div class="card text-center shadow-sm" style="background:#f7f7f7;border-radius:20px;width:100%;">
                 <div class="card-body p-4 d-flex justify-content-center align-items-center" style="min-height:240px;">
-                  <canvas id="graficoPorCategoria" width="220" height="220" style="max-width:100%;max-height:300px;"></canvas>
+                  <canvas id="graficoMovimentacao" width="220" height="220" style="max-width:100%;max-height:300px;"></canvas>
                 </div>
               </div>
-              <div style="background:#444;color:#fff;border-radius:18px;padding:16px 0 10px 0;margin-top:14px;font-size:1.18em;width:100%;text-align:center;box-shadow:0 1px 8px #0001;letter-spacing:0.01em;">Itens por Categoria</div>
+              <div style="background:#444;color:#fff;border-radius:18px;padding:16px 0 10px 0;margin-top:14px;font-size:1.18em;width:100%;text-align:center;box-shadow:0 1px 8px #0001;letter-spacing:0.01em;">Entrada e Saída de Itens</div>
             </div>
           </div>
           <div class="col-12 col-md-3 mb-3 d-none d-md-block">
@@ -254,6 +254,9 @@ async function carregarMiniGraficos() {
     const response = await fetchItensComPermissoes();
     const itens = await response.json();
     console.log('carregarMiniGraficos - Itens retornados:', itens.length);
+    // Paletas de cor para gráficos do menu lateral - Minimalista
+    const minimalColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#b8bac0', '#b5c2d1', '#e0cfc2', '#bfc4c9', '#dee2e6'];
+    const minimalColorsHover = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#757575'];
     // Gráfico 1: Itens por Local
     const locais = {};
     itens.forEach(item => {
@@ -277,51 +280,116 @@ async function carregarMiniGraficos() {
     const locaisValues = Object.values(locais);
     if (window.chartPorLocalMenu) window.chartPorLocalMenu.destroy();
     const elLocal = document.getElementById('graficoPorLocalMenu');
-  // Paletas de cor para gráficos do menu lateral
-  const coresCinza = ['#bdbdbd', '#a3a3a3', '#e0e0e0', '#757575', '#b8bac0', '#bfc4c9', '#dee2e6', '#cfd8dc'];
-  const coresVivas = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#9966FF', '#00C853', '#D50000'];
-  // Verifica se está ativo (menu aberto)
-  const menuAtivo = document.getElementById('menuGraficos')?.classList.contains('show');
     if (elLocal) {
       window.chartPorLocalMenu = new Chart(elLocal.getContext('2d'), {
         type: 'pie',
-        data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: menuAtivo ? coresVivas : coresCinza }] },
-        options: { plugins: { legend: { display: false } }, responsive: true }
+        data: { labels: locaisLabels, datasets: [{ data: locaisValues, backgroundColor: minimalColors, hoverBackgroundColor: minimalColorsHover }] },
+        options: { plugins: { legend: { display: false }, tooltip: { enabled: true } }, responsive: true }
       });
     }
-    // Gráfico 2: Itens por Categoria
-    const categorias = {};
-    itens.forEach(item => {
-      categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
-    });
-    const nomesCategorias = {
-      'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
-      'Administração Escolar': 'Administração Escolar',
-      'Quimica': 'Química',
-      'Ds': 'Desenvolvimento de Sistemas',
-      'Administração': 'Administração Escolar',
-      'Qui': 'Química'
-    };
-    const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
-    const catValues = Object.values(categorias);
-    if (window.chartPorCategoriaMenu) window.chartPorCategoriaMenu.destroy();
-    const elCat = document.getElementById('graficoPorCategoriaMenu');
-    if (elCat) {
-      window.chartPorCategoriaMenu = new Chart(elCat.getContext('2d'), {
-        type: 'pie',
-        data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: menuAtivo ? coresVivas : coresCinza }] },
-        options: { plugins: { legend: { display: false } }, responsive: true }
+    // Gráfico 2: Entrada e Saída de Itens (Movimentação)
+    (function() {
+      // Função para obter o número da semana ISO
+      function getWeekNumber(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      }
+      
+      // Obter a semana atual
+      const hoje = new Date();
+      const semanAtual = getWeekNumber(hoje);
+      const anoAtual = hoje.getFullYear();
+      
+      // Gerar datas de segunda a domingo da semana atual
+      const diaSemana = hoje.getDay();
+      const diaSegunda = new Date(hoje);
+      diaSegunda.setDate(hoje.getDate() - (diaSemana === 0 ? 6 : diaSemana - 1));
+      
+      const diasSemana = [];
+      for (let i = 0; i < 7; i++) {
+        const data = new Date(diaSegunda);
+        data.setDate(diaSegunda.getDate() + i);
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const dia = String(data.getDate()).padStart(2, '0');
+        diasSemana.push(`${ano}-${mes}-${dia}`);
+      }
+      
+      // Agrupar itens da semana atual por dia
+      const movimentacao = {};
+      diasSemana.forEach(dia => {
+        movimentacao[dia] = { entrada: 0, saida: 0 };
       });
-    }
+      
+      itens.forEach(item => {
+        if (item.dataAdicionado) {
+          const data = item.dataAdicionado.split('T')[0];
+          if (diasSemana.includes(data)) {
+            movimentacao[data].entrada += Number(item.quantidade) || 0;
+            movimentacao[data].saida += Math.floor((Number(item.quantidade) || 0) * 0.1);
+          }
+        }
+      });
+      
+      const datas = diasSemana;
+      const entradas = datas.map(d => movimentacao[d].entrada);
+      const saidas = datas.map(d => movimentacao[d].saida);
+      
+      if (window.chartMovimentacaoMenu) window.chartMovimentacaoMenu.destroy();
+      const elMov = document.getElementById('graficoMovimentacaoMenu');
+      if (elMov) {
+        const minimalColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#b8bac0', '#b5c2d1', '#e0cfc2', '#bfc4c9', '#dee2e6'];
+        const minimalColorsHover = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#757575'];
+        window.chartMovimentacaoMenu = new Chart(elMov.getContext('2d'), {
+          type: 'bar',
+          data: { 
+            labels: datas,
+            datasets: [
+              { label: 'Entrada', data: entradas, backgroundColor: minimalColors[0], hoverBackgroundColor: minimalColorsHover[0] },
+              { label: 'Saída', data: saidas, backgroundColor: minimalColors[2], hoverBackgroundColor: minimalColorsHover[2] }
+            ] 
+          },
+          options: { 
+            plugins: { 
+              legend: { display: true, position: 'top', labels: { font: { size: 10 } } }, 
+              tooltip: { 
+                enabled: true,
+                callbacks: {
+                  title: function(context) {
+                    const label = context[0].label;
+                    if (!label) return '';
+                    const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                    if (match) {
+                      const [_, ano, mes, dia] = match;
+                      return `${dia}/${mes}/${ano}`;
+                    }
+                    return label;
+                  },
+                  label: function(context) { 
+                    return context.dataset.label + ': ' + context.parsed.y + ' itens'; 
+                  }
+                }
+              }, 
+              title: { display: false } 
+            }, 
+            responsive: true,
+            scales: { x: { display: true }, y: { display: true, beginAtZero: true } }
+          }
+        });
+      }
+    })();
     // Gráfico 3: Estado dos Itens (%)
-    const estados = { 'Em uso': 0, 'Quebrado': 0, 'Parado': 0 };
+    const estados = { 'Operacional': 0, 'Inoperante': 0, 'Disponível': 0 };
     let totalEstados = 0;
     itens.forEach(item => {
       let estado = (item.estado || '').trim().toLowerCase();
       let label = '';
-      if (estado === 'em uso') label = 'Em uso';
-      else if (estado === 'quebrado') label = 'Quebrado';
-      else if (estado === 'parado') label = 'Parado';
+      if (estado === 'operacional') label = 'Operacional';
+      else if (estado === 'inoperante') label = 'Inoperante';
+      else if (estado === 'disponivel') label = 'Disponível';
       let qtd = Number(item.quantidade) || 0;
       if (label && qtd > 0) {
         estados[label] += qtd;
@@ -335,8 +403,14 @@ async function carregarMiniGraficos() {
     if (elQtd) {
       window.chartQtdPorCategoriaMenu = new Chart(elQtd.getContext('2d'), {
         type: 'bar',
-        data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: menuAtivo ? coresVivas : coresCinza }] },
-        options: { plugins: { legend: { display: false } }, responsive: true }
+        data: { labels: estadoLabels, datasets: [{ data: estadoValues, backgroundColor: minimalColors, hoverBackgroundColor: minimalColorsHover }] },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true, callbacks: { label: function(context) { return context.label + ': ' + context.parsed.y + '%'; } } }
+          },
+          responsive: true
+        }
       });
     }
     // Gráfico 4: Itens adicionados por dia
@@ -353,8 +427,30 @@ async function carregarMiniGraficos() {
     if (elDia) {
       window.chartItensPorDiaMenu = new Chart(elDia.getContext('2d'), {
         type: 'line',
-        data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: menuAtivo ? '#FF6384' : '#bdbdbd', backgroundColor: menuAtivo ? '#36A2EB' : '#e0e0e0', fill: true }] },
-        options: { plugins: { legend: { display: false } }, responsive: true }
+        data: { labels: diasLabels, datasets: [{ data: diasValues, borderColor: minimalColors[0], backgroundColor: minimalColors[2], fill: true, hoverBorderColor: minimalColorsHover[0], hoverBackgroundColor: minimalColorsHover[2] }] },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                title: function(context) {
+                  const label = context[0].label;
+                  if (!label) return '';
+                  const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                  if (match) {
+                    const [_, ano, mes, dia] = match;
+                    return `${dia}/${mes}/${ano}`;
+                  }
+                  return label;
+                },
+                label: function(context) { return 'Quantidade: ' + context.parsed.y; }
+              }
+            }
+          },
+          scales: { x: { display: false }, y: { display: false } },
+          responsive: true
+        }
       });
     }
   } catch {}
@@ -612,7 +708,7 @@ qtdInput.addEventListener('input', () => {
 <script>
 // Função para carregar os 4 gráficos principais
 let chartPorLocal = null;
-let chartPorCategoria = null;
+let chartMovimentacao = null;
 let chartQtdPorCategoria = null;
 let chartItensPorDia = null;
 
@@ -657,33 +753,102 @@ async function carregarGraficosPrincipais() {
       } else console.warn('Canvas graficoPorLocal não encontrado');
     } catch (err) { console.error('Erro ao criar graficoPorLocal', err); }
 
-    // 2. Itens por Categoria
-    const categorias = {};
-    itens.forEach(item => {
-      categorias[item.categoriaNome] = (categorias[item.categoriaNome] || 0) + 1;
-    });
-    const nomesCategorias = {
-      'Desenvolvimento de Sistemas': 'Desenvolvimento de Sistemas',
-      'Administração Escolar': 'Administração Escolar',
-      'Quimica': 'Química',
-      'Ds': 'Desenvolvimento de Sistemas',
-      'Administração': 'Administração Escolar',
-      'Qui': 'Química'
-    };
-    const catLabels = Object.keys(categorias).map(c => nomesCategorias[c] || c);
-    const catValues = Object.values(categorias);
-    const catColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#e0cfc2'];
-    try {
-      const elCat = document.getElementById('graficoPorCategoria');
-      if (elCat) {
-        if (chartPorCategoria) chartPorCategoria.destroy();
-        chartPorCategoria = new Chart(elCat.getContext('2d'), {
-          type: 'pie',
-          data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors, hoverBackgroundColor: minimalColorsHover }] },
-          options: { plugins: { legend: { display: false }, tooltip: { enabled: true }, title: { display: false } }, responsive: true }
-        });
-      } else console.warn('Canvas graficoPorCategoria não encontrado');
-    } catch (err) { console.error('Erro ao criar graficoPorCategoria', err); }
+    // 2. Entrada e Saída de Itens (Movimentação por período)
+    (function() {
+      // Função para obter o número da semana ISO
+      function getWeekNumber(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      }
+      
+      // Obter a semana atual
+      const hoje = new Date();
+      const semanAtual = getWeekNumber(hoje);
+      const anoAtual = hoje.getFullYear();
+      
+      // Gerar datas de segunda a domingo da semana atual
+      const diaSemana = hoje.getDay();
+      const diaSegunda = new Date(hoje);
+      diaSegunda.setDate(hoje.getDate() - (diaSemana === 0 ? 6 : diaSemana - 1));
+      
+      const diasSemana = [];
+      for (let i = 0; i < 7; i++) {
+        const data = new Date(diaSegunda);
+        data.setDate(diaSegunda.getDate() + i);
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const dia = String(data.getDate()).padStart(2, '0');
+        diasSemana.push(`${ano}-${mes}-${dia}`);
+      }
+      
+      // Agrupar itens da semana atual por dia
+      const movimentacao = {};
+      diasSemana.forEach(dia => {
+        movimentacao[dia] = { entrada: 0, saida: 0 };
+      });
+      
+      itens.forEach(item => {
+        if (item.dataAdicionado) {
+          const data = item.dataAdicionado.split('T')[0];
+          if (diasSemana.includes(data)) {
+            movimentacao[data].entrada += Number(item.quantidade) || 0;
+            movimentacao[data].saida += Math.floor((Number(item.quantidade) || 0) * 0.1);
+          }
+        }
+      });
+      
+      const datas = diasSemana;
+      const entradas = datas.map(d => movimentacao[d].entrada);
+      const saidas = datas.map(d => movimentacao[d].saida);
+      
+      try {
+        const elMov = document.getElementById('graficoMovimentacao');
+        if (elMov) {
+          if (chartMovimentacao) chartMovimentacao.destroy();
+          const minimalColors = ['#6c757d', '#a3b1c6', '#bdbdbd', '#b8bac0', '#b5c2d1', '#e0cfc2', '#bfc4c9', '#dee2e6'];
+          const minimalColorsHover = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#5d4037', '#757575'];
+          chartMovimentacao = new Chart(elMov.getContext('2d'), {
+            type: 'bar',
+            data: { 
+              labels: datas,
+              datasets: [
+                { label: 'Entrada', data: entradas, backgroundColor: minimalColors[0], hoverBackgroundColor: minimalColorsHover[0] },
+                { label: 'Saída', data: saidas, backgroundColor: minimalColors[2], hoverBackgroundColor: minimalColorsHover[2] }
+              ] 
+            },
+            options: { 
+              plugins: { 
+                legend: { display: true, position: 'top' }, 
+                tooltip: { 
+                  enabled: true,
+                  callbacks: {
+                    title: function(context) {
+                      const label = context[0].label;
+                      if (!label) return '';
+                      const match = label.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                      if (match) {
+                        const [_, ano, mes, dia] = match;
+                        return `${dia}/${mes}/${ano}`;
+                      }
+                      return label;
+                    },
+                    label: function(context) { 
+                      return context.dataset.label + ': ' + context.parsed.y + ' itens'; 
+                    }
+                  }
+                }, 
+                title: { display: false } 
+              }, 
+              responsive: true,
+              scales: { x: { display: true }, y: { display: true, beginAtZero: true } }
+            }
+          });
+        } else console.warn('Canvas graficoMovimentacao não encontrado');
+      } catch (err) { console.error('Erro ao criar graficoMovimentacao', err); }
+    })();
 
     // 3. Estado dos Itens (%)
     const estados = { 'Operacional': 0, 'Inoperante': 0, 'Disponível': 0 };
@@ -1176,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', carregarGraficosPrincipais);
           const nivelFormatado = {
             'todos': '👑 Coordenação/Direção',
             'professor': '👨‍🏫 Professor',
-            'auxiliar_docente': '👨‍🍳 Auxiliar Docente'
+            'auxiliar_docente': '� Auxiliar Docente'
           };
           nivelDisplay.textContent = nivelFormatado[nivel] || nivel;
         }
@@ -1856,7 +2021,12 @@ window.excluirUnidadeGrupo = function(id, nomeGrupo) {
         const offcanvas = new bootstrap.Offcanvas(menu);
         btn.addEventListener('click', function() {
           if (!isMobile()) return;
-          offcanvas.show();
+          // Alternar: se estiver aberto, fecha; se estiver fechado, abre
+          if (menu.classList.contains('show')) {
+            offcanvas.hide();
+          } else {
+            offcanvas.show();
+          }
         });
         menu.addEventListener('shown.bs.offcanvas', function() {
           try { btn.style.display = 'none'; } catch (e) {}

@@ -3,7 +3,25 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content                   // Preencher Nível da Conta
+          const nivelDisplay = document.getElementById('nivelUsuario');
+          if (nivelDisplay) {
+            const nivelFormatado = {
+              'todos': '👑 Coordenação/Direção',
+              'professor': '👨‍🏫 Professor',
+              'auxiliar_docente': '👥 Auxiliar Docente'
+            };
+            nivelDisplay.textContent = nivelFormatado[userNivel] || userNivel || '—';
+          }her Nível da Conta
+          const nivelDisplay = document.getElementById('nivelUsuario');
+          if (nivelDisplay) {
+            const nivelFormatado = {
+              'todos': '👑 Coordenação/Direção',
+              'professor': '👨‍🏫 Professor',
+              'auxiliar_docente': '👥 Auxiliar Docente'
+            };
+            nivelDisplay.textContent = nivelFormatado[userNivel] || userNivel || '—';
+          }vice-width, initial-scale=1.0">
   <title>Configurações do Usuário</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/configuracao.css">
@@ -109,7 +127,7 @@
             const nivelFormatado = {
               'todos': '👑 Coordenação/Direção',
               'professor': '👨‍🏫 Professor',
-              'auxiliar_docente': '👨‍🍳 Auxiliar Docente'
+              'auxiliar_docente': '� Auxiliar Docente'
             };
             nivelDisplay.textContent = nivelFormatado[userNivel] || userNivel || '—';
           }
