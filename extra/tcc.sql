@@ -188,14 +188,6 @@ CREATE TABLE `perfil` (
   `area` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Extraindo dados da tabela `perfil`
---
-
-INSERT INTO `perfil` (`CPF`, `Email`, `Senha`, `nivel`, `area`) VALUES
-('52657628842', 'leonelbrenodasilva@gmail.com', '$2b$10$EZxnUKy/qt5OvDhW6Mj5YOUsHbS8EKV0rpkmYKTwNqssNHH9vDnHK', 'auxiliar_docente', 'Desenvolvimento de Sistemas'),
-('52657628843', 'leonelbrenodasilva1@gmail.com', '$2b$10$1VRb7oZbW.CnBONGG4BCtOZHYIrJtMKxACPttJroaIa9NV55EBD8a', 'professor', 'Química'),
-('52657628844', 'leonelbrenodasilva2@gmail.com', '$2b$10$MWAU8DT8DcYTBg1JY0NYouFuX0YpoV8m9Cm8rLJvuJFV70QWT1sRy', 'todos', 'Coordenação');
 
 -- --------------------------------------------------------
 
