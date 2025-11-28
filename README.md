@@ -1,65 +1,112 @@
-# TCC Inventário – Guia de Desenvolvimento
+# Sistema de Gestão de Materiais Escolares
 
-## Visão geral
-Aplicação full-stack (Node.js + Express + MySQL no backend; HTML/JS/Bootstrap no frontend) para gestão de itens com histórico de auditoria e controle de acesso por CPF.
+Este projeto faz parte do Trabalho de Conclusão de Curso (TCC) e tem como objetivo otimizar o controle de materiais utilizados no ambiente escolar, permitindo registrar movimentações, acompanhar estoque e manter histórico de auditoria. A proposta visa oferecer uma solução simples, funcional e eficiente para melhorar a gestão interna da instituição.
 
-## Pré-requisitos
-- Node.js 18+
-- MySQL 8+
+---
 
-## Configuração do backend
-1. Copie `back/.env.example` para `back/.env` e ajuste os valores:
-   - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`
-   - `ADMIN_CPFS` (apenas dígitos, separados por vírgula)
-   - Opcional: variáveis do Gmail/OAuth em `back/emailService.js`
-2. Instale dependências no backend:
-   - Abra o terminal na pasta `back/` e rode `npm install`.
-3. Inicie o backend:
-   - Em `back/`, rode `npm start` ou `node index.js`.
+## 🚀 Tecnologias Utilizadas
 
-Observações:
-- O backend serve o frontend estático de `front/public` automaticamente.
-- As credenciais do banco são lidas via variáveis de ambiente (ver `back/db.js`).
+--Backend:--
+- Node.js  
+- Express  
+- MySQL
 
-## Configuração do frontend
-O frontend é servido pelo próprio backend. Acesse no navegador:
-- http://localhost:3000/
+--Frontend:--
+- HTML  
+- CSS / Bootstrap  
+- JavaScript
 
-## Acesso ao histórico (auditoria)
-- A rota `GET /api/auditoria` é protegida. Apenas CPFs na variável `ADMIN_CPFS` podem acessar.
-- O CPF é enviado pelo frontend no cabeçalho `X-User-CPF`.
-- Página de histórico: `/page/admin/historico.html`.
-- O link “Histórico” só aparece no menu se o backend confirmar permissão via `GET /api/auditoria/permissao`.
+---
 
-## Variáveis de ambiente importantes
-- `ADMIN_CPFS`: lista de CPFs autorizados (só dígitos, separados por vírgula).
-- `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`: parâmetros do MySQL.
-- `PORT`: porta do servidor Express (padrão 3000).
+## 📦 Estrutura do Projeto
 
-## Solução de problemas
-- 404 em `/api/auditoria/permissao`:
-  - Garanta que o backend foi reiniciado após as mudanças.
-  - Confirme que está acessando via o mesmo host do backend (as URLs no front são relativas).
-- 403 em `/api/auditoria`:
-  - Verifique se o CPF do usuário logado está listado em `ADMIN_CPFS` (apenas dígitos).
-  - Certifique-se de que o `X-User-CPF` está sendo enviado. O app usa `usuarioLogado.CPF` armazenado no `localStorage`.
-- Tabelas/colunas de auditoria:
-  - O backend cria a tabela `Auditoria` ao iniciar. Se a tabela já existia, ele tenta acrescentar `grupo` e `itemId`.
-- Gráficos não carregam:
-  - O front verifica a existência dos canvases antes de renderizar; se não existirem, são ignorados.
+/back → Servidor Node.js + API + Banco de Dados
+/front → Interface Web
 
-## Scripts úteis
-- Backend:
-  - `cd back` ; `npm install` ; `npm start`
-- Frontend: servido pelo backend em `http://localhost:3000/`.
+yaml
+Copiar código
 
-## Segurança
-- Não faça commit de `.env` com credenciais reais.
-- Valide CPFs apenas com dígitos. O backend normaliza valores.
+---
 
-## Estrutura
-- `back/`: API, autenticação, auditoria, relatórios
-- `front/public/`: Dashboard, páginas de usuário e admin
+## ⚙️ Como Executar o Projeto
 
-## Licença
-Uso acadêmico.
+### 1. Clonar o repositório
+```bash
+git clone https://github.com/SEU_USUARIO/tcc.git
+2. Configurar variáveis de ambiente
+bash
+Copiar código
+cd back
+cp .env.example .env
+Preencha com os dados do seu banco MySQL:
+
+env
+Copiar código
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+DB_DATABASE=
+ADMIN_CPFS=
+
+3. Instalar dependências e iniciar backend
+bash
+Copiar código
+npm install
+npm start
+Após isso, o sistema estará disponível em:3030
+
+
+🗄️ Banco de Dados
+O sistema utiliza MySQL para persistência de dados.
+As tabelas incluem:
+
+materiais
+
+movimentos
+
+usuarios
+
+auditoria
+
+etc.
+
+Um script SQL de criação da base pode ser adicionado futuramente para facilitar deploy e avaliação.
+
+🔐 Segurança e Auditoria
+Operações são registradas em log
+
+Controle de acesso via CPF administrador
+
+Dados sigilosos tratados via .env
+
+📌 Funcionalidades Principais
+Cadastro e controle de materiais
+
+Registro de retirada e devolução
+
+Histórico rastreável por usuário
+
+Consulta de estoque atualizado
+
+Relatórios de auditoria
+
+👨‍💻 Autor
+Leonel Breno da Silva Ramos de Paula e Felipe Julio Berton
+Desenvolvimento full-stack do projeto
+
+🎯 Objetivo Acadêmico
+Este sistema demonstra na prática conceitos de:
+
+desenvolvimento web
+
+arquitetura cliente-servidor
+
+integração com banco de dados relacional
+
+controle de segurança e auditoria
+
+documentação e versionamento de software
+
+📜 Licença
+Projeto desenvolvido para fins acadêmicos.
+Uso público permitido apenas para estudo ou referência.
