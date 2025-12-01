@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 01-Dez-2025 às 14:05
+-- Tempo de geração: 01-Dez-2025 às 14:19
 -- Versão do servidor: 8.0.30
 -- versão do PHP: 8.3.4
 
@@ -46,28 +46,17 @@ CREATE TABLE `auditoria` (
 --
 
 INSERT INTO `auditoria` (`id`, `dataHora`, `cpf`, `acao`, `recurso`, `referencia`, `grupo`, `itemId`, `detalhes`, `endpoint`, `ip`) VALUES
-(1, '2025-10-16 14:19:12', NULL, 'deletar-grupo', 'item', 'PenDrive', 'PenDrive', NULL, '{\"grupo\": \"PenDrive\", \"qtdRemovida\": 1}', '/api/itens/grupo/PenDrive', '::1'),
-(2, '2025-10-17 11:35:33', NULL, 'criar', 'item', 'Panos', 'Panos', NULL, '{\"nome\": \"Panos\", \"unidades\": [{\"local\": \"Almoxarifado\", \"estado\": \"em uso\"}], \"descricao\": \"utilizados na limpeza\", \"quantidade\": 1, \"fk_Categoria_id\": \"2\"}', '/api/itens', '::1'),
 (3, '2025-10-20 19:53:24', '52657628842', 'criar', 'item', 'Alice no Pais das Maravilhas', 'Alice no Pais das Maravilhas', NULL, '{\"nome\": \"Alice no Pais das Maravilhas\", \"unidades\": null, \"descricao\": \"Livro novo\", \"quantidade\": 1, \"fk_Categoria_id\": 2}', '/api/itens', '::1'),
 (4, '2025-10-20 19:53:43', '52657628842', 'editar', 'item', '45', 'Alice no Pais das Maravilhas', 45, '{\"antes\": {\"id\": 45, \"nome\": \"Alice no Pais das Maravilhas\", \"local\": null, \"estado\": null, \"descricao\": \"Livro novo\", \"quantidade\": 1, \"dataAdicionado\": \"2025-10-20T03:00:00.000Z\", \"fk_Categoria_id\": 2}, \"alteracoes\": {\"local\": \"Biblioteca\", \"estado\": \"em uso\"}}', '/api/itens/45', '::1'),
-(5, '2025-10-20 20:11:17', NULL, 'editar', 'item', '33', 'Béquer', 33, '{\"antes\": {\"id\": 33, \"nome\": \"Béquer\", \"local\": \"Laboratório de Quimica\", \"estado\": \"em uso\", \"descricao\": \"Utensílio utiilizado e armazenado no laboratorio de quimica.\", \"quantidade\": 1, \"dataAdicionado\": \"2025-10-16T03:00:00.000Z\", \"fk_Categoria_id\": 3}, \"alteracoes\": {\"local\": \"Laboratório de Quimica\", \"estado\": \"parado\"}}', '/api/itens/33', '::1'),
 (6, '2025-10-20 21:09:46', '52657628842', 'editar', 'item', '5', 'Béquer', 5, '{\"antes\": {\"id\": 5, \"nome\": \"Béquer\", \"local\": \"Laboratório de Quimica\", \"estado\": \"parado\", \"descricao\": \"Utensílio utiilizado e armazenado no laboratorio de quimica.\", \"quantidade\": 20, \"dataAdicionado\": \"2025-09-26T03:00:00.000Z\", \"fk_Categoria_id\": 3}, \"alteracoes\": {\"local\": \"Laboratório de Quimica\", \"estado\": \"em uso\"}}', '/api/itens/5', '::1'),
 (7, '2025-10-20 21:11:28', '52657628846', 'editar', 'item', '6', 'Mapa Mundi', 6, '{\"antes\": {\"id\": 6, \"nome\": \"Mapa Mundi\", \"local\": \"Sala de Aula\", \"estado\": \"em uso\", \"descricao\": \"Mapa mundial utilizado nas aulas de geografia e historia.\", \"quantidade\": 1, \"dataAdicionado\": \"2025-09-26T03:00:00.000Z\", \"fk_Categoria_id\": 2}, \"alteracoes\": {\"local\": \"Sala de Aula\", \"estado\": \"parado\"}}', '/api/itens/6', '::1'),
 (8, '2025-10-20 21:12:29', '52657628846', 'renomear-grupo', 'item', 'Mapa Mundi -> Mapa-Mundi', 'Mapa-Mundi', NULL, '{\"novoNome\": \"Mapa-Mundi\", \"antigoNome\": \"Mapa Mundi\"}', '/api/grupos/renomear', '::1'),
 (9, '2025-10-21 19:02:03', '52657628846', 'renomear-grupo', 'item', 'Béquer -> Béquer1', 'Béquer1', NULL, '{\"novoNome\": \"Béquer1\", \"antigoNome\": \"Béquer\"}', '/api/grupos/renomear', '::1'),
 (10, '2025-10-21 19:02:27', '52657628846', 'renomear-grupo', 'item', 'Béquer1 -> Béquer', 'Béquer', NULL, '{\"novoNome\": \"Béquer\", \"antigoNome\": \"Béquer1\"}', '/api/grupos/renomear', '::1'),
-(11, '2025-11-13 14:03:45', NULL, 'criar', 'item', 'mdf', 'mdf', NULL, '{\"nome\": \"mdf\", \"unidades\": [{\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"parado\"}, {\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"parado\"}, {\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"quebrado\"}], \"descricao\": \"estruturas para corte\", \"quantidade\": 3, \"fk_Categoria_id\": \"2\"}', '/api/itens', '::1'),
-(12, '2025-11-13 14:04:10', NULL, 'renomear-grupo', 'item', 'mdf -> mdfs', 'mdfs', NULL, '{\"novoNome\": \"mdfs\", \"antigoNome\": \"mdf\"}', '/api/grupos/renomear', '::1'),
-(13, '2025-11-13 14:05:20', NULL, 'renomear-grupo', 'item', 'mdfs -> MDF', 'MDF', NULL, '{\"novoNome\": \"MDF\", \"antigoNome\": \"mdfs\"}', '/api/grupos/renomear', '::1'),
-(14, '2025-11-13 14:05:32', NULL, 'editar', 'item', '46', 'MDF', 46, '{\"antes\": {\"id\": 46, \"nome\": \"MDF\", \"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"parado\", \"descricao\": \"estruturas para corte\", \"quantidade\": 1, \"dataAdicionado\": \"2025-11-13T03:00:00.000Z\", \"fk_Categoria_id\": 2}, \"alteracoes\": {\"local\": \"Sala de Armazenamento Técnico\", \"estado\": \"em uso\"}}', '/api/itens/46', '::1'),
-(15, '2025-11-13 14:18:24', NULL, 'deletar-grupo', 'item', 'MDF', 'MDF', NULL, '{\"grupo\": \"MDF\", \"qtdRemovida\": 3}', '/api/itens/grupo/MDF', '::1'),
-(16, '2025-11-13 14:28:37', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Maravilhas -> Alice no Pais das Kengas', 'Alice no Pais das Kengas', NULL, '{\"novoNome\": \"Alice no Pais das Kengas\", \"antigoNome\": \"Alice no Pais das Maravilhas\"}', '/api/grupos/renomear', '::1'),
-(17, '2025-11-13 14:29:05', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Kengas -> Alice no Pais das MAravilhas', 'Alice no Pais das MAravilhas', NULL, '{\"novoNome\": \"Alice no Pais das MAravilhas\", \"antigoNome\": \"Alice no Pais das Kengas\"}', '/api/grupos/renomear', '::1'),
-(18, '2025-11-13 14:29:12', NULL, 'renomear-grupo', 'item', 'Alice no Pais das MAravilhas -> Alice no Pais das Mravilhas', 'Alice no Pais das Mravilhas', NULL, '{\"novoNome\": \"Alice no Pais das Mravilhas\", \"antigoNome\": \"Alice no Pais das MAravilhas\"}', '/api/grupos/renomear', '::1'),
-(19, '2025-11-13 14:29:18', NULL, 'renomear-grupo', 'item', 'Alice no Pais das Mravilhas -> Alice no Pais das Maravilhas', 'Alice no Pais das Maravilhas', NULL, '{\"novoNome\": \"Alice no Pais das Maravilhas\", \"antigoNome\": \"Alice no Pais das Mravilhas\"}', '/api/grupos/renomear', '::1'),
 (20, '2025-11-26 10:57:10', '52657628842', 'criar', 'item', 'muitas coisas', 'muitas coisas', NULL, '{\"nome\": \"muitas coisas\", \"unidades\": [{\"local\": \"Laboratório de Informática 2\", \"estado\": \"parado\"}], \"descricao\": \"arroz\", \"quantidade\": 1, \"fk_Categoria_id\": \"1\"}', '/api/itens', '::1'),
 (21, '2025-11-26 11:53:50', '52657628842', 'criar', 'item', 'Alice no Pais das Maravilhas', 'Alice no Pais das Maravilhas', NULL, '{\"nome\": \"Alice no Pais das Maravilhas\", \"unidades\": null, \"descricao\": \"Livro novo\", \"quantidade\": 1, \"fk_Categoria_id\": 2}', '/api/itens', '::1'),
-(22, '2025-11-26 11:54:46', '52657628842', 'deletar', 'item', '50', 'Alice no Pais das Maravilhas', 50, '{\"antes\": {\"id\": 50, \"nome\": \"Alice no Pais das Maravilhas\", \"local\": null, \"estado\": null, \"descricao\": \"Livro novo\", \"quantidade\": 1, \"dataAdicionado\": \"2025-11-26T03:00:00.000Z\", \"fk_Categoria_id\": 2}}', '/api/itens/50', '::1');
+(22, '2025-11-26 11:54:46', '52657628842', 'deletar', 'item', '50', 'Alice no Pais das Maravilhas', 50, '{\"antes\": {\"id\": 50, \"nome\": \"Alice no Pais das Maravilhas\", \"local\": null, \"estado\": null, \"descricao\": \"Livro novo\", \"quantidade\": 1, \"dataAdicionado\": \"2025-11-26T03:00:00.000Z\", \"fk_Categoria_id\": 2}}', '/api/itens/50', '::1'),
+(23, '2025-12-01 11:11:35', '52657628842', 'criar', 'item', 'sla', 'sla', NULL, '{\"nome\": \"sla\", \"unidades\": [{\"local\": \"Sala de Aula\", \"estado\": \"parado\"}, {\"local\": \"Laboratório de Informática 2\", \"estado\": \"parado\"}], \"descricao\": \"sla\", \"quantidade\": 2, \"fk_Categoria_id\": \"2\"}', '/api/itens', '::1');
 
 -- --------------------------------------------------------
 
@@ -136,7 +125,9 @@ INSERT INTO `entrada` (`id`, `fk_Itens_id`, `data`, `quantidade`) VALUES
 (4, 47, '2025-11-13', 1),
 (5, 48, '2025-11-13', 1),
 (6, 49, '2025-11-26', 1),
-(7, 50, '2025-11-26', 1);
+(7, 50, '2025-11-26', 1),
+(8, 51, '2025-12-01', 1),
+(9, 52, '2025-12-01', 1);
 
 -- --------------------------------------------------------
 
@@ -194,7 +185,9 @@ INSERT INTO `itens` (`id`, `nome`, `quantidade`, `descricao`, `fk_Categoria_id`,
 (43, 'Béquer', 1, 'Utensílio utiilizado e armazenado no laboratorio de quimica.', 3, 'Laboratório de Quimica', '2025-10-16', 'operacional'),
 (44, 'Panos', 1, 'utilizados na limpeza', 2, 'Almoxarifado', '2025-10-17', 'operacional'),
 (45, 'Alice no Pais das Maravilhas', 1, 'Livro novo', 2, 'Biblioteca', '2025-10-20', 'operacional'),
-(49, 'muitas coisas', 1, 'arroz', 1, 'Laboratório de Informática 2', '2025-11-26', 'disponivel');
+(49, 'muitas coisas', 1, 'arroz', 1, 'Laboratório de Informática 2', '2025-11-26', 'disponivel'),
+(51, 'sla', 1, 'sla', 2, 'Sala de Aula', '2025-12-01', NULL),
+(52, 'sla', 1, 'sla', 2, 'Laboratório de Informática 2', '2025-12-01', NULL);
 
 -- --------------------------------------------------------
 
@@ -215,8 +208,7 @@ CREATE TABLE `perfil` (
 --
 
 INSERT INTO `perfil` (`CPF`, `Email`, `Senha`, `nivel`, `area`) VALUES
-('52657628843', 'leonelbrenodasilva@gmail.com', '$2b$10$z5eVpjL7xi7fLMXjSTZ7FuLjyFbZsGToRhZMvZih84.IvVutpL.6.', 'todos', 'Coordenação'),
-('52657628844', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$1sTZEIszkEqzmISpiXTMk.0PLkoCT/AbnyJGFoy19Z8cFeS7wpFOG', 'todos', 'Coordenação');
+('52657628842', 'leonelbrenodasilva@gmail.com', '$2b$10$aM5DCbEaLVRAlrS6t4Cxy.ms8QVMKJG0jdf94deVmqUtGJOU1EoMO', 'auxiliar_docente', 'Administração');
 
 -- --------------------------------------------------------
 
@@ -303,7 +295,7 @@ ALTER TABLE `saida`
 -- AUTO_INCREMENT de tabela `auditoria`
 --
 ALTER TABLE `auditoria`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de tabela `categoria`
@@ -321,13 +313,13 @@ ALTER TABLE `configuracaoemail`
 -- AUTO_INCREMENT de tabela `entrada`
 --
 ALTER TABLE `entrada`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `itens`
 --
 ALTER TABLE `itens`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT de tabela `saida`
