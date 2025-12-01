@@ -1,9 +1,0 @@
-847178398811-4a0fu21m5bl8q4bjvgjmfav6r9f99fg3.apps.googleusercontent.com
-
-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
-
-C:\Users\Aluno\Documents\GitHub\tcc\back\node_modules
-C:\Users\Aluno\Documents\GitHub\tcc\front\node_modules
-C:\Users\Aluno\Documents\GitHub\tcc\node_modules
-
-sempre dar npm install no front e no back
