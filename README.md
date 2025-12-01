@@ -44,10 +44,10 @@ Um sistema web completo para gerenciar inventário escolar com controle de acess
 - Tokens seguros com expiração
 
 ✅ **Comunicação por Email**
-- Notificações automáticas
-- Templates HTML profissionais
-- Recuperação de conta
-- Confirmação de mudanças
+- Recuperação de senha com token seguro
+- Confirmação de troca de email
+- Templates HTML profissionais e responsivos
+- Links com expiração de 1 hora
 
 ---
 
@@ -127,29 +127,43 @@ tcc/
 ├── back/                    # Backend (Express + MySQL)
 │   ├── index.js            # Servidor principal
 │   ├── db.js               # Conexão MySQL
+│   ├── loginRouter.js      # Rotas de login
 │   ├── usuarioRouter.js    # Rotas de usuário
-│   ├── loginRouter.js      # Autenticação
-│   ├── emailService.js     # Envio de emails
-│   ├── relatorioExcel.js   # Geração de Excel
+│   ├── emailConfigRouter.js # Configuração de email
+│   ├── emailService.js     # Serviço de envio de emails
+│   ├── relatorioExcel.js   # Geração de Excel (exceljs)
+│   ├── utils/
+│   │   └── errorHandler.js # Tratamento de erros
 │   └── package.json        # Dependências Node.js
 │
-├── front/                   # Frontend (Vanilla JS)
+├── front/                   # Frontend (Vanilla JS + Express)
 │   ├── index.js            # Servidor estático
 │   ├── public/
-│   │   ├── index.html      # Home
+│   │   ├── index.html      # Dashboard principal
+│   │   ├── modalGerenciarItens.html # Modal de gerenciamento
+│   │   ├── route.js        # Roteamento frontend
 │   │   ├── page/           # Páginas
+│   │   │   ├── usuario/    # Páginas de usuário
+│   │   │   │   ├── login.html
+│   │   │   │   ├── registrar-2.html
+│   │   │   │   ├── trocar-senha.html
+│   │   │   │   ├── trocar-email.html
+│   │   │   │   ├── esqueci-senha.html
+│   │   │   │   ├── confirmar-troca.html
+│   │   │   │   └── confirmar-troca-email.html
+│   │   │   └── admin/      # Páginas de admin
 │   │   └── assets/
-│   │       ├── css/        # Estilos
-│   │       └── js/         # Scripts
+│   │       ├── css/        # Estilos CSS
+│   │       └── js/         # Scripts JavaScript
 │   └── package.json
-│
-├── scripts/                 # Scripts utilitários
-│   └── relatorio_excel.py  # (Obsoleto - Python não é mais usado)
 │
 ├── extra/                   # Arquivos extras
 │   ├── tcc.sql             # Banco de dados
-│   ├── postman-email-config.json
-│   └── comandos.txt
+│   ├── postman-email-config.json # Configuração Postman
+│   └── comandos.txt        # Comandos úteis
+│
+├── scripts/                 # Scripts (Python - não mais usado)
+│   └── relatorio_excel.py  # Histórico apenas
 │
 └── README.md               # Este arquivo
 ```
@@ -159,27 +173,37 @@ tcc/
 ## 🔌 API Principais
 
 ### Autenticação
-- `POST /api/login` - Fazer login
-- `POST /api/logout` - Fazer logout
-- `POST /api/usuarios/solicitar-troca-senha` - Solicitar recuperação de senha
-- `POST /api/usuarios/confirmar-troca-senha` - Confirmar nova senha
+- `POST /api/login` - Fazer login com CPF e senha
+- `POST /api/usuarios/solicitar-troca-senha` - Solicitar recuperação de senha por email
+- `POST /api/usuarios/confirmar-troca-senha` - Confirmar nova senha via token
+- `POST /api/usuarios/solicitar-troca-email` - Solicitar mudança de email
+- `POST /api/usuarios/confirmar-troca-email` - Confirmar novo email via token
 
-### Itens
-- `GET /api/itens` - Listar itens
-- `GET /api/itens/:id` - Detalhar item
-- `GET /api/itens/grupo/:nome` - Itens por grupo
-- `POST /api/itens` - Criar item
+### Gerenciamento de Usuários
+- `POST /api/usuarios` - Cadastrar novo usuário
+- `GET /api/usuarios/:cpf` - Buscar dados do usuário
+
+### Itens & Categorias
+- `GET /api/itens` - Listar itens (com filtros por nível e área)
+- `GET /api/itens/:id` - Detalhar item específico
+- `GET /api/itens/grupo/:nome` - Listar itens de um grupo
+- `POST /api/itens` - Criar novo item
 - `PUT /api/itens/:id` - Editar item
 - `DELETE /api/itens/:id` - Deletar item
+- `GET /api/itens/categorias` - Estatísticas por categoria
+
+### Grupos
+- `PUT /api/grupos/renomear` - Renomear um grupo
+- `DELETE /api/itens/grupo/:nome` - Deletar um grupo inteiro
 
 ### Relatórios
-- `GET /api/relatorio-excel?nivel=todos&area=` - Download Excel
-- `GET /api/relatorio-pdf?nivel=todos&area=` - Download PDF
-- `GET /api/relatorio-word?nivel=todos&area=` - Download Word
-- `GET /api/relatorio?nivel=todos&area=` - Download CSV
+- `GET /api/relatorio-excel?nivel=todos&area=` - Download Excel (.xlsx)
+- `GET /api/relatorio-pdf?nivel=todos&area=` - Download PDF (.pdf)
+- `GET /api/relatorio-word?nivel=todos&area=` - Download Word (.docx)
+- `GET /api/relatorio?nivel=todos&area=` - Download CSV (.csv)
 
 ### Auditoria
-- `GET /api/registro` - Histórico de ações (admin only)
+- `GET /api/registro` - Histórico de todas as ações (admin only)
 
 ---
 
@@ -234,43 +258,63 @@ BASE_URL=https://seu-dominio.com
 ## 🎨 Funcionalidades por Nível
 
 ### 👨‍🏫 Professor
-- Ver itens da sua categoria
-- Criar grupos de itens
-- Gerar relatórios (seus itens)
+- ✅ Ver itens da sua categoria
+- ✅ Criar/editar/deletar itens (sua categoria)
+- ✅ Acessar grupos de itens
+- ✅ Gerar relatórios (filtrados por sua área)
 
 ### 👥 Auxiliar Docente
-- Mesmas permissões do Professor
+- ✅ Mesmas permissões do Professor
 
 ### 📊 Coordenação
-- Ver itens de todas as categorias
-- Gerenciar itens
-- Gerar relatórios gerais
-- Exportar dados
+- ✅ Ver todos os itens
+- ✅ Editar/deletar qualquer item
+- ✅ Gerenciar todos os grupos
+- ✅ Gerar relatórios completos
+- ✅ Ver estatísticas gerais
 
 ### 👔 Direção
-- Acesso total ao sistema
-- Ver auditoria completa
-- Gerenciar usuários
-- Relatórios completos
+- ✅ Acesso total ao sistema
+- ✅ **Consultar auditoria** (quem fez o quê, quando, onde)
+- ✅ Gerenciar todos os dados
+- ✅ Relatórios sem restrições
 
 ---
 
 ## 🔄 Fluxo de Autenticação
 
 ```
-1. Usuário faz login com CPF
+1. Usuário faz login com CPF + Senha
    ↓
-2. Sistema valida CPF no banco
+2. Sistema valida CPF no banco de dados
    ↓
 3. Valida senha (bcrypt)
    ↓
-4. Retorna token de sessão
+4. Retorna dados do usuário (CPF, Email, Nível, Área)
    ↓
-5. Frontend armazena dados no sessionStorage
+5. Frontend armazena no sessionStorage
    ↓
 6. Requisições incluem CPF no header (x-user-cpf)
    ↓
-7. Backend registra ações na auditoria
+7. Backend valida permissões e registra na auditoria
+```
+
+## 🔄 Fluxo de Recuperação de Senha
+
+```
+1. Usuário clica "Esqueci minha senha"
+   ↓
+2. Informa seu CPF
+   ↓
+3. Sistema gera token e envia email
+   ↓
+4. Usuário clica link do email (expira em 1h)
+   ↓
+5. Página de confirmação valida token
+   ↓
+6. Usuário define nova senha
+   ↓
+7. Sistema atualiza senha (criptografada)
 ```
 
 ---
@@ -331,79 +375,28 @@ Os logs estão no console do servidor. Erros importantes também são registrado
 ```bash
 # Ver logs em tempo real
 node index.js
-
-# Ou com gerenciador de processo (recomendado para produção)
-npm install -g pm2
-pm2 start index.js
-pm2 logs
-```
-
----
-
-## 🚀 Deploy em Produção
-
-### Heroku
-```bash
-# Crie conta no Heroku
-# Instale Heroku CLI
-# Login
-heroku login
-
-# Crie app
-heroku create seu-app-name
-
-# Configure banco de dados
-heroku addons:create cleardb:ignite
-
-# Deploy
-git push heroku main
-```
-
-### Docker
-```dockerfile
-FROM node:16
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 3000
-CMD ["node", "index.js"]
-```
-
-```bash
-docker build -t tcc-estoque .
-docker run -p 3000:3000 tcc-estoque
 ```
 
 ---
 
 ## 👨‍💻 Desenvolvedor
 
-Desenvolvido como projeto de conclusão de curso (TCC).
+**Desenvolvido como Trabalho de Conclusão de Curso (TCC)**
 
-- **Repositório**: [github.com/rebelde1231142/tcc](https://github.com/rebelde1231142/tcc)
+- **GitHub**: [@rebelde1231142](https://github.com/rebelde1231142)
+- **Repositório**: [tcc](https://github.com/rebelde1231142/tcc)
 - **Licença**: ISC
-- **Data**: 2025
-
----
-
-## 📞 Suporte
-
-Para reportar bugs ou sugerir melhorias, abra uma [issue no GitHub](https://github.com/rebelde1231142/tcc/issues).
+- **Ano**: 2025
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob licença ISC.
+ISC License - Sinta-se livre para usar, modificar e distribuir.
 
-```
-ISC License
+---
 
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
-```
+**Feito com ❤️ para melhorar a gestão de estoque escolar**
 
 ---
 
