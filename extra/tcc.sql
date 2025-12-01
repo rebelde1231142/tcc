@@ -301,6 +301,45 @@ ALTER TABLE `saida`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `ConfiguracaoEmail`
+-- Tabela para armazenar credenciais de email (sem expiração de token)
+--
+
+CREATE TABLE `ConfiguracaoEmail` (
+  `id` int NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `ativo` tinyint(1) DEFAULT '1',
+  `dataCriacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `ConfiguracaoEmail`
+--
+
+-- Insira suas credenciais de email aqui após criar a tabela:
+-- INSERT INTO `ConfiguracaoEmail` (`email`, `senha`, `ativo`) 
+-- VALUES ('seu-email@gmail.com', 'sua-senha-de-app', 1);
+
+--
+-- Índices para tabela `ConfiguracaoEmail`
+--
+ALTER TABLE `ConfiguracaoEmail`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ativo` (`ativo`),
+  ADD KEY `idx_dataCriacao` (`dataCriacao`);
+
+--
+-- AUTO_INCREMENT para tabela `ConfiguracaoEmail`
+--
+ALTER TABLE `ConfiguracaoEmail`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

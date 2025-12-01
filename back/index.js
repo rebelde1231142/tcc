@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const loginRouter = require('./loginRouter');
 const usuarioRouter = require('./usuarioRouter');
+const emailConfigRouter = require('./emailConfigRouter');
 const pool = require('./db');
 const { Parser } = require('json2csv');
 const PDFDocument = require('pdfkit');
@@ -270,6 +271,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'front', 'public')));
 app.use('/api', loginRouter);
 app.use('/api', usuarioRouter);
+app.use(emailConfigRouter);
 // Garantir tabela de auditoria ao subir
 ensureAuditTable();
 

@@ -1,0 +1,87 @@
+{
+  "info": {
+    "name": "Gerenciamento de Email",
+    "description": "Endpoints para configurar e gerenciar credenciais de email",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Salvar Credenciais de Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"seu-email@gmail.com\",\n  \"senha\": \"sua-senha-de-app-sem-espacos\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/api/email-config",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["api", "email-config"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Obter Configuração de Email",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/api/email-config",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["api", "email-config"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ativar/Desativar Email",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ativo\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/api/email-config/1/ativo",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["api", "email-config", "1", "ativo"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Deletar Configuração de Email",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/api/email-config/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["api", "email-config", "1"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

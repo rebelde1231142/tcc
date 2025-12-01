@@ -1,37 +1,39 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
-const { google } = require('googleapis');
+const pool = require('./db');
 
-const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
-const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
-const REDIRECT_URI = process.env.GMAIL_REDIRECT_URI;
-const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
-const EMAIL_USER = process.env.EMAIL_USER;
-
-const oAuth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  REDIRECT_URI
-);
-oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+// Função para buscar credenciais do banco
+async function obterCredenciaisEmail() {
+  try {
+    const [rows] = await pool.query(
+      'SELECT email, senha FROM ConfiguracaoEmail WHERE ativo = 1 LIMIT 1'
+    );
+    
+    if (rows.length === 0) {
+      throw new Error('Credenciais de email não configuradas no banco de dados');
+    }
+    
+    return rows[0];
+  } catch (error) {
+    console.error('Erro ao obter credenciais de email:', error);
+    throw error;
+  }
+}
 
 async function enviarEmail(destinatario, assunto, html) {
   try {
-    const accessToken = await oAuth2Client.getAccessToken();
+    const credenciais = await obterCredenciaisEmail();
+    
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        type: 'OAuth2',
-        user: EMAIL_USER,
-        clientId: CLIENT_ID,
-        clientSecret: CLIENT_SECRET,
-        refreshToken: REFRESH_TOKEN,
-        accessToken: accessToken.token
+        user: credenciais.email,
+        pass: credenciais.senha
       }
     });
 
     const mailOptions = {
-      from: EMAIL_USER,
+      from: credenciais.email,
       to: destinatario,
       subject: assunto,
       html
