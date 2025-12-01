@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Tempo de geração: 27-Nov-2025 às 17:42
+-- Tempo de geração: 01-Dez-2025 às 14:05
 -- Versão do servidor: 8.0.30
 -- versão do PHP: 8.3.4
 
@@ -89,6 +89,28 @@ INSERT INTO `categoria` (`Id`, `Nome`, `Descricao`) VALUES
 (1, 'Ds', 'itens de ds'),
 (2, 'Administração', 'itens em geral'),
 (3, 'Qui', 'Componentes do laboratório de quimica');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `configuracaoemail`
+--
+
+CREATE TABLE `configuracaoemail` (
+  `id` int NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `senha` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ativo` tinyint(1) DEFAULT '1',
+  `dataCriacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `dataAtualizacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Extraindo dados da tabela `configuracaoemail`
+--
+
+INSERT INTO `configuracaoemail` (`id`, `email`, `senha`, `ativo`, `dataCriacao`, `dataAtualizacao`) VALUES
+(1, 'leonelbrenodasilvagithub@gmail.com', 'wbzxcixvanmykzki', 1, '2025-12-01 13:46:24', '2025-12-01 13:47:08');
 
 -- --------------------------------------------------------
 
@@ -188,6 +210,13 @@ CREATE TABLE `perfil` (
   `area` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Extraindo dados da tabela `perfil`
+--
+
+INSERT INTO `perfil` (`CPF`, `Email`, `Senha`, `nivel`, `area`) VALUES
+('52657628843', 'leonelbrenodasilva@gmail.com', '$2b$10$z5eVpjL7xi7fLMXjSTZ7FuLjyFbZsGToRhZMvZih84.IvVutpL.6.', 'todos', 'Coordenação'),
+('52657628844', 'leonelbrenodasilvagithub@gmail.com', '$2b$10$1sTZEIszkEqzmISpiXTMk.0PLkoCT/AbnyJGFoy19Z8cFeS7wpFOG', 'todos', 'Coordenação');
 
 -- --------------------------------------------------------
 
@@ -229,6 +258,14 @@ ALTER TABLE `auditoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`Id`);
+
+--
+-- Índices para tabela `configuracaoemail`
+--
+ALTER TABLE `configuracaoemail`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ativo` (`ativo`),
+  ADD KEY `idx_dataCriacao` (`dataCriacao`);
 
 --
 -- Índices para tabela `entrada`
@@ -275,6 +312,12 @@ ALTER TABLE `categoria`
   MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT de tabela `configuracaoemail`
+--
+ALTER TABLE `configuracaoemail`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT de tabela `entrada`
 --
 ALTER TABLE `entrada`
@@ -301,45 +344,6 @@ ALTER TABLE `saida`
 --
 ALTER TABLE `itens`
   ADD CONSTRAINT `itens_ibfk_1` FOREIGN KEY (`fk_Categoria_id`) REFERENCES `categoria` (`Id`);
-
--- --------------------------------------------------------
-
---
--- Estrutura da tabela `ConfiguracaoEmail`
--- Tabela para armazenar credenciais de email (sem expiração de token)
---
-
-CREATE TABLE `ConfiguracaoEmail` (
-  `id` int NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `senha` varchar(255) NOT NULL,
-  `ativo` tinyint(1) DEFAULT '1',
-  `dataCriacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `dataAtualizacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Despejando dados para a tabela `ConfiguracaoEmail`
---
-
--- Insira suas credenciais de email aqui após criar a tabela:
--- INSERT INTO `ConfiguracaoEmail` (`email`, `senha`, `ativo`) 
--- VALUES ('seu-email@gmail.com', 'sua-senha-de-app', 1);
-
---
--- Índices para tabela `ConfiguracaoEmail`
---
-ALTER TABLE `ConfiguracaoEmail`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_ativo` (`ativo`),
-  ADD KEY `idx_dataCriacao` (`dataCriacao`);
-
---
--- AUTO_INCREMENT para tabela `ConfiguracaoEmail`
---
-ALTER TABLE `ConfiguracaoEmail`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
