@@ -88,18 +88,25 @@ cd ..
 mysql -u root -p < extra/tcc.sql
 ```
 
-5. **Configure as variáveis de ambiente**
+5. **Configure as variáveis de ambiente** (opcional)
 
-Crie um arquivo `.env` na pasta `back`:
+Se suas credenciais MySQL forem **diferentes dos padrão**, crie um arquivo `.env` na pasta `back`:
+
 ```env
+# Banco de Dados (use se for diferente do padrão)
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=
-DB_NAME=tcc
-EMAIL_USER=seu_email@gmail.com
-EMAIL_PASSWORD=sua_senha_app
-ADMIN_CPFS=12345678900,98765432100
+DB_DATABASE=tcc
+
 ```
+
+**Se usar os valores padrão (localhost, root, sem senha, banco=tcc), não precisa criar o `.env`!**
+
+**Nota sobre Email:**
+As credenciais de email são configuradas **no banco de dados**, na tabela `ConfiguracaoEmail`:
+- Configure o email e senha para envio de notificações
+- Marque como `ativo = 1`
 
 6. **Inicie o servidor backend**
 ```bash
@@ -207,32 +214,31 @@ tcc/
 
 ---
 
-## 🔐 Variáveis de Ambiente
+## 🔐 Configuração Avançada (Opcional)
 
-Crie um arquivo `.env` na pasta `back`:
+Se suas credenciais MySQL forem **diferentes dos padrão** ou quiser customizar administradores, crie um arquivo `.env` na pasta `back`:
 
 ```env
-# Banco de Dados
+# Banco de Dados (use se for diferente do padrão)
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=
-DB_NAME=tcc
+DB_DATABASE=tcc
 
-# Email (Gmail)
-EMAIL_USER=seu_email@gmail.com
-EMAIL_PASSWORD=sua_senha_app
-
-# Admin
+# Administradores (CPFs separados por vírgula)
 ADMIN_CPFS=12345678900,98765432100
-
-# URL (Produção)
-BASE_URL=https://seu-dominio.com
 ```
 
-**Para usar Gmail:**
-1. Ative 2FA na sua conta Google
-2. Gere uma [Senha de App](https://myaccount.google.com/apppasswords)
-3. Use a senha de app no `.env`
+**Padrões** (se não definir no `.env`):
+- `DB_HOST=localhost`
+- `DB_USER=root`
+- `DB_PASSWORD=` (vazio)
+- `DB_DATABASE=tcc`
+
+**Email:**
+As credenciais de email são configuradas **no banco de dados**, na tabela `ConfiguracaoEmail`:
+- Configure o email e senha para envio
+- Marque como `ativo = 1`
 
 ---
 
@@ -242,16 +248,19 @@ BASE_URL=https://seu-dominio.com
 - **Express** - Framework web
 - **MySQL2** - Driver MySQL
 - **bcrypt** - Criptografia de senhas
-- **nodemailer** - Envio de emails
-- **exceljs** - Geração de Excel (Node.js puro)
+- **nodemailer** - Envio de emails (credenciais do banco)
+- **exceljs** - Geração de Excel (100% Node.js)
 - **docx** - Geração de Word
 - **pdfkit** - Geração de PDF
 - **json2csv** - Geração de CSV
+- **cors** - CORS middleware
+- **dotenv** - Variáveis de ambiente
+- **sortablejs** - Drag & drop
 
 ### Frontend
 - **Vanilla JavaScript** - Sem frameworks pesados
-- **Bootstrap 5** - Estilos
-- **Flaticon** - Ícones
+- **Express** - Servidor estático
+- **SortableJS** - Reordenação de itens
 
 ---
 
@@ -393,10 +402,6 @@ node index.js
 ## 📄 Licença
 
 ISC License - Sinta-se livre para usar, modificar e distribuir.
-
----
-
-**Feito com ❤️ para melhorar a gestão de estoque escolar**
 
 ---
 
